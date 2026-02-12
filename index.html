@@ -66,4 +66,94 @@ input[type=text] {
 button {
   margin-top: 30px;
   font-size: 28px;
-  padding: 18px 4
+  padding: 18px 44px;
+  border-radius: 14px;
+  border: none;
+  background: #00c853;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>CP Freestyle Judging</h1>
+<div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
+
+<form id="scoreForm">
+
+  <input type="hidden" id="judge" name="entry.759726589">
+
+  <h3>Competitor Number</h3>
+  <input type="text" name="entry.1094004330" required>
+
+  <div class="score-display" id="scoreText">5.0</div>
+
+  <input
+    class="slider"
+    type="range"
+    min="0"
+    max="10"
+    step="0.1"
+    value="5"
+    id="slider"
+  >
+
+  <input type="hidden" id="score" name="entry.1544079831">
+
+  <div class="penalties">
+    <h3>Penalties</h3>
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> Missed Entry</label><br>
+    <label><input type="checkbox" name="entry.753299047" value="Out of Bounds"> Out of Bounds</label><br>
+    <label><input type="checkbox" name="entry.753299047" value="Fall"> Fall</label>
+  </div>
+
+  <button type="submit">SUBMIT SCORE</button>
+
+</form>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const judge = params.get("judge") || "UNKNOWN";
+
+document.getElementById("judge").value = judge;
+document.getElementById("judgeLabel").innerText = "Judge: " + judge;
+
+const slider = document.getElementById("slider");
+const scoreText = document.getElementById("scoreText");
+const scoreInput = document.getElementById("score");
+
+function updateScore() {
+  const val = parseFloat(slider.value).toFixed(1);
+  scoreText.textContent = val;
+  scoreInput.value = val;
+
+  const hue = (val / 10) * 120;
+  scoreText.style.color = `hsl(${hue}, 90%, 60%)`;
+}
+
+slider.addEventListener("input", updateScore);
+updateScore();
+
+document.getElementById("scoreForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const data = new FormData(this);
+
+  fetch(
+    "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse",
+    {
+      method: "POST",
+      mode: "no-cors",
+      body: data
+    }
+  );
+
+  alert("Score submitted");
+  this.reset();
+  updateScore();
+});
+</script>
+
+</body>
+</html>
