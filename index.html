@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CP Freestyle Judging</title>
+<title>CP Freestyle – Judge Panel</title>
 
 <style>
 body {
@@ -14,13 +14,11 @@ body {
   padding: 20px;
 }
 
-h1 {
-  margin-bottom: 5px;
-}
+h1 { margin-bottom: 4px; }
 
 .judge-label {
   color: #aaa;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
   font-size: 18px;
 }
 
@@ -37,7 +35,7 @@ input[type=text] {
   font-size: 96px;
   font-weight: bold;
   margin: 30px 0;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .slider {
@@ -59,80 +57,88 @@ input[type=text] {
 }
 
 .penalties {
-  margin-top: 30px;
+  margin-top: 25px;
   font-size: 20px;
 }
 
 button {
   margin-top: 30px;
-  font-size: 28px;
+  font-size: 26px;
   padding: 18px 44px;
   border-radius: 14px;
   border: none;
   background: #00c853;
   color: white;
+  width: 90%;
+  max-width: 320px;
+}
+
+button.locked {
+  background: #555;
+}
+
+.hold-bar {
+  height: 6px;
+  width: 0%;
+  background: #00e676;
+  margin: 12px auto 0;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+  max-width: 320px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>CP Freestyle Judging</h1>
+<h1>CP Freestyle – Judge Panel</h1>
 <div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
 
 <form id="scoreForm">
 
-  <input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="score" name="entry.1544079831">
 
-  <h3>Competitor Number</h3>
-  <input type="text" name="entry.1094004330" required>
+<h3>Competitor Number</h3>
+<input type="text" name="entry.1094004330" required id="competitor">
 
-  <div class="score-display" id="scoreText">5.0</div>
+<div class="score-display" id="scoreText">5.0</div>
 
-  <input
-    class="slider"
-    type="range"
-    min="0"
-    max="10"
-    step="0.1"
-    value="5"
-    id="slider"
-  >
+<input
+  class="slider"
+  type="range"
+  min="0"
+  max="10"
+  step="0.1"
+  value="5"
+  id="slider"
+>
 
-  <input type="hidden" id="score" name="entry.1544079831">
-
-  <div class="penalties">
-  <h3>Penalties</h3>
-  <label>
-    <input type="checkbox" name="entry.753299047" value="Missed Entry (ME)">
-    Missed Entry (ME)
-  </label><br>
-
-  <label>
-    <input type="checkbox" name="entry.753299047" value="Water Landing (WL)">
-    Water Landing (WL)
-  </label><br>
-
-  <label>
-    <input type="checkbox" name="entry.753299047" value="Move Failure (MF)">
-    Move Failure (MF)
-  </label>
+<div class="penalties">
+<h3>Penalties</h3>
+<label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> Missed Entry (ME)</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> Water Landing (WL)</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> Move Failure (MF)</label>
 </div>
 
-  <button type="submit">SUBMIT SCORE</button>
+<button type="button" id="submitBtn">HOLD TO SUBMIT</button>
+<div class="hold-bar" id="holdBar"></div>
 
 </form>
 
 <script>
+// ---------------- Judge ID ----------------
 const params = new URLSearchParams(window.location.search);
 const judge = params.get("judge") || "UNKNOWN";
-
 document.getElementById("judge").value = judge;
 document.getElementById("judgeLabel").innerText = "Judge: " + judge;
 
+// ---------------- Slider + Haptics ----------------
 const slider = document.getElementById("slider");
 const scoreText = document.getElementById("scoreText");
 const scoreInput = document.getElementById("score");
+
+let lastHaptic = 5.0;
 
 function updateScore() {
   const val = parseFloat(slider.value).toFixed(1);
@@ -141,15 +147,51 @@ function updateScore() {
 
   const hue = (val / 10) * 120;
   scoreText.style.color = `hsl(${hue}, 90%, 60%)`;
+
+  // Haptic every 0.5 change
+  if (Math.abs(val - lastHaptic) >= 0.5) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    lastHaptic = val;
+  }
 }
 
 slider.addEventListener("input", updateScore);
 updateScore();
 
-document.getElementById("scoreForm").addEventListener("submit", function(e) {
-  e.preventDefault();
+// ---------------- Hold to Submit ----------------
+const submitBtn = document.getElementById("submitBtn");
+const holdBar = document.getElementById("holdBar");
+let holdTimer = null;
+let holdProgress = 0;
+let locked = false;
 
-  const data = new FormData(this);
+function startHold() {
+  if (locked) return;
+
+  holdProgress = 0;
+  holdBar.style.width = "0%";
+
+  holdTimer = setInterval(() => {
+    holdProgress += 8;
+    holdBar.style.width = holdProgress + "%";
+
+    if (holdProgress >= 100) {
+      clearInterval(holdTimer);
+      submitScore();
+    }
+  }, 120);
+}
+
+function cancelHold() {
+  clearInterval(holdTimer);
+  holdBar.style.width = "0%";
+}
+
+function submitScore() {
+  locked = true;
+
+  const form = document.getElementById("scoreForm");
+  const data = new FormData(form);
 
   fetch(
     "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse",
@@ -160,12 +202,47 @@ document.getElementById("scoreForm").addEventListener("submit", function(e) {
     }
   );
 
-  alert("Score submitted");
-  this.reset();
+  if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+
+  submitBtn.textContent = "SUBMITTED";
+  submitBtn.classList.add("locked");
+  slider.disabled = true;
+
+  setTimeout(showNextRun, 800);
+}
+
+function showNextRun() {
+  submitBtn.textContent = "READY FOR NEXT RUN";
+  submitBtn.classList.remove("locked");
+  submitBtn.style.background = "#2979ff";
+}
+
+// ---------------- Reset for Next Run ----------------
+submitBtn.addEventListener("mousedown", startHold);
+submitBtn.addEventListener("touchstart", startHold);
+
+submitBtn.addEventListener("mouseup", cancelHold);
+submitBtn.addEventListener("mouseleave", cancelHold);
+submitBtn.addEventListener("touchend", cancelHold);
+
+submitBtn.addEventListener("click", () => {
+  if (!locked) return;
+
+  // Reset
+  locked = false;
+  slider.disabled = false;
+  slider.value = 5;
+  lastHaptic = 5.0;
   updateScore();
+
+  document.getElementById("competitor").value = "";
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+
+  submitBtn.textContent = "HOLD TO SUBMIT";
+  submitBtn.style.background = "#00c853";
+  holdBar.style.width = "0%";
 });
 </script>
 
 </body>
 </html>
-
