@@ -71,6 +71,11 @@ button {
   color: white;
   width: 90%;
   max-width: 320px;
+
+  /* Prevent text selection / long-press menu */
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 button.locked {
@@ -111,7 +116,7 @@ button.locked {
 <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> Move Failure (MF)</label>
 </div>
 
-<button type="button" id="submitBtn">SUBMIT SCORE</button>
+<button type="button" id="submitBtn">HOLD TO SUBMIT</button>
 
 </form>
 
@@ -146,41 +151,30 @@ function updateScore() {
 slider.addEventListener("input", updateScore);
 updateScore();
 
-// -------- Submit + Lock --------
+// -------- Short Hold Submit --------
 const submitBtn = document.getElementById("submitBtn");
 let locked = false;
+let holdTimer = null;
 
-submitBtn.addEventListener("click", () => {
-  if (locked) {
-    // Reset for next run
-    locked = false;
-    slider.disabled = false;
-    slider.value = 5;
-    lastHaptic = 5.0;
-    updateScore();
+function startHold(e) {
+  if (locked) return;
+  e.preventDefault();
 
-    document.getElementById("competitor").value = "";
-    document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+  holdTimer = setTimeout(submitScore, 350); // ⏱️ SHORT HOLD
+}
 
-    submitBtn.textContent = "SUBMIT SCORE";
-    submitBtn.classList.remove("locked");
-    return;
-  }
+function cancelHold() {
+  clearTimeout(holdTimer);
+}
 
+function submitScore() {
   const competitor = document.getElementById("competitor").value;
-  const score = scoreInput.value;
-
   if (!competitor) {
     alert("Enter competitor number");
     return;
   }
 
-  if (!confirm(`Submit score ${score} for competitor ${competitor}?`)) {
-    return;
-  }
-
-  const form = document.getElementById("scoreForm");
-  const data = new FormData(form);
+  const data = new FormData(document.getElementById("scoreForm"));
 
   fetch(
     "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse",
@@ -191,12 +185,37 @@ submitBtn.addEventListener("click", () => {
     }
   );
 
-  if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+  if (navigator.vibrate) navigator.vibrate([25, 30, 25]);
 
   locked = true;
   slider.disabled = true;
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
+}
+
+submitBtn.addEventListener("touchstart", startHold, { passive: false });
+submitBtn.addEventListener("touchend", cancelHold);
+submitBtn.addEventListener("touchcancel", cancelHold);
+
+submitBtn.addEventListener("mousedown", startHold);
+submitBtn.addEventListener("mouseup", cancelHold);
+submitBtn.addEventListener("mouseleave", cancelHold);
+
+// -------- Reset --------
+submitBtn.addEventListener("click", () => {
+  if (!locked) return;
+
+  locked = false;
+  slider.disabled = false;
+  slider.value = 5;
+  lastHaptic = 5.0;
+  updateScore();
+
+  document.getElementById("competitor").value = "";
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+
+  submitBtn.textContent = "HOLD TO SUBMIT";
+  submitBtn.classList.remove("locked");
 });
 </script>
 
