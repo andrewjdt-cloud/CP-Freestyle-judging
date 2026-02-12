@@ -102,11 +102,22 @@ button {
   <input type="hidden" id="score" name="entry.1544079831">
 
   <div class="penalties">
-    <h3>Penalties</h3>
-    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> Missed Entry</label><br>
-    <label><input type="checkbox" name="entry.753299047" value="Out of Bounds"> Out of Bounds</label><br>
-    <label><input type="checkbox" name="entry.753299047" value="Fall"> Fall</label>
-  </div>
+  <h3>Penalties</h3>
+  <label>
+    <input type="checkbox" name="entry.753299047" value="Missed Entry (ME)">
+    Missed Entry (ME)
+  </label><br>
+
+  <label>
+    <input type="checkbox" name="entry.753299047" value="Water Landing (WL)">
+    Water Landing (WL)
+  </label><br>
+
+  <label>
+    <input type="checkbox" name="entry.753299047" value="Move Failure (MF)">
+    Move Failure (MF)
+  </label>
+</div>
 
   <button type="submit">SUBMIT SCORE</button>
 
@@ -157,3 +168,4 @@ document.getElementById("scoreForm").addEventListener("submit", function(e) {
 
 </body>
 </html>
+
