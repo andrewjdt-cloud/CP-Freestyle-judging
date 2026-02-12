@@ -94,26 +94,26 @@ body {
 </div>
 
 <script>
-// 🔁 CONFIG — paste your published sheet JSON feed URL here
-const SHEET_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTDCQQr4ioQJWYlFOPmMEE03oy1lnrwx8eHrlP_-NvXMG7GFMkG-rx8Ad-9YP99-IcPgjZZFXFdqa4o/pubhtml?gid=1171869633&single=true";
+// 🔧 CONFIG (no need to touch anything else)
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const GID = "1171869633";
 
-// Fetch every 2 seconds
-setInterval(loadScores, 2000);
-loadScores();
+// Google Sheets GViz endpoint
+const URL =
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${GID}&tqx=out:json`;
 
 async function loadScores() {
-  const res = await fetch(SHEET_URL);
+  const res = await fetch(URL);
   const text = await res.text();
 
-  // Extract values from Google Sheets HTML
-  const rows = [...text.matchAll(/<tr[^>]*>(.*?)<\/tr>/gs)]
-    .map(r => [...r[1].matchAll(/<td[^>]*>(.*?)<\/td>/gs)].map(c => c[1]));
+  // Parse GViz JSON
+  const json = JSON.parse(text.substring(47, text.length - 2));
+  const rows = json.table.rows;
 
-  if (rows.length < 2) return;
+  if (!rows || rows.length < 1) return;
 
-  // Latest 5 rows (judge submissions)
-  const latest = rows.slice(1, 6);
+  // Get latest 5 rows
+  const latest = rows.slice(-5);
 
   const scoresEl = document.getElementById("scores");
   scoresEl.innerHTML = "";
@@ -121,16 +121,20 @@ async function loadScores() {
   let total = 0;
   let count = 0;
 
-  document.getElementById("competitor").textContent = latest[0][0];
+  // Competitor number from the newest row
+  document.getElementById("competitor").textContent =
+    latest[0].c[0]?.v ?? "—";
 
   latest.forEach(r => {
-    const score = parseFloat(r[2]);
-    const penalties = (r[3] || "")
+    const score = r.c[2]?.v;
+    let penalties = r.c[3]?.v || "";
+
+    penalties = penalties
       .replace("Missed Entry (ME)", "ME")
       .replace("Water Landing (WL)", "WL")
       .replace("Move Failure (MF)", "MF");
 
-    if (!isNaN(score)) {
+    if (typeof score === "number") {
       total += score;
       count++;
     }
@@ -138,16 +142,18 @@ async function loadScores() {
     const box = document.createElement("div");
     box.className = "score-box";
     box.innerHTML = `
-      <div class="score">${score.toFixed(1)}</div>
+      <div class="score">${score?.toFixed(1) ?? "—"}</div>
       <div class="penalties">${penalties}</div>
     `;
-
     scoresEl.appendChild(box);
   });
 
   document.getElementById("average").textContent =
     count ? (total / count).toFixed(2) : "—";
 }
+
+setInterval(loadScores, 2000);
+loadScores();
 </script>
 
 </body>
