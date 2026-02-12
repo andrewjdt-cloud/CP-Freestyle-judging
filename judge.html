@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Judging</title>
+
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  margin: 20px;
+}
+
+.score-btn {
+  width: 70px;
+  height: 70px;
+  font-size: 22px;
+  margin: 5px;
+}
+
+.selected {
+  background: green;
+  color: white;
+}
+
+input, button {
+  font-size: 18px;
+  padding: 10px;
+  margin: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Gymnastics Judging</h2>
+
+<form id="judgeForm"
+action="https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse"
+method="POST">
+
+<input type="hidden" id="judge" name="entry.759726589">
+
+<h3>Competitor Number</h3>
+<input required name="entry.1094004330">
+
+<h3>Score</h3>
+<input type="hidden" id="score" name="entry.1544079831" required>
+
+<div id="buttons"></div>
+
+<h3>Penalties</h3>
+
+<label><input type="checkbox" name="entry.753299047" value="Out of bounds"> Out of bounds</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Fall"> Fall</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Time violation"> Time violation</label><br>
+
+<br>
+<button type="submit">Submit Score</button>
+
+</form>
+
+<script>
+
+// Fill judge from URL
+const params = new URLSearchParams(window.location.search);
+document.getElementById("judge").value = params.get("judge");
+
+// Generate score buttons
+const container = document.getElementById("buttons");
+
+for (let i = 0; i <= 100; i++) {
+  let score = (i / 10).toFixed(1);
+
+  let btn = document.createElement("button");
+  btn.innerText = score;
+  btn.type = "button";
+  btn.className = "score-btn";
+
+  btn.onclick = () => {
+    document.getElementById("score").value = score;
+    document.querySelectorAll(".score-btn")
+      .forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+  };
+
+  container.appendChild(btn);
+}
+
+</script>
+
+</body>
+</html>
