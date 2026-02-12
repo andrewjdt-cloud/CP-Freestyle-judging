@@ -2,31 +2,43 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Judging</title>
+<title>Judge Scoring</title>
 
 <style>
 body {
   font-family: Arial;
   text-align: center;
-  margin: 20px;
+  background: #f5f5f5;
+  padding: 20px;
 }
 
-.score-btn {
-  width: 70px;
-  height: 70px;
+h2 { margin-bottom: 10px; }
+
+.score-display {
+  font-size: 60px;
+  font-weight: bold;
+  margin: 20px 0;
+}
+
+.slider-container {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+input[type=range] {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  width: 50px;
+  height: 300px;
+  background: linear-gradient(to top, red, orange, yellow, limegreen);
+}
+
+button {
   font-size: 22px;
-  margin: 5px;
-}
-
-.selected {
-  background: green;
-  color: white;
-}
-
-input, button {
-  font-size: 18px;
-  padding: 10px;
-  margin: 10px;
+  padding: 15px 30px;
+  margin-top: 20px;
 }
 </style>
 </head>
@@ -35,28 +47,29 @@ input, button {
 
 <h2>CP Freestyle Judging</h2>
 
-<form id="judgeForm"
-action="https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse"
-method="POST">
+<form id="scoreForm">
 
 <input type="hidden" id="judge" name="entry.759726589">
 
-<h3>Competitor Number</h3>
-<input required name="entry.1094004330">
+<label>Competitor Number</label><br>
+<input name="entry.1094004330" required><br>
 
-<h3>Score</h3>
-<input type="hidden" id="score" name="entry.1544079831" required>
+<div class="score-display" id="scoreText">5.0</div>
 
-<div id="buttons"></div>
+<div class="slider-container">
+  <input type="range" id="slider"
+    min="0" max="10" step="0.1" value="5">
+</div>
+
+<input type="hidden" id="score" name="entry.1544079831">
 
 <h3>Penalties</h3>
 
-<label><input type="checkbox" name="entry.753299047" value="Out of bounds"> Out of bounds</label><br>
-<label><input type="checkbox" name="entry.753299047" value="Fall"> Fall</label><br>
-<label><input type="checkbox" name="entry.753299047" value="Time violation"> Time violation</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> Missed Entry</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> Water Landing</label><br>
+<label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> Move Failure</label><br>
 
-<br>
-<button type="submit">Submit Score</button>
+<button type="submit">SUBMIT SCORE</button>
 
 </form>
 
@@ -66,29 +79,37 @@ method="POST">
 const params = new URLSearchParams(window.location.search);
 document.getElementById("judge").value = params.get("judge");
 
-// Generate score buttons
-const container = document.getElementById("buttons");
+// Slider behaviour
+const slider = document.getElementById("slider");
+const scoreText = document.getElementById("scoreText");
+const scoreInput = document.getElementById("score");
 
-for (let i = 0; i <= 100; i++) {
-  let score = (i / 10).toFixed(1);
-
-  let btn = document.createElement("button");
-  btn.innerText = score;
-  btn.type = "button";
-  btn.className = "score-btn";
-
-  btn.onclick = () => {
-    document.getElementById("score").value = score;
-    document.querySelectorAll(".score-btn")
-      .forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-  };
-
-  container.appendChild(btn);
+function updateScore() {
+  let val = parseFloat(slider.value).toFixed(1);
+  scoreText.innerText = val;
+  scoreInput.value = val;
 }
+
+slider.oninput = updateScore;
+updateScore();
+
+// Submit to Google Forms
+document.getElementById("scoreForm").onsubmit = function(e) {
+  e.preventDefault();
+
+  const data = new FormData(this);
+
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse", {
+    method: "POST",
+    mode: "no-cors",
+    body: data
+  });
+
+  alert("Score submitted!");
+  this.reset();
+};
 
 </script>
 
 </body>
 </html>
-
