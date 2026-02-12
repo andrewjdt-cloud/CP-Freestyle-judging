@@ -76,16 +76,6 @@ button {
 button.locked {
   background: #555;
 }
-
-.hold-bar {
-  height: 6px;
-  width: 0%;
-  background: #00e676;
-  margin: 12px auto 0;
-  border-radius: 3px;
-  transition: width 0.1s linear;
-  max-width: 320px;
-}
 </style>
 </head>
 
@@ -121,19 +111,18 @@ button.locked {
 <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> Move Failure (MF)</label>
 </div>
 
-<button type="button" id="submitBtn">HOLD TO SUBMIT</button>
-<div class="hold-bar" id="holdBar"></div>
+<button type="button" id="submitBtn">SUBMIT SCORE</button>
 
 </form>
 
 <script>
-// ---------------- Judge ID ----------------
+// -------- Judge ID --------
 const params = new URLSearchParams(window.location.search);
 const judge = params.get("judge") || "UNKNOWN";
 document.getElementById("judge").value = judge;
 document.getElementById("judgeLabel").innerText = "Judge: " + judge;
 
-// ---------------- Slider + Haptics ----------------
+// -------- Slider + Haptics --------
 const slider = document.getElementById("slider");
 const scoreText = document.getElementById("scoreText");
 const scoreInput = document.getElementById("score");
@@ -148,7 +137,6 @@ function updateScore() {
   const hue = (val / 10) * 120;
   scoreText.style.color = `hsl(${hue}, 90%, 60%)`;
 
-  // Haptic every 0.5 change
   if (Math.abs(val - lastHaptic) >= 0.5) {
     if (navigator.vibrate) navigator.vibrate(10);
     lastHaptic = val;
@@ -158,37 +146,38 @@ function updateScore() {
 slider.addEventListener("input", updateScore);
 updateScore();
 
-// ---------------- Hold to Submit ----------------
+// -------- Submit + Lock --------
 const submitBtn = document.getElementById("submitBtn");
-const holdBar = document.getElementById("holdBar");
-let holdTimer = null;
-let holdProgress = 0;
 let locked = false;
 
-function startHold() {
-  if (locked) return;
+submitBtn.addEventListener("click", () => {
+  if (locked) {
+    // Reset for next run
+    locked = false;
+    slider.disabled = false;
+    slider.value = 5;
+    lastHaptic = 5.0;
+    updateScore();
 
-  holdProgress = 0;
-  holdBar.style.width = "0%";
+    document.getElementById("competitor").value = "";
+    document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
 
-  holdTimer = setInterval(() => {
-    holdProgress += 8;
-    holdBar.style.width = holdProgress + "%";
+    submitBtn.textContent = "SUBMIT SCORE";
+    submitBtn.classList.remove("locked");
+    return;
+  }
 
-    if (holdProgress >= 100) {
-      clearInterval(holdTimer);
-      submitScore();
-    }
-  }, 120);
-}
+  const competitor = document.getElementById("competitor").value;
+  const score = scoreInput.value;
 
-function cancelHold() {
-  clearInterval(holdTimer);
-  holdBar.style.width = "0%";
-}
+  if (!competitor) {
+    alert("Enter competitor number");
+    return;
+  }
 
-function submitScore() {
-  locked = true;
+  if (!confirm(`Submit score ${score} for competitor ${competitor}?`)) {
+    return;
+  }
 
   const form = document.getElementById("scoreForm");
   const data = new FormData(form);
@@ -204,43 +193,10 @@ function submitScore() {
 
   if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
 
-  submitBtn.textContent = "SUBMITTED";
-  submitBtn.classList.add("locked");
+  locked = true;
   slider.disabled = true;
-
-  setTimeout(showNextRun, 800);
-}
-
-function showNextRun() {
   submitBtn.textContent = "READY FOR NEXT RUN";
-  submitBtn.classList.remove("locked");
-  submitBtn.style.background = "#2979ff";
-}
-
-// ---------------- Reset for Next Run ----------------
-submitBtn.addEventListener("mousedown", startHold);
-submitBtn.addEventListener("touchstart", startHold);
-
-submitBtn.addEventListener("mouseup", cancelHold);
-submitBtn.addEventListener("mouseleave", cancelHold);
-submitBtn.addEventListener("touchend", cancelHold);
-
-submitBtn.addEventListener("click", () => {
-  if (!locked) return;
-
-  // Reset
-  locked = false;
-  slider.disabled = false;
-  slider.value = 5;
-  lastHaptic = 5.0;
-  updateScore();
-
-  document.getElementById("competitor").value = "";
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-
-  submitBtn.textContent = "HOLD TO SUBMIT";
-  submitBtn.style.background = "#00c853";
-  holdBar.style.width = "0%";
+  submitBtn.classList.add("locked");
 });
 </script>
 
