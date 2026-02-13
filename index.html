@@ -18,7 +18,7 @@ h1 { margin-bottom: 4px; }
 
 .judge-label {
   color: #aaa;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-size: 18px;
 }
 
@@ -29,6 +29,13 @@ input[type=text] {
   text-align: center;
   border-radius: 10px;
   border: none;
+}
+
+.name-display {
+  margin-top: 8px;
+  font-size: 20px;
+  color: #8bc34a;
+  min-height: 26px;
 }
 
 .score-display {
@@ -53,7 +60,6 @@ input[type=text] {
   height: 44px;
   border-radius: 50%;
   background: white;
-  cursor: pointer;
 }
 
 .penalties {
@@ -71,8 +77,6 @@ button {
   color: white;
   width: 90%;
   max-width: 320px;
-
-  /* Prevent text selection / long-press menu */
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -95,19 +99,13 @@ button.locked {
 <input type="hidden" id="score" name="entry.1544079831">
 
 <h3>Competitor Number</h3>
-<input type="text" name="entry.1094004330" required id="competitor">
+<input type="text" name="entry.1094004330" id="competitor" required>
+<div class="name-display" id="nameDisplay"></div>
 
 <div class="score-display" id="scoreText">5.0</div>
 
-<input
-  class="slider"
-  type="range"
-  min="0"
-  max="10"
-  step="0.1"
-  value="5"
-  id="slider"
->
+<input class="slider" type="range"
+min="0" max="10" step="0.1" value="5" id="slider">
 
 <div class="penalties">
 <h3>Penalties</h3>
@@ -121,17 +119,39 @@ button.locked {
 </form>
 
 <script>
+// -------- CONFIG --------
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const COMPETITOR_GID = "51112637";
+
 // -------- Judge ID --------
 const params = new URLSearchParams(window.location.search);
 const judge = params.get("judge") || "UNKNOWN";
 document.getElementById("judge").value = judge;
 document.getElementById("judgeLabel").innerText = "Judge: " + judge;
 
+// -------- Competitor Lookup --------
+const competitorInput = document.getElementById("competitor");
+const nameDisplay = document.getElementById("nameDisplay");
+let competitorMap = {};
+
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const json = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    json.table.rows.forEach(r => {
+      competitorMap[r.c[0].v] = r.c[1].v;
+    });
+  });
+
+competitorInput.addEventListener("input", () => {
+  const name = competitorMap[competitorInput.value];
+  nameDisplay.textContent = name ? name : "Unknown competitor";
+});
+
 // -------- Slider + Haptics --------
 const slider = document.getElementById("slider");
 const scoreText = document.getElementById("scoreText");
 const scoreInput = document.getElementById("score");
-
 let lastHaptic = 5.0;
 
 function updateScore() {
@@ -142,8 +162,8 @@ function updateScore() {
   const hue = (val / 10) * 120;
   scoreText.style.color = `hsl(${hue}, 90%, 60%)`;
 
-  if (Math.abs(val - lastHaptic) >= 0.5) {
-    if (navigator.vibrate) navigator.vibrate(10);
+  if (Math.abs(val - lastHaptic) >= 0.5 && navigator.vibrate) {
+    navigator.vibrate(10);
     lastHaptic = val;
   }
 }
@@ -154,13 +174,12 @@ updateScore();
 // -------- Short Hold Submit --------
 const submitBtn = document.getElementById("submitBtn");
 let locked = false;
-let holdTimer = null;
+let holdTimer;
 
 function startHold(e) {
   if (locked) return;
   e.preventDefault();
-
-  holdTimer = setTimeout(submitScore, 350); // ⏱️ SHORT HOLD
+  holdTimer = setTimeout(submitScore, 350);
 }
 
 function cancelHold() {
@@ -168,22 +187,12 @@ function cancelHold() {
 }
 
 function submitScore() {
-  const competitor = document.getElementById("competitor").value;
-  if (!competitor) {
-    alert("Enter competitor number");
-    return;
-  }
-
   const data = new FormData(document.getElementById("scoreForm"));
-
-  fetch(
-    "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse",
-    {
-      method: "POST",
-      mode: "no-cors",
-      body: data
-    }
-  );
+  fetch("https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse", {
+    method: "POST",
+    mode: "no-cors",
+    body: data
+  });
 
   if (navigator.vibrate) navigator.vibrate([25, 30, 25]);
 
@@ -196,24 +205,20 @@ function submitScore() {
 submitBtn.addEventListener("touchstart", startHold, { passive: false });
 submitBtn.addEventListener("touchend", cancelHold);
 submitBtn.addEventListener("touchcancel", cancelHold);
-
 submitBtn.addEventListener("mousedown", startHold);
 submitBtn.addEventListener("mouseup", cancelHold);
 submitBtn.addEventListener("mouseleave", cancelHold);
 
-// -------- Reset --------
 submitBtn.addEventListener("click", () => {
   if (!locked) return;
-
   locked = false;
   slider.disabled = false;
   slider.value = 5;
   lastHaptic = 5.0;
   updateScore();
-
-  document.getElementById("competitor").value = "";
+  competitorInput.value = "";
+  nameDisplay.textContent = "";
   document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-
   submitBtn.textContent = "HOLD TO SUBMIT";
   submitBtn.classList.remove("locked");
 });
