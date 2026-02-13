@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP Freestyle – Admin Panel</title>
+
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: #0b0b0b;
+  color: #fff;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+.section {
+  background: #111;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin: 8px 0;
+}
+
+input[type=text] {
+  width: 100%;
+  font-size: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  margin-top: 10px;
+  padding: 10px 16px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+}
+
+button.danger {
+  background: #ff5252;
+}
+
+.judge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 6px 0;
+}
+
+small {
+  color: #aaa;
+}
+</style>
+</head>
+
+<body>
+
+<h1>CP Freestyle – Admin Panel</h1>
+
+<div id="accessError" style="color:#ff5252; display:none;">
+  Access denied
+</div>
+
+<div id="adminContent" style="display:none;">
+
+  <div class="section">
+    <h3>Event Control</h3>
+    <label>Event Name
+      <input id="eventName">
+    </label>
+    <label>Location
+      <input id="eventLocation">
+    </label>
+    <label>Round
+      <input id="eventRound">
+    </label>
+    <label>Round Open
+      <input id="roundOpen">
+    </label>
+    <button onclick="saveEvent()">Save Event Config</button>
+  </div>
+
+  <div class="section">
+    <h3>Judges</h3>
+    <div id="judges"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID = "686531230";
+const JUDGES_GID = "1213944419";
+
+/* ---------- Auth ---------- */
+const params = new URLSearchParams(window.location.search);
+const adminToken = params.get("token");
+
+/* ---------- Load Event Config ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const cfg = {};
+    j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
+
+    if (cfg.AdminToken !== adminToken) {
+      document.getElementById("accessError").style.display = "block";
+      return;
+    }
+
+    document.getElementById("adminContent").style.display = "block";
+
+    eventName.value = cfg.EventName || "";
+    eventLocation.value = cfg.Location || "";
+    eventRound.value = cfg.Round || "";
+    roundOpen.value = cfg.RoundOpen || "NO";
+  });
+
+/* ---------- Save Event Config ---------- */
+function saveEvent() {
+  alert("Edit Event Config directly in Google Sheets for now.\nThis panel is control-first, write-back comes next.");
+}
+
+/* ---------- Load Judges ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const container = document.getElementById("judges");
+
+    j.table.rows.forEach(r => {
+      const name = r.c[0].v;
+      const active = r.c[2].v;
+
+      const row = document.createElement("div");
+      row.className = "judge";
+      row.innerHTML = `
+        <span>${name}</span>
+        <span>${active}</span>
+      `;
+      container.appendChild(row);
+    });
+  });
+</script>
+
+</body>
+</html>
