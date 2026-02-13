@@ -11,85 +11,95 @@ body {
   background: #111;
   color: #fff;
   text-align: center;
-  padding: 20px;
+  padding: 16px;
 }
 
-h1 { margin-bottom: 2px; }
-
+/* ---------- Event Info ---------- */
 .event-info {
-  margin-bottom: 18px;
+  margin-bottom: 12px;
 }
 
 .event-name {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
 }
 
 .event-location,
 .event-round {
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* ---------- Judge ---------- */
+.judge-label {
+  margin-bottom: 10px;
   font-size: 16px;
   color: #aaa;
 }
 
-.judge-label {
-  color: #aaa;
-  margin-bottom: 16px;
-  font-size: 18px;
-}
-
+/* ---------- Inputs ---------- */
 input[type=text] {
-  font-size: 24px;
-  padding: 12px;
-  width: 220px;
+  font-size: 22px;
+  padding: 10px;
+  width: 200px;
   text-align: center;
   border-radius: 10px;
   border: none;
 }
 
 .name-display {
-  margin-top: 8px;
-  font-size: 20px;
+  margin-top: 6px;
+  font-size: 18px;
   color: #8bc34a;
-  min-height: 26px;
+  min-height: 22px;
 }
 
+/* ---------- Score ---------- */
 .score-display {
-  font-size: 96px;
+  font-size: 88px;
   font-weight: bold;
-  margin: 30px 0;
+  margin: 16px 0;
   transition: color 0.2s ease;
 }
 
+/* ---------- Slider ---------- */
 .slider {
   width: 90%;
   max-width: 420px;
-  height: 26px;
+  height: 24px;
   appearance: none;
-  border-radius: 13px;
+  border-radius: 12px;
   background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
 }
 
 .slider::-webkit-slider-thumb {
   appearance: none;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: white;
+  background: #fff;
 }
 
+/* ---------- Penalties ---------- */
 .penalties {
-  margin-top: 25px;
-  font-size: 20px;
+  margin-top: 12px;
+  font-size: 18px;
 }
 
+.penalties label {
+  display: inline-block;
+  margin-bottom: 4px;
+}
+
+/* ---------- Button ---------- */
 button {
-  margin-top: 30px;
-  font-size: 26px;
-  padding: 18px 44px;
+  margin-top: 16px;
+  font-size: 24px;
+  padding: 14px 36px;
   border-radius: 14px;
   border: none;
   background: #00c853;
-  color: white;
+  color: #fff;
   width: 90%;
   max-width: 320px;
   user-select: none;
@@ -100,11 +110,18 @@ button {
 button.locked {
   background: #555;
 }
+
+/* ---------- Phone-height optimisation ---------- */
+@media (max-height: 750px) {
+  .score-display { font-size: 80px; margin: 14px 0; }
+  button { font-size: 22px; padding: 12px 32px; }
+}
 </style>
 </head>
 
 <body>
 
+<!-- Event Config -->
 <div class="event-info">
   <div class="event-name" id="eventName">Loading event…</div>
   <div class="event-location" id="eventLocation"></div>
@@ -118,20 +135,27 @@ button.locked {
 <input type="hidden" id="judge" name="entry.759726589">
 <input type="hidden" id="score" name="entry.1544079831">
 
-<h3>Competitor Number</h3>
+<h3>Competitor</h3>
 <input type="text" name="entry.1094004330" id="competitor" required>
 <div class="name-display" id="nameDisplay"></div>
 
 <div class="score-display" id="scoreText">5.0</div>
 
-<input class="slider" type="range"
-min="0" max="10" step="0.1" value="5" id="slider">
+<input
+  class="slider"
+  type="range"
+  min="0"
+  max="10"
+  step="0.1"
+  value="5"
+  id="slider"
+>
 
 <div class="penalties">
 <h3>Penalties</h3>
-<label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> Missed Entry (ME)</label><br>
-<label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> Water Landing (WL)</label><br>
-<label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> Move Failure (MF)</label>
+<label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+<label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+<label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
 </div>
 
 <button type="button" id="submitBtn">HOLD TO SUBMIT</button>
@@ -139,46 +163,41 @@ min="0" max="10" step="0.1" value="5" id="slider">
 </form>
 
 <script>
-// -------- CONFIG --------
+/* ---------- CONFIG ---------- */
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 const EVENT_CONFIG_GID = "686531230";
 const COMPETITOR_GID = "51112637";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-// -------- Judge ID --------
+/* ---------- Judge ID ---------- */
 const params = new URLSearchParams(window.location.search);
 const judge = params.get("judge") || "UNKNOWN";
 document.getElementById("judge").value = judge;
-document.getElementById("judgeLabel").innerText = "Judge: " + judge;
+document.getElementById("judgeLabel").textContent = "Judge: " + judge;
 
-// -------- Event Config --------
+/* ---------- Event Config ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
   .then(r => r.text())
   .then(t => {
-    const json = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    const config = {};
-    json.table.rows.forEach(r => {
-      config[r.c[0].v] = r.c[1].v;
-    });
-
-    document.getElementById("eventName").textContent = config.EventName || "";
-    document.getElementById("eventLocation").textContent = config.Location || "";
-    document.getElementById("eventRound").textContent = config.Round || "";
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const cfg = {};
+    j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
+    eventName.textContent = cfg.EventName || "";
+    eventLocation.textContent = cfg.Location || "";
+    eventRound.textContent = cfg.Round || "";
   });
 
-// -------- Competitor Lookup --------
+/* ---------- Competitor Lookup ---------- */
 const competitorInput = document.getElementById("competitor");
 const nameDisplay = document.getElementById("nameDisplay");
-let competitorMap = {};
+const competitorMap = {};
 
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
   .then(r => r.text())
   .then(t => {
-    const json = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    json.table.rows.forEach(r => {
-      competitorMap[r.c[0].v] = r.c[1].v;
-    });
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
   });
 
 competitorInput.addEventListener("input", () => {
@@ -186,30 +205,28 @@ competitorInput.addEventListener("input", () => {
     competitorMap[competitorInput.value] || "Unknown competitor";
 });
 
-// -------- Slider + Haptics --------
+/* ---------- Slider + Haptics ---------- */
 const slider = document.getElementById("slider");
 const scoreText = document.getElementById("scoreText");
 const scoreInput = document.getElementById("score");
 let lastHaptic = 5.0;
 
 function updateScore() {
-  const val = parseFloat(slider.value).toFixed(1);
-  scoreText.textContent = val;
-  scoreInput.value = val;
+  const v = parseFloat(slider.value).toFixed(1);
+  scoreText.textContent = v;
+  scoreInput.value = v;
+  scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
 
-  const hue = (val / 10) * 120;
-  scoreText.style.color = `hsl(${hue}, 90%, 60%)`;
-
-  if (Math.abs(val - lastHaptic) >= 0.5 && navigator.vibrate) {
+  if (Math.abs(v - lastHaptic) >= 0.5 && navigator.vibrate) {
     navigator.vibrate(10);
-    lastHaptic = val;
+    lastHaptic = v;
   }
 }
 
 slider.addEventListener("input", updateScore);
 updateScore();
 
-// -------- Offline-safe submit --------
+/* ---------- Offline Buffer ---------- */
 const QUEUE_KEY = "pendingSubmissions";
 
 function getQueue() {
@@ -225,9 +242,8 @@ function saveToQueue(data) {
 function flushQueue() {
   if (!navigator.onLine) return;
   const q = getQueue();
-  if (!q.length) return;
-
   const remaining = [];
+
   q.forEach(item => {
     const fd = new FormData();
     Object.keys(item).forEach(k => fd.append(k, item[k]));
@@ -240,7 +256,7 @@ function flushQueue() {
 
 window.addEventListener("online", flushQueue);
 
-// -------- Short Hold Submit --------
+/* ---------- Short Hold Submit ---------- */
 const submitBtn = document.getElementById("submitBtn");
 let locked = false;
 let holdTimer;
@@ -256,7 +272,7 @@ function cancelHold() {
 }
 
 function submitScore() {
-  const data = new FormData(document.getElementById("scoreForm"));
+  const data = new FormData(scoreForm);
   saveToQueue(data);
   flushQueue();
 
@@ -275,6 +291,7 @@ submitBtn.addEventListener("mousedown", startHold);
 submitBtn.addEventListener("mouseup", cancelHold);
 submitBtn.addEventListener("mouseleave", cancelHold);
 
+/* ---------- Reset ---------- */
 submitBtn.addEventListener("click", () => {
   if (!locked) return;
 
