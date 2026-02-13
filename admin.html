@@ -13,10 +13,6 @@ body {
   padding: 20px;
 }
 
-h2 {
-  margin-bottom: 10px;
-}
-
 .section {
   background: #111;
   border-radius: 14px;
@@ -50,11 +46,6 @@ button.small {
   margin: 8px 0;
 }
 
-.status {
-  margin-top: 8px;
-  font-size: 14px;
-}
-
 .error {
   color: #ff5252;
 }
@@ -69,15 +60,13 @@ button.small {
 
 <div id="adminContent" style="display:none;">
 
-  <!-- ROUND CONTROL -->
   <div class="section">
     <h3>Round Control</h3>
     <button onclick="setRound('YES')">OPEN ROUND</button>
     <button class="danger" onclick="setRound('NO')">CLOSE ROUND</button>
-    <div class="status" id="roundStatus"></div>
+    <div id="roundStatus"></div>
   </div>
 
-  <!-- JUDGES -->
   <div class="section">
     <h3>Judges</h3>
     <div id="judges"></div>
@@ -91,7 +80,6 @@ const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 const EVENT_CONFIG_GID = "686531230";
 const JUDGES_GID = "1213944419";
 
-/* ✅ APPS SCRIPT URL (LIVE) */
 const SCRIPT_URL =
   "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
 
@@ -99,11 +87,16 @@ const SCRIPT_URL =
 const params = new URLSearchParams(window.location.search);
 const adminToken = params.get("token");
 
-/* ---------- Helpers ---------- */
+/* ---------- API CALL ---------- */
 function api(payload) {
   payload.adminToken = adminToken;
+
   return fetch(SCRIPT_URL, {
     method: "POST",
+    mode: "cors",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(payload)
   }).then(r => r.json());
 }
@@ -123,7 +116,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
 
     document.getElementById("adminContent").style.display = "block";
     document.getElementById("roundStatus").textContent =
-      "Current RoundOpen: " + (cfg.RoundOpen || "UNKNOWN");
+      "Current RoundOpen: " + cfg.RoundOpen;
   });
 
 /* ---------- Round Control ---------- */
@@ -137,7 +130,7 @@ function setRound(value) {
         alert("Error: " + res.error);
       }
     })
-    .catch(() => alert("Network error"));
+    .catch(err => alert("Network error"));
 }
 
 /* ---------- Load Judges ---------- */
