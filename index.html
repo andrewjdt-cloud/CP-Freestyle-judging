@@ -160,10 +160,21 @@ button.locked {
 >
 
 <div class="penalties">
-<h3>Penalties</h3>
-<label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
-<label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
-<label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  <h3>Penalties</h3>
+  <div class="penalty-row">
+    <label>
+      <input type="checkbox" name="entry.753299047" value="Missed Entry (ME)">
+      ME
+    </label>
+    <label>
+      <input type="checkbox" name="entry.753299047" value="Water Landing (WL)">
+      WL
+    </label>
+    <label>
+      <input type="checkbox" name="entry.753299047" value="Move Failure (MF)">
+      MF
+    </label>
+  </div>
 </div>
 
 <button type="button" id="submitBtn">HOLD TO SUBMIT</button>
@@ -320,4 +331,5 @@ submitBtn.addEventListener("click", () => {
 
 </body>
 </html>
+
 
