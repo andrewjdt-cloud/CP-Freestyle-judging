@@ -14,7 +14,22 @@ body {
   padding: 20px;
 }
 
-h1 { margin-bottom: 4px; }
+h1 { margin-bottom: 2px; }
+
+.event-info {
+  margin-bottom: 18px;
+}
+
+.event-name {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.event-location,
+.event-round {
+  font-size: 16px;
+  color: #aaa;
+}
 
 .judge-label {
   color: #aaa;
@@ -90,7 +105,12 @@ button.locked {
 
 <body>
 
-<h1>CP Freestyle – Judge Panel</h1>
+<div class="event-info">
+  <div class="event-name" id="eventName">Loading event…</div>
+  <div class="event-location" id="eventLocation"></div>
+  <div class="event-round" id="eventRound"></div>
+</div>
+
 <div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
 
 <form id="scoreForm">
@@ -121,6 +141,7 @@ min="0" max="10" step="0.1" value="5" id="slider">
 <script>
 // -------- CONFIG --------
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID = "686531230";
 const COMPETITOR_GID = "51112637";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
@@ -130,6 +151,21 @@ const params = new URLSearchParams(window.location.search);
 const judge = params.get("judge") || "UNKNOWN";
 document.getElementById("judge").value = judge;
 document.getElementById("judgeLabel").innerText = "Judge: " + judge;
+
+// -------- Event Config --------
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const json = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const config = {};
+    json.table.rows.forEach(r => {
+      config[r.c[0].v] = r.c[1].v;
+    });
+
+    document.getElementById("eventName").textContent = config.EventName || "";
+    document.getElementById("eventLocation").textContent = config.Location || "";
+    document.getElementById("eventRound").textContent = config.Round || "";
+  });
 
 // -------- Competitor Lookup --------
 const competitorInput = document.getElementById("competitor");
@@ -173,7 +209,7 @@ function updateScore() {
 slider.addEventListener("input", updateScore);
 updateScore();
 
-// -------- Offline-safe queue --------
+// -------- Offline-safe submit --------
 const QUEUE_KEY = "pendingSubmissions";
 
 function getQueue() {
@@ -181,28 +217,22 @@ function getQueue() {
 }
 
 function saveToQueue(data) {
-  const queue = getQueue();
-  queue.push(Object.fromEntries(data.entries()));
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  const q = getQueue();
+  q.push(Object.fromEntries(data.entries()));
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
 }
 
 function flushQueue() {
   if (!navigator.onLine) return;
-
-  const queue = getQueue();
-  if (!queue.length) return;
+  const q = getQueue();
+  if (!q.length) return;
 
   const remaining = [];
-
-  queue.forEach(item => {
-    const data = new FormData();
-    Object.keys(item).forEach(k => data.append(k, item[k]));
-
-    fetch(FORM_ENDPOINT, {
-      method: "POST",
-      mode: "no-cors",
-      body: data
-    }).catch(() => remaining.push(item));
+  q.forEach(item => {
+    const fd = new FormData();
+    Object.keys(item).forEach(k => fd.append(k, item[k]));
+    fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: fd })
+      .catch(() => remaining.push(item));
   });
 
   localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
@@ -245,7 +275,6 @@ submitBtn.addEventListener("mousedown", startHold);
 submitBtn.addEventListener("mouseup", cancelHold);
 submitBtn.addEventListener("mouseleave", cancelHold);
 
-// -------- Reset --------
 submitBtn.addEventListener("click", () => {
   if (!locked) return;
 
