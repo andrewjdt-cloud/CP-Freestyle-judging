@@ -65,7 +65,6 @@ button.small {
 
 <div id="adminContent" style="display:none;">
 
-  <!-- ROUND CONTROL -->
   <div class="section">
     <h3>Round Control</h3>
     <button onclick="setRound('YES')">OPEN ROUND</button>
@@ -73,7 +72,6 @@ button.small {
     <div id="roundStatus" style="margin-top:8px;"></div>
   </div>
 
-  <!-- JUDGES -->
   <div class="section">
     <h3>Judges</h3>
     <div id="judges"></div>
@@ -94,18 +92,18 @@ const SCRIPT_URL =
 const params = new URLSearchParams(window.location.search);
 const adminToken = params.get("token");
 
-/* ---------- API ---------- */
+/* ---------- FIRE-AND-FORGET API ---------- */
 function api(payload) {
   payload.adminToken = adminToken;
 
-  return fetch(SCRIPT_URL, {
+  fetch(SCRIPT_URL, {
     method: "POST",
-    mode: "cors",
+    mode: "no-cors",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "text/plain"
     },
     body: JSON.stringify(payload)
-  }).then(r => r.json());
+  });
 }
 
 /* ---------- Load Event Config ---------- */
@@ -128,16 +126,9 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
 
 /* ---------- Round Control ---------- */
 function setRound(value) {
-  api({ action: "setRoundOpen", value })
-    .then(res => {
-      if (res.ok) {
-        document.getElementById("roundStatus").textContent =
-          "Current RoundOpen: " + value;
-      } else {
-        alert("Error: " + res.error);
-      }
-    })
-    .catch(() => alert("Network error"));
+  api({ action: "setRoundOpen", value });
+  document.getElementById("roundStatus").textContent =
+    "Current RoundOpen: " + value;
 }
 
 /* ---------- Load Judges ---------- */
@@ -149,7 +140,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
 
     j.table.rows.forEach(r => {
       const name = String(r.c[0].v).trim();
-      let active = String(r.c[2].v).trim();   // ✅ MUST be let
+      let active = String(r.c[2].v).trim();
 
       const row = document.createElement("div");
       row.className = "judge";
@@ -163,21 +154,12 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
 
       btn.onclick = () => {
         const newValue = active === "YES" ? "NO" : "YES";
+        api({ action: "setJudgeActive", judge: name, value: newValue });
 
-        api({
-          action: "setJudgeActive",
-          judge: name,
-          value: newValue
-        }).then(res => {
-          if (res.ok) {
-            active = newValue;
-            label.textContent = `${name} (${active})`;
-            btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
-            btn.className = "small " + (active === "YES" ? "danger" : "");
-          } else {
-            alert("Error: " + res.error);
-          }
-        }).catch(() => alert("Network error"));
+        active = newValue;
+        label.textContent = `${name} (${active})`;
+        btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+        btn.className = "small " + (active === "YES" ? "danger" : "");
       };
 
       row.appendChild(label);
