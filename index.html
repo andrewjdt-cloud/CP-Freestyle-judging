@@ -16,7 +16,7 @@ body {
 
 /* ---------- Event Info ---------- */
 .event-info {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .event-name {
@@ -28,6 +28,19 @@ body {
 .event-round {
   font-size: 14px;
   color: #aaa;
+}
+
+.round-status {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+.round-open {
+  color: #00e676;
+}
+
+.round-closed {
+  color: #ff5252;
 }
 
 /* ---------- Judge ---------- */
@@ -89,14 +102,14 @@ input[type=text] {
 .penalty-row {
   display: flex;
   justify-content: center;
-  gap: 28px;           /* controls horizontal spacing */
+  gap: 28px;
   margin-top: 6px;
 }
 
 .penalty-row label {
   display: flex;
   align-items: center;
-  gap: 6px;            /* space between checkbox and text */
+  gap: 6px;
 }
 
 /* ---------- Button ---------- */
@@ -115,7 +128,8 @@ button {
   -webkit-touch-callout: none;
 }
 
-button.locked {
+button.locked,
+button.disabled {
   background: #555;
 }
 
@@ -134,6 +148,7 @@ button.locked {
   <div class="event-name" id="eventName">Loading event…</div>
   <div class="event-location" id="eventLocation"></div>
   <div class="event-round" id="eventRound"></div>
+  <div class="round-status" id="roundStatus"></div>
 </div>
 
 <div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
@@ -149,31 +164,15 @@ button.locked {
 
 <div class="score-display" id="scoreText">5.0</div>
 
-<input
-  class="slider"
-  type="range"
-  min="0"
-  max="10"
-  step="0.1"
-  value="5"
-  id="slider"
->
+<input class="slider" type="range"
+min="0" max="10" step="0.1" value="5" id="slider">
 
 <div class="penalties">
   <h3>Penalties</h3>
   <div class="penalty-row">
-    <label>
-      <input type="checkbox" name="entry.753299047" value="Missed Entry (ME)">
-      ME
-    </label>
-    <label>
-      <input type="checkbox" name="entry.753299047" value="Water Landing (WL)">
-      WL
-    </label>
-    <label>
-      <input type="checkbox" name="entry.753299047" value="Move Failure (MF)">
-      MF
-    </label>
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
   </div>
 </div>
 
@@ -192,8 +191,11 @@ const FORM_ENDPOINT =
 /* ---------- Judge ID ---------- */
 const params = new URLSearchParams(window.location.search);
 const judge = params.get("judge") || "UNKNOWN";
+judgeLabel.textContent = "Judge: " + judge;
 document.getElementById("judge").value = judge;
-document.getElementById("judgeLabel").textContent = "Judge: " + judge;
+
+/* ---------- State ---------- */
+let roundOpen = false;
 
 /* ---------- Event Config ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
@@ -202,10 +204,31 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
     const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
     const cfg = {};
     j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
+
     eventName.textContent = cfg.EventName || "";
     eventLocation.textContent = cfg.Location || "";
     eventRound.textContent = cfg.Round || "";
+
+    roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
+
+    const status = document.getElementById("roundStatus");
+    if (roundOpen) {
+      status.textContent = "● OPEN";
+      status.className = "round-status round-open";
+    } else {
+      status.textContent = "● CLOSED";
+      status.className = "round-status round-closed";
+      disableSubmissions();
+    }
   });
+
+/* ---------- Disable submissions ---------- */
+function disableSubmissions() {
+  submitBtn.textContent = "ROUND CLOSED";
+  submitBtn.classList.add("disabled");
+  slider.disabled = true;
+  submitBtn.disabled = true;
+}
 
 /* ---------- Competitor Lookup ---------- */
 const competitorInput = document.getElementById("competitor");
@@ -281,7 +304,7 @@ let locked = false;
 let holdTimer;
 
 function startHold(e) {
-  if (locked) return;
+  if (!roundOpen || locked) return;
   e.preventDefault();
   holdTimer = setTimeout(submitScore, 350);
 }
@@ -291,6 +314,8 @@ function cancelHold() {
 }
 
 function submitScore() {
+  if (!roundOpen) return;
+
   const data = new FormData(scoreForm);
   saveToQueue(data);
   flushQueue();
@@ -312,7 +337,7 @@ submitBtn.addEventListener("mouseleave", cancelHold);
 
 /* ---------- Reset ---------- */
 submitBtn.addEventListener("click", () => {
-  if (!locked) return;
+  if (!locked || !roundOpen) return;
 
   locked = false;
   slider.disabled = false;
@@ -331,6 +356,3 @@ submitBtn.addEventListener("click", () => {
 
 </body>
 </html>
-
-
-
