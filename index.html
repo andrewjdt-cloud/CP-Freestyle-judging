@@ -35,13 +35,9 @@ body {
   margin-top: 2px;
 }
 
-.round-open {
-  color: #00e676;
-}
-
-.round-closed {
-  color: #ff5252;
-}
+.round-open { color: #00e676; }
+.round-closed { color: #ff5252; }
+.access-denied { color: #ff5252; }
 
 /* ---------- Judge ---------- */
 .judge-label {
@@ -151,7 +147,7 @@ button.disabled {
   <div class="round-status" id="roundStatus"></div>
 </div>
 
-<div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
+<div class="judge-label" id="judgeLabel">Judge: —</div>
 
 <form id="scoreForm">
 
@@ -185,17 +181,28 @@ min="0" max="10" step="0.1" value="5" id="slider">
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 const EVENT_CONFIG_GID = "686531230";
 const COMPETITOR_GID = "51112637";
+const JUDGES_GID = "1213944419";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-/* ---------- Judge ID ---------- */
+/* ---------- URL Params ---------- */
 const params = new URLSearchParams(window.location.search);
-const judge = params.get("judge") || "UNKNOWN";
-judgeLabel.textContent = "Judge: " + judge;
-document.getElementById("judge").value = judge;
+const judgeParam = params.get("judge");
+const tokenParam = params.get("token");
 
 /* ---------- State ---------- */
 let roundOpen = false;
+let accessGranted = false;
+
+/* ---------- Disable UI ---------- */
+function disableAll(message) {
+  roundStatus.textContent = message;
+  roundStatus.className = "round-status access-denied";
+  submitBtn.textContent = "ACCESS DENIED";
+  submitBtn.classList.add("disabled");
+  submitBtn.disabled = true;
+  slider.disabled = true;
+}
 
 /* ---------- Event Config ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
@@ -210,25 +217,31 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
     eventRound.textContent = cfg.Round || "";
 
     roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
-
-    const status = document.getElementById("roundStatus");
-    if (roundOpen) {
-      status.textContent = "● OPEN";
-      status.className = "round-status round-open";
-    } else {
-      status.textContent = "● CLOSED";
-      status.className = "round-status round-closed";
-      disableSubmissions();
-    }
+    roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
+    roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
   });
 
-/* ---------- Disable submissions ---------- */
-function disableSubmissions() {
-  submitBtn.textContent = "ROUND CLOSED";
-  submitBtn.classList.add("disabled");
-  slider.disabled = true;
-  submitBtn.disabled = true;
-}
+/* ---------- Judge Auth ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    j.table.rows.forEach(r => {
+      const judgeLabelValue = r.c[0].v;
+      const token = r.c[1].v;
+      const active = r.c[2].v === "YES";
+
+      if (judgeLabelValue === judgeParam && token === tokenParam && active) {
+        accessGranted = true;
+        document.getElementById("judge").value = judgeLabelValue;
+        judgeLabel.textContent = "Judge: " + judgeLabelValue;
+      }
+    });
+
+    if (!accessGranted) {
+      disableAll("Access denied – invalid judge link");
+    }
+  });
 
 /* ---------- Competitor Lookup ---------- */
 const competitorInput = document.getElementById("competitor");
@@ -299,12 +312,11 @@ function flushQueue() {
 window.addEventListener("online", flushQueue);
 
 /* ---------- Short Hold Submit ---------- */
-const submitBtn = document.getElementById("submitBtn");
 let locked = false;
 let holdTimer;
 
 function startHold(e) {
-  if (!roundOpen || locked) return;
+  if (!roundOpen || !accessGranted || locked) return;
   e.preventDefault();
   holdTimer = setTimeout(submitScore, 350);
 }
@@ -314,7 +326,7 @@ function cancelHold() {
 }
 
 function submitScore() {
-  if (!roundOpen) return;
+  if (!roundOpen || !accessGranted) return;
 
   const data = new FormData(scoreForm);
   saveToQueue(data);
@@ -337,7 +349,7 @@ submitBtn.addEventListener("mouseleave", cancelHold);
 
 /* ---------- Reset ---------- */
 submitBtn.addEventListener("click", () => {
-  if (!locked || !roundOpen) return;
+  if (!locked || !roundOpen || !accessGranted) return;
 
   locked = false;
   slider.disabled = false;
