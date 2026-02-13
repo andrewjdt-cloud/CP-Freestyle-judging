@@ -155,15 +155,23 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
       btn.className = "small " + (active === "YES" ? "danger" : "");
 
       btn.onclick = () => {
-        api({
-          action: "setJudgeActive",
-          judge: name,
-          value: active === "YES" ? "NO" : "YES"
-        }).then(res => {
-          if (res.ok) location.reload();
-          else alert("Error: " + res.error);
-        });
-      };
+  const newValue = active === "YES" ? "NO" : "YES";
+
+  api({
+    action: "setJudgeActive",
+    judge: name,
+    value: newValue
+  }).then(res => {
+    if (res.ok) {
+      label.textContent = name + " (" + newValue + ")";
+      btn.textContent = newValue === "YES" ? "DISABLE" : "ENABLE";
+      btn.className = "small " + (newValue === "YES" ? "danger" : "");
+      active = newValue;
+    } else {
+      alert("Error: " + res.error);
+    }
+  });
+};
 
       row.appendChild(label);
       row.appendChild(btn);
