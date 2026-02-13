@@ -13,6 +13,10 @@ body {
   padding: 20px;
 }
 
+h2 {
+  margin-bottom: 12px;
+}
+
 .section {
   background: #111;
   border-radius: 14px;
@@ -48,6 +52,7 @@ button.small {
 
 .error {
   color: #ff5252;
+  margin-bottom: 12px;
 }
 </style>
 </head>
@@ -60,13 +65,15 @@ button.small {
 
 <div id="adminContent" style="display:none;">
 
+  <!-- ROUND CONTROL -->
   <div class="section">
     <h3>Round Control</h3>
     <button onclick="setRound('YES')">OPEN ROUND</button>
     <button class="danger" onclick="setRound('NO')">CLOSE ROUND</button>
-    <div id="roundStatus"></div>
+    <div id="roundStatus" style="margin-top:8px;"></div>
   </div>
 
+  <!-- JUDGES -->
   <div class="section">
     <h3>Judges</h3>
     <div id="judges"></div>
@@ -87,7 +94,7 @@ const SCRIPT_URL =
 const params = new URLSearchParams(window.location.search);
 const adminToken = params.get("token");
 
-/* ---------- API CALL ---------- */
+/* ---------- API ---------- */
 function api(payload) {
   payload.adminToken = adminToken;
 
@@ -107,7 +114,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
   .then(t => {
     const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
     const cfg = {};
-    j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
+    j.table.rows.forEach(r => cfg[String(r.c[0].v).trim()] = String(r.c[1].v).trim());
 
     if (!adminToken || cfg.AdminToken !== adminToken) {
       document.getElementById("error").textContent = "Access denied";
@@ -116,7 +123,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
 
     document.getElementById("adminContent").style.display = "block";
     document.getElementById("roundStatus").textContent =
-      "Current RoundOpen: " + cfg.RoundOpen;
+      "Current RoundOpen: " + (cfg.RoundOpen || "UNKNOWN");
   });
 
 /* ---------- Round Control ---------- */
@@ -130,7 +137,7 @@ function setRound(value) {
         alert("Error: " + res.error);
       }
     })
-    .catch(err => alert("Network error"));
+    .catch(() => alert("Network error"));
 }
 
 /* ---------- Load Judges ---------- */
@@ -141,37 +148,37 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
     const container = document.getElementById("judges");
 
     j.table.rows.forEach(r => {
-      const name = r.c[0].v;
-      const active = r.c[2].v;
+      const name = String(r.c[0].v).trim();
+      let active = String(r.c[2].v).trim();   // ✅ MUST be let
 
       const row = document.createElement("div");
       row.className = "judge";
 
       const label = document.createElement("span");
-      label.textContent = name + " (" + active + ")";
+      label.textContent = `${name} (${active})`;
 
       const btn = document.createElement("button");
-      btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
       btn.className = "small " + (active === "YES" ? "danger" : "");
+      btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
 
       btn.onclick = () => {
-  const newValue = active === "YES" ? "NO" : "YES";
+        const newValue = active === "YES" ? "NO" : "YES";
 
-  api({
-    action: "setJudgeActive",
-    judge: name,
-    value: newValue
-  }).then(res => {
-    if (res.ok) {
-      label.textContent = name + " (" + newValue + ")";
-      btn.textContent = newValue === "YES" ? "DISABLE" : "ENABLE";
-      btn.className = "small " + (newValue === "YES" ? "danger" : "");
-      active = newValue;
-    } else {
-      alert("Error: " + res.error);
-    }
-  });
-};
+        api({
+          action: "setJudgeActive",
+          judge: name,
+          value: newValue
+        }).then(res => {
+          if (res.ok) {
+            active = newValue;
+            label.textContent = `${name} (${active})`;
+            btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+            btn.className = "small " + (active === "YES" ? "danger" : "");
+          } else {
+            alert("Error: " + res.error);
+          }
+        }).catch(() => alert("Network error"));
+      };
 
       row.appendChild(label);
       row.appendChild(btn);
