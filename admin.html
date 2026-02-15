@@ -1,13 +1,11 @@
 <!--
 CP Freestyle Judging System
-File: index.html
+File: admin.html
 Version: v1.2
 Date: 2026-02-15
 Notes:
-- On-screen numeric keypad for competitor entry
-- Removes system keyboard entirely
-- Cross-platform (Android + iOS) consistent behavior
-- Experimental UX branch from v1.0
+- Canary version to confirm deployment & cache refresh
+- Visible UI text changes only
 -->
 
 <!DOCTYPE html>
@@ -15,255 +13,92 @@ Notes:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CP Freestyle – Judge Panel</title>
+<title>CP Freestyle – Admin Panel (v1.2)</title>
 
 <style>
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0b0b0b;
+  color: #fff;
+  padding: 20px;
+}
+
+.section {
   background: #111;
-  color: #fff;
-  text-align: center;
+  border-radius: 14px;
   padding: 16px;
+  margin-bottom: 20px;
 }
 
-/* ---------- Event Info ---------- */
-.event-info { margin-bottom: 10px; }
-.event-name { font-size: 20px; font-weight: 600; }
-.event-location, .event-round { font-size: 14px; color: #aaa; }
-
-/* ---------- Judge ---------- */
-.judge-label {
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #aaa;
+h2 {
+  margin-bottom: 12px;
 }
 
-/* ---------- Competitor Display ---------- */
-.competitor-number {
-  font-size: 48px;
-  font-weight: bold;
-  letter-spacing: 4px;
-  margin: 6px 0;
+h3 {
+  text-transform: uppercase;
 }
 
-.name-display {
-  font-size: 18px;
-  color: #8bc34a;
-  min-height: 22px;
-  margin-bottom: 8px;
-}
-
-/* ---------- Keypad ---------- */
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  max-width: 260px;
-  margin: 0 auto 14px;
-}
-
-.keypad button {
-  font-size: 26px;
-  padding: 16px 0;
-  border-radius: 14px;
-  border: none;
-  background: #222;
-  color: #fff;
-}
-
-.keypad button.action {
-  background: #444;
-}
-
-/* ---------- Score ---------- */
-.score-display {
-  font-size: 88px;
-  font-weight: bold;
-  margin: 12px 0;
-}
-
-.slider {
-  width: 90%;
-  max-width: 420px;
-  height: 24px;
-  appearance: none;
-  border-radius: 12px;
-  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
-}
-
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fff;
-}
-
-/* ---------- Penalties ---------- */
-.penalties { margin-top: 8px; font-size: 18px; }
-.penalty-row {
-  display: flex;
-  justify-content: center;
-  gap: 28px;
-  margin-top: 6px;
-}
-
-/* ---------- Submit ---------- */
-button.submit {
-  margin-top: 14px;
-  font-size: 24px;
-  padding: 14px 36px;
-  border-radius: 14px;
+button {
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 10px;
   border: none;
   background: #00c853;
   color: #fff;
-  width: 90%;
-  max-width: 320px;
+  cursor: pointer;
 }
 
-button.locked {
-  background: #555;
+button.danger {
+  background: #ff5252;
+}
+
+button.small {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.judge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.footer {
+  margin-top: 30px;
+  font-size: 12px;
+  color: #777;
+  text-align: center;
 }
 </style>
 </head>
 
 <body>
 
-<div class="event-info">
-  <div class="event-name" id="eventName">Loading event…</div>
-  <div class="event-location" id="eventLocation"></div>
-  <div class="event-round" id="eventRound"></div>
+<h2>CP Freestyle – Admin Panel</h2>
+
+<div class="section">
+  <h3>ROUND CONTROL</h3>
+  <button>OPEN ROUND</button>
+  <button class="danger">CLOSE ROUND</button>
 </div>
 
-<div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
-
-<form id="scoreForm">
-<input type="hidden" name="entry.759726589" id="judge">
-<input type="hidden" name="entry.1094004330" id="competitor">
-<input type="hidden" name="entry.1544079831" id="score">
-
-<h3>Competitor</h3>
-<div class="competitor-number" id="competitorDisplay">---</div>
-<div class="name-display" id="nameDisplay"></div>
-
-<div class="keypad">
-  <button onclick="addDigit(1)">1</button>
-  <button onclick="addDigit(2)">2</button>
-  <button onclick="addDigit(3)">3</button>
-  <button onclick="addDigit(4)">4</button>
-  <button onclick="addDigit(5)">5</button>
-  <button onclick="addDigit(6)">6</button>
-  <button onclick="addDigit(7)">7</button>
-  <button onclick="addDigit(8)">8</button>
-  <button onclick="addDigit(9)">9</button>
-  <button class="action" onclick="backspace()">⌫</button>
-  <button onclick="addDigit(0)">0</button>
-  <button class="action" onclick="clearNumber()">C</button>
+<div class="section">
+  <h3>PENALTIES</h3>
+  <p>This heading is intentionally ALL CAPS to confirm v1.2 is loaded.</p>
 </div>
 
-<div class="score-display" id="scoreText">5.0</div>
-<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
-
-<div class="penalties">
-  <div class="penalty-row">
-    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
-    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
-    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+<div class="section">
+  <h3>JUDGES</h3>
+  <div class="judge">
+    <span>J1 Andrew D</span>
+    <button class="small danger">DISABLE</button>
   </div>
 </div>
 
-<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
-</form>
-
-<script>
-/* ---------- CONFIG ---------- */
-const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-const EVENT_CONFIG_GID = "686531230";
-const COMPETITOR_GID = "51112637";
-const FORM_ENDPOINT =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
-
-/* ---------- Judge ---------- */
-const params = new URLSearchParams(location.search);
-const judge = params.get("judge") || "UNKNOWN";
-judgeLabel.textContent = "Judge: " + judge;
-document.getElementById("judge").value = judge;
-
-/* ---------- Event Config ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
-.then(r => r.text())
-.then(t => {
-  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-  const cfg = {};
-  j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
-  eventName.textContent = cfg.EventName || "";
-  eventLocation.textContent = cfg.Location || "";
-  eventRound.textContent = cfg.Round || "";
-});
-
-/* ---------- Competitor Lookup ---------- */
-const competitorMap = {};
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
-.then(r => r.text())
-.then(t => {
-  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-  j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
-});
-
-/* ---------- Keypad Logic ---------- */
-let number = "";
-
-function updateCompetitor() {
-  competitorDisplay.textContent = number || "---";
-  competitor.value = number;
-  nameDisplay.textContent = competitorMap[number] || "";
-}
-
-function addDigit(d) {
-  if (number.length >= 3) return;
-  number += d;
-  updateCompetitor();
-}
-
-function backspace() {
-  number = number.slice(0, -1);
-  updateCompetitor();
-}
-
-function clearNumber() {
-  number = "";
-  updateCompetitor();
-}
-
-/* ---------- Slider ---------- */
-slider.addEventListener("input", () => {
-  scoreText.textContent = slider.value;
-  score.value = slider.value;
-});
-score.value = "5.0";
-
-/* ---------- Submit ---------- */
-let locked = false;
-let holdTimer;
-
-submitBtn.addEventListener("touchstart", e => {
-  if (locked) return;
-  e.preventDefault();
-  holdTimer = setTimeout(submitScore, 350);
-}, { passive: false });
-
-submitBtn.addEventListener("touchend", () => clearTimeout(holdTimer));
-
-function submitScore() {
-  const data = new FormData(scoreForm);
-  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: data });
-
-  locked = true;
-  slider.disabled = true;
-  submitBtn.textContent = "READY FOR NEXT RUN";
-  submitBtn.classList.add("locked");
-}
-</script>
+<div class="footer">
+  Admin Panel v1.2
+</div>
 
 </body>
 </html>
