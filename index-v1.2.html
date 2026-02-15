@@ -1,12 +1,13 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.2.html
-Version: v1.2
+Version: v1.2 (FIXED)
 Date: 2026-02-15
 Notes:
-- Experimental numeric keypad for competitor entry
-- No system keyboard
-- Same judge + token security as v1.0
+- Numeric keypad competitor entry
+- FIX: keypad buttons no longer submit form
+- Compact side-by-side layout for mobile
+- Secure judge + token enforcement
 -->
 
 <!DOCTYPE html>
@@ -22,49 +23,55 @@ body {
   background: #111;
   color: #fff;
   text-align: center;
-  padding: 16px;
+  padding: 12px;
 }
 
-/* ---------- Event Info ---------- */
-.event-info { margin-bottom: 12px; }
-.event-name { font-size: 20px; font-weight: 600; }
-.event-location, .event-round { font-size: 14px; color: #aaa; }
+.event-info { margin-bottom: 8px; }
+.event-name { font-size: 18px; font-weight: 600; }
+.event-location, .event-round { font-size: 13px; color: #aaa; }
 
-/* ---------- Judge ---------- */
 .judge-label {
-  margin-bottom: 10px;
-  font-size: 16px;
+  margin-bottom: 6px;
+  font-size: 14px;
   color: #aaa;
 }
 
-/* ---------- Competitor ---------- */
+/* ---------- Competitor + Keypad Row ---------- */
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.competitor-box {
+  flex: 1;
+}
+
 .competitor-number {
-  font-size: 48px;
+  font-size: 42px;
   font-weight: bold;
-  letter-spacing: 4px;
-  margin: 6px 0;
 }
 
 .name-display {
-  font-size: 18px;
+  font-size: 16px;
   color: #8bc34a;
-  min-height: 22px;
-  margin-bottom: 8px;
+  min-height: 20px;
 }
 
 /* ---------- Keypad ---------- */
 .keypad {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  max-width: 260px;
-  margin: 0 auto 16px;
+  gap: 6px;
+  width: 140px;
 }
 
 .keypad button {
-  font-size: 26px;
-  padding: 16px 0;
-  border-radius: 14px;
+  type: button;
+  font-size: 18px;
+  padding: 10px 0;
+  border-radius: 10px;
   border: none;
   background: #222;
   color: #fff;
@@ -76,48 +83,51 @@ body {
 
 /* ---------- Score ---------- */
 .score-display {
-  font-size: 88px;
+  font-size: 80px;
   font-weight: bold;
-  margin: 16px 0;
+  margin: 10px 0;
 }
 
 .slider {
-  width: 90%;
+  width: 100%;
   max-width: 420px;
-  height: 24px;
+  height: 22px;
   appearance: none;
-  border-radius: 12px;
+  border-radius: 11px;
   background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
 }
 
 .slider::-webkit-slider-thumb {
   appearance: none;
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #fff;
 }
 
 /* ---------- Penalties ---------- */
-.penalties { margin-top: 10px; font-size: 18px; }
+.penalties {
+  margin-top: 8px;
+  font-size: 16px;
+}
+
 .penalty-row {
   display: flex;
   justify-content: center;
-  gap: 28px;
-  margin-top: 6px;
+  gap: 26px;
+  margin-top: 4px;
 }
 
 /* ---------- Submit ---------- */
 button.submit {
-  margin-top: 16px;
-  font-size: 24px;
-  padding: 14px 36px;
+  margin-top: 12px;
+  font-size: 22px;
+  padding: 12px;
   border-radius: 14px;
   border: none;
   background: #00c853;
   color: #fff;
-  width: 90%;
-  max-width: 320px;
+  width: 100%;
 }
 
 button.locked {
@@ -138,27 +148,31 @@ button.locked {
 
 <form id="scoreForm">
 
-<input type="hidden" name="entry.759726589" id="judge">
-<input type="hidden" name="entry.1094004330" id="competitor">
-<input type="hidden" name="entry.1544079831" id="score">
+<input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="competitor" name="entry.1094004330">
+<input type="hidden" id="score" name="entry.1544079831">
 
-<h3>Competitor</h3>
-<div class="competitor-number" id="competitorDisplay">---</div>
-<div class="name-display" id="nameDisplay"></div>
+<div class="top-row">
+  <div class="competitor-box">
+    <h3>Competitor</h3>
+    <div class="competitor-number" id="competitorDisplay">---</div>
+    <div class="name-display" id="nameDisplay"></div>
+  </div>
 
-<div class="keypad" id="keypad">
-  <button onclick="addDigit(1)">1</button>
-  <button onclick="addDigit(2)">2</button>
-  <button onclick="addDigit(3)">3</button>
-  <button onclick="addDigit(4)">4</button>
-  <button onclick="addDigit(5)">5</button>
-  <button onclick="addDigit(6)">6</button>
-  <button onclick="addDigit(7)">7</button>
-  <button onclick="addDigit(8)">8</button>
-  <button onclick="addDigit(9)">9</button>
-  <button class="action" onclick="backspace()">⌫</button>
-  <button onclick="addDigit(0)">0</button>
-  <button class="action" onclick="clearNumber()">C</button>
+  <div class="keypad">
+    <button type="button" onclick="addDigit(1)">1</button>
+    <button type="button" onclick="addDigit(2)">2</button>
+    <button type="button" onclick="addDigit(3)">3</button>
+    <button type="button" onclick="addDigit(4)">4</button>
+    <button type="button" onclick="addDigit(5)">5</button>
+    <button type="button" onclick="addDigit(6)">6</button>
+    <button type="button" onclick="addDigit(7)">7</button>
+    <button type="button" onclick="addDigit(8)">8</button>
+    <button type="button" onclick="addDigit(9)">9</button>
+    <button type="button" class="action" onclick="backspace()">⌫</button>
+    <button type="button" onclick="addDigit(0)">0</button>
+    <button type="button" class="action" onclick="clearNumber()">C</button>
+  </div>
 </div>
 
 <div class="score-display" id="scoreText">5.0</div>
@@ -219,23 +233,19 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
   let valid = false;
 
   j.table.rows.forEach(r => {
-    const name = String(r.c[0].v).trim();
-    const token = String(r.c[1].v).trim();
-    const active = String(r.c[2].v).trim();
-
-    if (name === judgeParam && token === tokenParam && active === "YES") {
-      valid = true;
-    }
+    if (
+      String(r.c[0].v).trim() === judgeParam &&
+      String(r.c[1].v).trim() === tokenParam &&
+      String(r.c[2].v).trim() === "YES"
+    ) valid = true;
   });
 
   if (!valid) return;
 
   judgeLabel.textContent = "Judge: " + judgeParam;
   judge.value = judgeParam;
-
   slider.disabled = false;
   document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.disabled = false);
-
   submitBtn.textContent = "HOLD TO SUBMIT";
   submitBtn.classList.remove("locked");
 });
@@ -273,7 +283,6 @@ slider.addEventListener("input", () => {
 
 /* ---------- Submit ---------- */
 let holdTimer;
-
 submitBtn.addEventListener("touchstart", e => {
   if (submitBtn.classList.contains("locked")) return;
   e.preventDefault();
