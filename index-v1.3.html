@@ -1,0 +1,407 @@
+<!--
+CP Freestyle Judging System
+File: index-v1.3.html
+Version: v1.3 (Prev / Next competitor navigation)
+Date: 2026-02-15
+Notes:
+- Competitor order driven by existing competitor tab
+- Uses CompetitorOrder column (Column A)
+- No typing / no keypad / no keyboard
+- Prev / Next navigation with auto-advance after submit
+- Secure judge + token enforcement
+- Robust long-press submit (desktop + mobile)
+- Success tick overlay confirmation
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP Freestyle – Judge Panel (v1.3)</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 14px;
+}
+
+/* ---------- Event Info ---------- */
+.event-info { margin-bottom: 8px; }
+.event-name { font-size: 18px; font-weight: 600; }
+.event-location,
+.event-round { font-size: 13px; color: #aaa; }
+
+.round-status { font-size: 12px; margin-top: 2px; }
+.round-open { color: #00e676; }
+.round-closed { color: #ff5252; }
+.access-denied { color: #ff5252; }
+
+/* ---------- Judge ---------- */
+.judge-label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* ---------- Competitor Navigation ---------- */
+.competitor-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.nav-btn {
+  font-size: 18px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+
+.nav-btn:disabled {
+  opacity: 0.3;
+}
+
+.competitor-box {
+  flex: 1;
+}
+
+.competitor-number {
+  font-size: 42px;
+  font-weight: bold;
+}
+
+.name-display {
+  font-size: 16px;
+  color: #8bc34a;
+  min-height: 20px;
+}
+
+/* ---------- Success Tick ---------- */
+.success-tick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-size: 96px;
+  color: #00e676;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.success-tick.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* ---------- Score ---------- */
+.score-display {
+  font-size: 80px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.slider {
+  width: 100%;
+  height: 22px;
+  appearance: none;
+  border-radius: 11px;
+  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* ---------- Penalties ---------- */
+.penalties {
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.penalty-row {
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  margin-top: 4px;
+}
+
+/* ---------- Submit ---------- */
+button.submit {
+  margin-top: 12px;
+  font-size: 22px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+  width: 100%;
+}
+
+button.locked,
+button.disabled {
+  background: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="event-info">
+  <div class="event-name" id="eventName">Loading event…</div>
+  <div class="event-location" id="eventLocation"></div>
+  <div class="event-round" id="eventRound"></div>
+  <div class="round-status" id="roundStatus"></div>
+</div>
+
+<div class="judge-label" id="judgeLabel">Judge: —</div>
+
+<form id="scoreForm">
+
+<input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="competitor" name="entry.1094004330">
+<input type="hidden" id="score" name="entry.1544079831">
+
+<div class="competitor-nav">
+  <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
+
+  <div class="competitor-box">
+    <div class="competitor-number" id="competitorDisplay">—</div>
+    <div class="name-display" id="nameDisplay"></div>
+  </div>
+
+  <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
+
+  <div id="successTick" class="success-tick">✔</div>
+</div>
+
+<div class="score-display" id="scoreText">5.0</div>
+<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
+
+<div class="penalties">
+  <div class="penalty-row">
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  </div>
+</div>
+
+<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
+
+</form>
+
+<script>
+/* ---------- CONFIG ---------- */
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID = "686531230";
+const COMPETITOR_GID = "51112637";
+const JUDGES_GID = "1213944419";
+const FORM_ENDPOINT =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
+
+/* ---------- URL Params ---------- */
+const params = new URLSearchParams(window.location.search);
+const judgeParam = params.get("judge");
+const tokenParam = params.get("token");
+
+/* ---------- State ---------- */
+let roundOpen = false;
+let accessGranted = false;
+let locked = false;
+let justSubmitted = false;
+
+/* ---------- Haptics ---------- */
+function haptic(pattern = 10) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+/* ---------- Disable UI ---------- */
+function disableAll(message) {
+  roundStatus.textContent = message;
+  roundStatus.className = "round-status access-denied";
+  submitBtn.textContent = "ACCESS DENIED";
+  submitBtn.classList.add("disabled");
+  submitBtn.disabled = true;
+  slider.disabled = true;
+}
+
+/* ---------- Event Config ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
+.then(r => r.text())
+.then(t => {
+  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  const cfg = {};
+  j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
+
+  eventName.textContent = cfg.EventName || "";
+  eventLocation.textContent = cfg.Location || "";
+  eventRound.textContent = cfg.Round || "";
+
+  roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
+  roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
+  roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
+});
+
+/* ---------- Judge Auth ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
+.then(r => r.text())
+.then(t => {
+  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  j.table.rows.forEach(r => {
+    if (r.c[0].v === judgeParam && r.c[1].v === tokenParam && r.c[2].v === "YES") {
+      accessGranted = true;
+      judge.value = judgeParam;
+      judgeLabel.textContent = "Judge: " + judgeParam;
+    }
+  });
+
+  if (!accessGranted) disableAll("Access denied – invalid judge link");
+});
+
+/* ---------- Competitor List ---------- */
+let competitors = [];
+let index = 0;
+
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
+.then(r => r.text())
+.then(t => {
+  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  competitors = j.table.rows
+    .map(r => ({
+      order: Number(r.c[0].v),
+      number: r.c[1].v,
+      name: r.c[2].v
+    }))
+    .sort((a, b) => a.order - b.order);
+
+  updateCompetitor();
+});
+
+function updateCompetitor() {
+  if (!competitors.length) return;
+
+  const c = competitors[index];
+  competitor.value = c.number;
+  competitorDisplay.textContent = c.number;
+  nameDisplay.textContent = c.name;
+
+  prevBtn.disabled = index === 0;
+  nextBtn.disabled = index === competitors.length - 1;
+}
+
+/* ---------- Navigation ---------- */
+prevBtn.onclick = () => {
+  if (index > 0) {
+    index--;
+    updateCompetitor();
+    haptic(5);
+  }
+};
+
+nextBtn.onclick = () => {
+  if (index < competitors.length - 1) {
+    index++;
+    updateCompetitor();
+    haptic(5);
+  }
+};
+
+/* ---------- Slider ---------- */
+let lastHaptic = 5.0;
+slider.addEventListener("input", () => {
+  const v = parseFloat(slider.value).toFixed(1);
+  scoreText.textContent = v;
+  score.value = v;
+  scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
+
+  if (Math.abs(v - lastHaptic) >= 0.5) {
+    haptic(10);
+    lastHaptic = v;
+  }
+});
+
+/* ---------- Long Press Submit ---------- */
+let pressStart = null;
+const HOLD_MS = 350;
+
+function onPressStart(e) {
+  if (!roundOpen || !accessGranted || locked) return;
+  e.preventDefault();
+  pressStart = Date.now();
+}
+
+function onPressEnd() {
+  if (!pressStart) return;
+  const held = Date.now() - pressStart;
+  pressStart = null;
+  if (held >= HOLD_MS) submitScore();
+}
+
+function submitScore() {
+  const data = new FormData(scoreForm);
+  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: data });
+
+  haptic([25, 30, 25]);
+
+  locked = true;
+  justSubmitted = true;
+  slider.disabled = true;
+  submitBtn.textContent = "READY FOR NEXT RUN";
+  submitBtn.classList.add("locked");
+  successTick.classList.add("show");
+}
+
+/* Desktop */
+submitBtn.addEventListener("mousedown", onPressStart);
+submitBtn.addEventListener("mouseup", onPressEnd);
+submitBtn.addEventListener("mouseleave", () => pressStart = null);
+
+/* Mobile */
+submitBtn.addEventListener("touchstart", onPressStart, { passive: false });
+submitBtn.addEventListener("touchend", onPressEnd);
+submitBtn.addEventListener("touchcancel", () => pressStart = null);
+
+/* ---------- Reset + Auto-Advance ---------- */
+submitBtn.addEventListener("click", () => {
+  if (justSubmitted) {
+    justSubmitted = false;
+    return;
+  }
+  if (!locked || !roundOpen || !accessGranted) return;
+
+  locked = false;
+  slider.disabled = false;
+  slider.value = 5;
+  lastHaptic = 5.0;
+  scoreText.textContent = "5.0";
+  score.value = "5.0";
+
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+
+  successTick.classList.remove("show");
+  submitBtn.textContent = "HOLD TO SUBMIT";
+  submitBtn.classList.remove("locked");
+
+  if (index < competitors.length - 1) {
+    index++;
+    updateCompetitor();
+  }
+});
+</script>
+
+</body>
+</html>
