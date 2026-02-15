@@ -5,9 +5,9 @@ Version: v1.1
 Date: 2026-02-15
 Notes:
 - Mobile UX experiment
-- Competitor input moved below scoring controls on small screens
-- Keyboard no longer hides slider or submit button
-- Based on v1.0 baseline
+- Competitor input moves below scoring controls on small screens
+- Slider and submit remain visible when keyboard opens
+- Desktop layout unchanged from v1.0
 -->
 
 <!DOCTYPE html>
@@ -169,6 +169,13 @@ button.locked {
 
 <div class="layout">
 
+  <!-- COMPETITOR BLOCK (DOM FIRST = DESKTOP TOP) -->
+  <div class="competitor-block">
+    <h3>Competitor</h3>
+    <input type="text" name="entry.1094004330" id="competitor" required>
+    <div class="name-display" id="nameDisplay"></div>
+  </div>
+
   <!-- SCORING BLOCK -->
   <div class="scoring-block">
 
@@ -200,13 +207,6 @@ button.locked {
 
     <button type="button" id="submitBtn">HOLD TO SUBMIT</button>
 
-  </div>
-
-  <!-- COMPETITOR BLOCK -->
-  <div class="competitor-block">
-    <h3>Competitor</h3>
-    <input type="text" name="entry.1094004330" id="competitor" required>
-    <div class="name-display" id="nameDisplay"></div>
   </div>
 
 </div>
