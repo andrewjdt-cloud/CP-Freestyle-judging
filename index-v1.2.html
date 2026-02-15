@@ -1,13 +1,14 @@
-<!--
+<!-- 
 CP Freestyle Judging System
 File: index-v1.2.html
-Version: v1.2 (keypad + desktop confirmation fix)
+Version: v1.2 (keypad + success tick overlay)
 Date: 2026-02-15
 Notes:
 - Numeric keypad competitor entry
 - Secure judge + token enforcement
 - Robust long-press submit (desktop + mobile)
 - Consistent READY FOR NEXT RUN confirmation
+- Success tick overlay (no layout height change)
 -->
 
 <!DOCTYPE html>
@@ -46,6 +47,7 @@ body {
 
 /* ---------- Competitor + Keypad ---------- */
 .top-row {
+  position: relative;
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -63,6 +65,25 @@ body {
   font-size: 16px;
   color: #8bc34a;
   min-height: 20px;
+}
+
+/* ---------- Success Tick (Overlay) ---------- */
+.success-tick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-size: 96px;
+  color: #00e676;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.success-tick.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
 }
 
 /* ---------- Keypad ---------- */
@@ -177,6 +198,9 @@ button.disabled {
     <button type="button" onclick="tapDigit(0)">0</button>
     <button type="button" class="action" onclick="clearNumber()">C</button>
   </div>
+
+  <!-- Success Tick Overlay -->
+  <div id="successTick" class="success-tick">✔</div>
 </div>
 
 <div class="score-display" id="scoreText">5.0</div>
@@ -214,12 +238,12 @@ let accessGranted = false;
 let locked = false;
 let justSubmitted = false;
 
-/* ---------- Haptic Helper ---------- */
+/* ---------- Haptics ---------- */
 function haptic(pattern = 10) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
-  function hasValidCompetitor() {
+function hasValidCompetitor() {
   return number.length > 0;
 }
 
@@ -256,20 +280,14 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
 .then(t => {
   const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
   j.table.rows.forEach(r => {
-    if (
-      r.c[0].v === judgeParam &&
-      r.c[1].v === tokenParam &&
-      r.c[2].v === "YES"
-    ) {
+    if (r.c[0].v === judgeParam && r.c[1].v === tokenParam && r.c[2].v === "YES") {
       accessGranted = true;
       judge.value = judgeParam;
       judgeLabel.textContent = "Judge: " + judgeParam;
     }
   });
 
-  if (!accessGranted) {
-    disableAll("Access denied – invalid judge link");
-  }
+  if (!accessGranted) disableAll("Access denied – invalid judge link");
 });
 
 /* ---------- Competitor Lookup ---------- */
@@ -281,7 +299,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETIT
   j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
 });
 
-/* ---------- Keypad Logic ---------- */
+/* ---------- Keypad ---------- */
 let number = "";
 
 function updateCompetitor() {
@@ -329,17 +347,13 @@ const HOLD_MS = 350;
 
 function onPressStart(e) {
   if (!roundOpen || !accessGranted || locked) return;
-
-  // NEW: competitor required
   if (!hasValidCompetitor()) {
-    haptic(30); // short error buzz
+    haptic(30);
     return;
   }
-
   e.preventDefault();
   pressStart = Date.now();
 }
-
 
 function onPressEnd() {
   if (!pressStart) return;
@@ -359,6 +373,7 @@ function submitScore() {
   slider.disabled = true;
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
+  successTick.classList.add("show");
 }
 
 /* Desktop */
@@ -392,6 +407,7 @@ submitBtn.addEventListener("click", () => {
 
   submitBtn.textContent = "HOLD TO SUBMIT";
   submitBtn.classList.remove("locked");
+  successTick.classList.remove("show");
 });
 </script>
 
