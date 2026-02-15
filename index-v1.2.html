@@ -219,6 +219,10 @@ function haptic(pattern = 10) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
+  function hasValidCompetitor() {
+  return number.length > 0;
+}
+
 /* ---------- Disable UI ---------- */
 function disableAll(message) {
   roundStatus.textContent = message;
@@ -325,9 +329,17 @@ const HOLD_MS = 350;
 
 function onPressStart(e) {
   if (!roundOpen || !accessGranted || locked) return;
+
+  // NEW: competitor required
+  if (!hasValidCompetitor()) {
+    haptic(30); // short error buzz
+    return;
+  }
+
   e.preventDefault();
   pressStart = Date.now();
 }
+
 
 function onPressEnd() {
   if (!pressStart) return;
