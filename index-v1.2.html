@@ -1,13 +1,13 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.2.html
-Version: v1.2 (FIXED)
+Version: v1.2 (COMPLETE)
 Date: 2026-02-15
 Notes:
 - Numeric keypad competitor entry
-- FIX: keypad buttons no longer submit form
-- Compact side-by-side layout for mobile
 - Secure judge + token enforcement
+- Compact mobile layout
+- FIX: READY FOR NEXT RUN now resets the form
 -->
 
 <!DOCTYPE html>
@@ -36,7 +36,7 @@ body {
   color: #aaa;
 }
 
-/* ---------- Competitor + Keypad Row ---------- */
+/* ---------- Competitor + Keypad ---------- */
 .top-row {
   display: flex;
   justify-content: space-between;
@@ -44,9 +44,7 @@ body {
   margin-bottom: 10px;
 }
 
-.competitor-box {
-  flex: 1;
-}
+.competitor-box { flex: 1; }
 
 .competitor-number {
   font-size: 42px;
@@ -68,7 +66,6 @@ body {
 }
 
 .keypad button {
-  type: button;
   font-size: 18px;
   padding: 10px 0;
   border-radius: 10px;
@@ -77,9 +74,7 @@ body {
   color: #fff;
 }
 
-.keypad button.action {
-  background: #444;
-}
+.keypad button.action { background: #444; }
 
 /* ---------- Score ---------- */
 .score-display {
@@ -90,7 +85,6 @@ body {
 
 .slider {
   width: 100%;
-  max-width: 420px;
   height: 22px;
   appearance: none;
   border-radius: 11px;
@@ -130,9 +124,7 @@ button.submit {
   width: 100%;
 }
 
-button.locked {
-  background: #555;
-}
+button.locked { background: #555; }
 </style>
 </head>
 
@@ -244,8 +236,10 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
 
   judgeLabel.textContent = "Judge: " + judgeParam;
   judge.value = judgeParam;
+
   slider.disabled = false;
   document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.disabled = false);
+
   submitBtn.textContent = "HOLD TO SUBMIT";
   submitBtn.classList.remove("locked");
 });
@@ -281,19 +275,48 @@ slider.addEventListener("input", () => {
   score.value = slider.value;
 });
 
-/* ---------- Submit ---------- */
+/* ---------- Submit + Reset ---------- */
 let holdTimer;
+let locked = false;
+
 submitBtn.addEventListener("touchstart", e => {
-  if (submitBtn.classList.contains("locked")) return;
   e.preventDefault();
-  holdTimer = setTimeout(() => {
-    fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: new FormData(scoreForm) });
-    submitBtn.textContent = "READY FOR NEXT RUN";
-    submitBtn.classList.add("locked");
-  }, 350);
+
+  if (locked) {
+    resetForm();
+    return;
+  }
+
+  if (submitBtn.classList.contains("locked")) return;
+
+  holdTimer = setTimeout(submitScore, 350);
 }, { passive: false });
 
 submitBtn.addEventListener("touchend", () => clearTimeout(holdTimer));
+
+function submitScore() {
+  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: new FormData(scoreForm) });
+
+  locked = true;
+  submitBtn.textContent = "READY FOR NEXT RUN";
+  submitBtn.classList.add("locked");
+}
+
+function resetForm() {
+  locked = false;
+
+  number = "";
+  updateCompetitor();
+
+  slider.value = 5;
+  score.value = "5.0";
+  scoreText.textContent = "5.0";
+
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+
+  submitBtn.textContent = "HOLD TO SUBMIT";
+  submitBtn.classList.remove("locked");
+}
 </script>
 
 </body>
