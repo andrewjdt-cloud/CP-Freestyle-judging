@@ -1,13 +1,13 @@
 <!--
 CP Freestyle Judging System
 File: index.html
-Version: v1.0 (LOCKED – desktop hold fixed)
+Version: v1.0 (LOCKED – desktop confirmation fix)
 Date: 2026-02-15
 Notes:
 - Secure judge + token enforcement
 - Robust long-press submit (desktop + mobile)
-- Slider haptics preserved
-- Offline buffering preserved
+- Consistent READY FOR NEXT RUN confirmation
+- Offline buffering + haptics preserved
 -->
 
 <!DOCTYPE html>
@@ -137,7 +137,6 @@ button.disabled {
 
 <body>
 
-<!-- Event Config -->
 <div class="event-info">
   <div class="event-name" id="eventName">Loading event…</div>
   <div class="event-location" id="eventLocation"></div>
@@ -191,6 +190,17 @@ const tokenParam = params.get("token");
 /* ---------- State ---------- */
 let roundOpen = false;
 let accessGranted = false;
+let locked = false;
+let justSubmitted = false;
+
+/* ---------- Haptic Helper ---------- */
+function haptic(pattern = 10) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+  function hasValidCompetitor() {
+  return /^\d+$/.test(competitor.value.trim());
+}
 
 /* ---------- Disable UI ---------- */
 function disableAll(message) {
@@ -225,14 +235,14 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
   .then(t => {
     const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
     j.table.rows.forEach(r => {
-      const judgeLabelValue = r.c[0].v;
-      const token = r.c[1].v;
-      const active = r.c[2].v === "YES";
-
-      if (judgeLabelValue === judgeParam && token === tokenParam && active) {
+      if (
+        r.c[0].v === judgeParam &&
+        r.c[1].v === tokenParam &&
+        r.c[2].v === "YES"
+      ) {
         accessGranted = true;
-        document.getElementById("judge").value = judgeLabelValue;
-        judgeLabel.textContent = "Judge: " + judgeLabelValue;
+        judge.value = judgeParam;
+        judgeLabel.textContent = "Judge: " + judgeParam;
       }
     });
 
@@ -242,10 +252,7 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
   });
 
 /* ---------- Competitor Lookup ---------- */
-const competitorInput = document.getElementById("competitor");
-const nameDisplay = document.getElementById("nameDisplay");
 const competitorMap = {};
-
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
   .then(r => r.text())
   .then(t => {
@@ -253,76 +260,41 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETIT
     j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
   });
 
-competitorInput.addEventListener("input", () => {
-  nameDisplay.textContent =
-    competitorMap[competitorInput.value] || "Unknown competitor";
+competitor.addEventListener("input", () => {
+  nameDisplay.textContent = competitorMap[competitor.value] || "Unknown competitor";
 });
 
-/* ---------- Slider + Haptics ---------- */
-const slider = document.getElementById("slider");
-const scoreText = document.getElementById("scoreText");
-const scoreInput = document.getElementById("score");
+/* ---------- Slider ---------- */
 let lastHaptic = 5.0;
-
-function haptic(pattern = 10) {
-  if (navigator.vibrate) navigator.vibrate(pattern);
-}
-
-function updateScore() {
+slider.addEventListener("input", () => {
   const v = parseFloat(slider.value).toFixed(1);
   scoreText.textContent = v;
-  scoreInput.value = v;
+  score.value = v;
   scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
 
   if (Math.abs(v - lastHaptic) >= 0.5) {
     haptic(10);
     lastHaptic = v;
   }
-}
+});
 
-slider.addEventListener("input", updateScore);
-updateScore();
-
-/* ---------- Offline Buffer ---------- */
-const QUEUE_KEY = "pendingSubmissions";
-
-function getQueue() {
-  return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-}
-
-function saveToQueue(data) {
-  const q = getQueue();
-  q.push(Object.fromEntries(data.entries()));
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-}
-
-function flushQueue() {
-  if (!navigator.onLine) return;
-  const q = getQueue();
-  const remaining = [];
-
-  q.forEach(item => {
-    const fd = new FormData();
-    Object.keys(item).forEach(k => fd.append(k, item[k]));
-    fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: fd })
-      .catch(() => remaining.push(item));
-  });
-
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
-}
-
-window.addEventListener("online", flushQueue);
-
-/* ---------- Robust Hold Submit ---------- */
-let locked = false;
+/* ---------- Long Press Submit ---------- */
 let pressStart = null;
 const HOLD_MS = 350;
 
 function onPressStart(e) {
   if (!roundOpen || !accessGranted || locked) return;
+
+  // NEW: competitor required
+  if (!hasValidCompetitor()) {
+    haptic(30); // short error buzz
+    return;
+  }
+
   e.preventDefault();
   pressStart = Date.now();
 }
+
 
 function onPressEnd() {
   if (!pressStart) return;
@@ -332,15 +304,13 @@ function onPressEnd() {
 }
 
 function submitScore() {
-  if (!roundOpen || !accessGranted) return;
-
   const data = new FormData(scoreForm);
-  saveToQueue(data);
-  flushQueue();
+  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: data });
 
   haptic([25, 30, 25]);
 
   locked = true;
+  justSubmitted = true;
   slider.disabled = true;
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
@@ -358,15 +328,20 @@ submitBtn.addEventListener("touchcancel", () => pressStart = null);
 
 /* ---------- Reset ---------- */
 submitBtn.addEventListener("click", () => {
+  if (justSubmitted) {
+    justSubmitted = false;
+    return;
+  }
   if (!locked || !roundOpen || !accessGranted) return;
 
   locked = false;
   slider.disabled = false;
   slider.value = 5;
   lastHaptic = 5.0;
-  updateScore();
+  scoreText.textContent = "5.0";
+  score.value = "5.0";
 
-  competitorInput.value = "";
+  competitor.value = "";
   nameDisplay.textContent = "";
   document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
 
