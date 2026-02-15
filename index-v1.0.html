@@ -1,1 +1,178 @@
+<!--
+CP Freestyle Judging System
+File: admin.html
+Version: v1.0
+Date: 2026-02-15
+Notes:
+- Production admin panel
+- Round open / close control
+- Judge enable / disable
+- Token-secured
+-->
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP Freestyle – Admin Panel</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0b0b0b;
+  color: #fff;
+  padding: 20px;
+}
+
+.section {
+  background: #111;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  margin-bottom: 12px;
+}
+
+button {
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+  cursor: pointer;
+}
+
+button.danger {
+  background: #ff5252;
+}
+
+button.small {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.judge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.error {
+  color: #ff5252;
+  margin-bottom: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>CP Freestyle – Admin Panel</h2>
+<div id="error" class="error"></div>
+
+<div id="adminContent" style="display:none;">
+
+  <div class="section">
+    <h3>Round Control</h3>
+    <button onclick="setRound('YES')">OPEN ROUND</button>
+    <button class="danger" onclick="setRound('NO')">CLOSE ROUND</button>
+    <div id="roundStatus" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="section">
+    <h3>Judges</h3>
+    <div id="judges"></div>
+  </div>
+
+</div>
+
+<script>
+/* ---------- CONFIG ---------- */
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID = "686531230";
+const JUDGES_GID = "1213944419";
+
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
+
+/* ---------- AUTH ---------- */
+const params = new URLSearchParams(window.location.search);
+const adminToken = params.get("token");
+
+/* ---------- API ---------- */
+function api(payload) {
+  payload.adminToken = adminToken;
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(payload)
+  });
+}
+
+/* ---------- Event Config ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    const cfg = {};
+    j.table.rows.forEach(r => cfg[String(r.c[0].v).trim()] = String(r.c[1].v).trim());
+
+    if (!adminToken || cfg.AdminToken !== adminToken) {
+      document.getElementById("error").textContent = "Access denied";
+      return;
+    }
+
+    adminContent.style.display = "block";
+    roundStatus.textContent = "Current RoundOpen: " + (cfg.RoundOpen || "UNKNOWN");
+  });
+
+/* ---------- Round Control ---------- */
+function setRound(value) {
+  api({ action: "setRoundOpen", value });
+  roundStatus.textContent = "Current RoundOpen: " + value;
+}
+
+/* ---------- Judges ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
+  .then(r => r.text())
+  .then(t => {
+    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+
+    j.table.rows.forEach(r => {
+      let name = String(r.c[0].v).trim();
+      let active = String(r.c[2].v).trim();
+
+      const row = document.createElement("div");
+      row.className = "judge";
+
+      const label = document.createElement("span");
+      label.textContent = `${name} (${active})`;
+
+      const btn = document.createElement("button");
+      btn.className = "small " + (active === "YES" ? "danger" : "");
+      btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+
+      btn.onclick = () => {
+        const newValue = active === "YES" ? "NO" : "YES";
+        api({ action: "setJudgeActive", judge: name, value: newValue });
+        active = newValue;
+        label.textContent = `${name} (${active})`;
+        btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+        btn.className = "small " + (active === "YES" ? "danger" : "");
+      };
+
+      row.appendChild(label);
+      row.appendChild(btn);
+      judges.appendChild(row);
+    });
+  });
+</script>
+
+</body>
+</html>
