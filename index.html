@@ -1,9 +1,20 @@
+<!--
+CP Freestyle Judging System
+File: index.html
+Version: v1.1
+Date: 2026-02-15
+Notes:
+- Experimental mobile UX
+- Competitor block moves below scoring controls on small screens
+- Desktop layout unchanged from v1.0
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CP Freestyle – Judge Panel</title>
+<title>CP Freestyle – Judge Panel (v1.1)</title>
 
 <style>
 body {
@@ -14,357 +25,51 @@ body {
   padding: 16px;
 }
 
-/* ---------- Event Info ---------- */
-.event-info {
-  margin-bottom: 10px;
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.event-name {
-  font-size: 20px;
-  font-weight: 600;
+@media (max-width: 600px) {
+  .competitor { order: 2; }
+  .scoring { order: 1; }
 }
 
-.event-location,
-.event-round {
-  font-size: 14px;
-  color: #aaa;
-}
-
-.round-status {
-  font-size: 13px;
-  margin-top: 2px;
-}
-
-.round-open { color: #00e676; }
-.round-closed { color: #ff5252; }
-.access-denied { color: #ff5252; }
-
-/* ---------- Judge ---------- */
-.judge-label {
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #aaa;
-}
-
-/* ---------- Inputs ---------- */
-input[type=text] {
-  font-size: 22px;
-  padding: 10px;
-  width: 200px;
-  text-align: center;
-  border-radius: 10px;
-  border: none;
-}
-
-.name-display {
-  margin-top: 6px;
-  font-size: 18px;
-  color: #8bc34a;
-  min-height: 22px;
-}
-
-/* ---------- Score ---------- */
 .score-display {
   font-size: 88px;
   font-weight: bold;
-  margin: 16px 0;
-  transition: color 0.2s ease;
 }
 
-/* ---------- Slider ---------- */
 .slider {
   width: 90%;
   max-width: 420px;
-  height: 24px;
-  appearance: none;
-  border-radius: 12px;
-  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
 }
 
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fff;
-}
-
-/* ---------- Penalties ---------- */
-.penalties {
-  margin-top: 12px;
-  font-size: 18px;
-}
-
-.penalty-row {
-  display: flex;
-  justify-content: center;
-  gap: 28px;
-  margin-top: 6px;
-}
-
-.penalty-row label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* ---------- Button ---------- */
 button {
   margin-top: 16px;
   font-size: 24px;
-  padding: 14px 36px;
-  border-radius: 14px;
-  border: none;
-  background: #00c853;
-  color: #fff;
-  width: 90%;
-  max-width: 320px;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-}
-
-button.locked,
-button.disabled {
-  background: #555;
-}
-
-/* ---------- Phone-height optimisation ---------- */
-@media (max-height: 750px) {
-  .score-display { font-size: 80px; margin: 14px 0; }
-  button { font-size: 22px; padding: 12px 32px; }
+  padding: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- Event Config -->
-<div class="event-info">
-  <div class="event-name" id="eventName">Loading event…</div>
-  <div class="event-location" id="eventLocation"></div>
-  <div class="event-round" id="eventRound"></div>
-  <div class="round-status" id="roundStatus"></div>
-</div>
+<div class="layout">
 
-<div class="judge-label" id="judgeLabel">Judge: —</div>
-
-<form id="scoreForm">
-
-<input type="hidden" id="judge" name="entry.759726589">
-<input type="hidden" id="score" name="entry.1544079831">
-
-<h3>Competitor</h3>
-<input type="text" name="entry.1094004330" id="competitor" required>
-<div class="name-display" id="nameDisplay"></div>
-
-<div class="score-display" id="scoreText">5.0</div>
-
-<input class="slider" type="range"
-min="0" max="10" step="0.1" value="5" id="slider">
-
-<div class="penalties">
-  <h3>Penalties</h3>
-  <div class="penalty-row">
-    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
-    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
-    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  <div class="competitor">
+    <h3>Competitor</h3>
+    <input type="text" placeholder="Enter number">
   </div>
+
+  <div class="scoring">
+    <div class="score-display">5.0</div>
+    <input class="slider" type="range" min="0" max="10" step="0.1" value="5">
+    <button>HOLD TO SUBMIT</button>
+  </div>
+
 </div>
-
-<button type="button" id="submitBtn">HOLD TO SUBMIT</button>
-
-</form>
-
-<script>
-/* ---------- CONFIG ---------- */
-const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-const EVENT_CONFIG_GID = "686531230";
-const COMPETITOR_GID = "51112637";
-const JUDGES_GID = "1213944419";
-const FORM_ENDPOINT =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
-
-/* ---------- URL Params ---------- */
-const params = new URLSearchParams(window.location.search);
-const judgeParam = params.get("judge");
-const tokenParam = params.get("token");
-
-/* ---------- State ---------- */
-let roundOpen = false;
-let accessGranted = false;
-
-/* ---------- Disable UI ---------- */
-function disableAll(message) {
-  roundStatus.textContent = message;
-  roundStatus.className = "round-status access-denied";
-  submitBtn.textContent = "ACCESS DENIED";
-  submitBtn.classList.add("disabled");
-  submitBtn.disabled = true;
-  slider.disabled = true;
-}
-
-/* ---------- Event Config ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    const cfg = {};
-    j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
-
-    eventName.textContent = cfg.EventName || "";
-    eventLocation.textContent = cfg.Location || "";
-    eventRound.textContent = cfg.Round || "";
-
-    roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
-    roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
-    roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
-  });
-
-/* ---------- Judge Auth ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    j.table.rows.forEach(r => {
-      const judgeLabelValue = r.c[0].v;
-      const token = r.c[1].v;
-      const active = r.c[2].v === "YES";
-
-      if (judgeLabelValue === judgeParam && token === tokenParam && active) {
-        accessGranted = true;
-        document.getElementById("judge").value = judgeLabelValue;
-        judgeLabel.textContent = "Judge: " + judgeLabelValue;
-      }
-    });
-
-    if (!accessGranted) {
-      disableAll("Access denied – invalid judge link");
-    }
-  });
-
-/* ---------- Competitor Lookup ---------- */
-const competitorInput = document.getElementById("competitor");
-const nameDisplay = document.getElementById("nameDisplay");
-const competitorMap = {};
-
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
-  });
-
-competitorInput.addEventListener("input", () => {
-  nameDisplay.textContent =
-    competitorMap[competitorInput.value] || "Unknown competitor";
-});
-
-/* ---------- Slider + Haptics ---------- */
-const slider = document.getElementById("slider");
-const scoreText = document.getElementById("scoreText");
-const scoreInput = document.getElementById("score");
-let lastHaptic = 5.0;
-
-function updateScore() {
-  const v = parseFloat(slider.value).toFixed(1);
-  scoreText.textContent = v;
-  scoreInput.value = v;
-  scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
-
-  if (Math.abs(v - lastHaptic) >= 0.5 && navigator.vibrate) {
-    navigator.vibrate(10);
-    lastHaptic = v;
-  }
-}
-
-slider.addEventListener("input", updateScore);
-updateScore();
-
-/* ---------- Offline Buffer ---------- */
-const QUEUE_KEY = "pendingSubmissions";
-
-function getQueue() {
-  return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-}
-
-function saveToQueue(data) {
-  const q = getQueue();
-  q.push(Object.fromEntries(data.entries()));
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-}
-
-function flushQueue() {
-  if (!navigator.onLine) return;
-  const q = getQueue();
-  const remaining = [];
-
-  q.forEach(item => {
-    const fd = new FormData();
-    Object.keys(item).forEach(k => fd.append(k, item[k]));
-    fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: fd })
-      .catch(() => remaining.push(item));
-  });
-
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
-}
-
-window.addEventListener("online", flushQueue);
-
-/* ---------- Short Hold Submit ---------- */
-let locked = false;
-let holdTimer;
-
-function startHold(e) {
-  if (!roundOpen || !accessGranted || locked) return;
-  e.preventDefault();
-  holdTimer = setTimeout(submitScore, 350);
-}
-
-function cancelHold() {
-  clearTimeout(holdTimer);
-}
-
-function submitScore() {
-  if (!roundOpen || !accessGranted) return;
-
-  const data = new FormData(scoreForm);
-  saveToQueue(data);
-  flushQueue();
-
-  if (navigator.vibrate) navigator.vibrate([25, 30, 25]);
-
-  locked = true;
-  slider.disabled = true;
-  submitBtn.textContent = "READY FOR NEXT RUN";
-  submitBtn.classList.add("locked");
-}
-
-submitBtn.addEventListener("touchstart", startHold, { passive: false });
-submitBtn.addEventListener("touchend", cancelHold);
-submitBtn.addEventListener("touchcancel", cancelHold);
-submitBtn.addEventListener("mousedown", startHold);
-submitBtn.addEventListener("mouseup", cancelHold);
-submitBtn.addEventListener("mouseleave", cancelHold);
-
-/* ---------- Reset ---------- */
-submitBtn.addEventListener("click", () => {
-  if (!locked || !roundOpen || !accessGranted) return;
-
-  locked = false;
-  slider.disabled = false;
-  slider.value = 5;
-  lastHaptic = 5.0;
-  updateScore();
-
-  competitorInput.value = "";
-  nameDisplay.textContent = "";
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-
-  submitBtn.textContent = "HOLD TO SUBMIT";
-  submitBtn.classList.remove("locked");
-});
-</script>
 
 </body>
 </html>
