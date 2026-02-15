@@ -61,6 +61,29 @@ input[type=text] {
   min-height: 22px;
 }
 
+/* ---------- Competitor Success Tick ---------- */
+.competitor-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.success-tick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-size: 96px;
+  color: #00e676;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.success-tick.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
 /* ---------- Score ---------- */
 .score-display {
   font-size: 88px;
@@ -151,11 +174,18 @@ button.disabled {
 <input type="hidden" id="judge" name="entry.759726589">
 <input type="hidden" id="score" name="entry.1544079831">
 
-<h3>Competitor</h3>
-<input type="text" name="entry.1094004330" id="competitor" required>
-<div class="name-display" id="nameDisplay"></div>
+<div class="competitor-wrap">
+  <h3>Competitor</h3>
+  <input type="text" name="entry.1094004330" id="competitor" required>
+  <div class="name-display" id="nameDisplay"></div>
 
-<div class="score-display" id="scoreText">5.0</div>
+  <div id="successTick" class="success-tick">✔</div>
+</div>
+
+
+<div class="score-wrap">
+  <div class="score-display" id="scoreText">5.0</div>
+</div>
 
 <input class="slider" type="range"
 min="0" max="10" step="0.1" value="5" id="slider">
@@ -314,6 +344,7 @@ function submitScore() {
   slider.disabled = true;
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
+  successTick.classList.add("show");
 }
 
 /* Desktop */
@@ -347,8 +378,12 @@ submitBtn.addEventListener("click", () => {
 
   submitBtn.textContent = "HOLD TO SUBMIT";
   submitBtn.classList.remove("locked");
+  successTick.classList.remove("show");
 });
 </script>
 
 </body>
 </html>
+
+
+
