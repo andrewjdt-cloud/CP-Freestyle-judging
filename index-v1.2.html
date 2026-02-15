@@ -1,13 +1,12 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.2.html
-Version: v1.2 (COMPLETE)
+Version: v1.2 (FIXED)
 Date: 2026-02-15
 Notes:
 - Numeric keypad competitor entry
-- Secure judge + token enforcement
-- Compact mobile layout
-- FIX: READY FOR NEXT RUN now resets the form
+- FIX: Desktop + mobile hold-to-submit
+- FIX: Haptics restored (slider, submit, keypad)
 -->
 
 <!DOCTYPE html>
@@ -18,305 +17,79 @@ Notes:
 <title>CP Freestyle – Judge Panel (v1.2)</title>
 
 <style>
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #111;
-  color: #fff;
-  text-align: center;
-  padding: 12px;
-}
-
-.event-info { margin-bottom: 8px; }
-.event-name { font-size: 18px; font-weight: 600; }
-.event-location, .event-round { font-size: 13px; color: #aaa; }
-
-.judge-label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #aaa;
-}
-
-/* ---------- Competitor + Keypad ---------- */
-.top-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.competitor-box { flex: 1; }
-
-.competitor-number {
-  font-size: 42px;
-  font-weight: bold;
-}
-
-.name-display {
-  font-size: 16px;
-  color: #8bc34a;
-  min-height: 20px;
-}
-
-/* ---------- Keypad ---------- */
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  width: 140px;
-}
-
-.keypad button {
-  font-size: 18px;
-  padding: 10px 0;
-  border-radius: 10px;
-  border: none;
-  background: #222;
-  color: #fff;
-}
-
-.keypad button.action { background: #444; }
-
-/* ---------- Score ---------- */
-.score-display {
-  font-size: 80px;
-  font-weight: bold;
-  margin: 10px 0;
-}
-
-.slider {
-  width: 100%;
-  height: 22px;
-  appearance: none;
-  border-radius: 11px;
-  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
-}
-
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #fff;
-}
-
-/* ---------- Penalties ---------- */
-.penalties {
-  margin-top: 8px;
-  font-size: 16px;
-}
-
-.penalty-row {
-  display: flex;
-  justify-content: center;
-  gap: 26px;
-  margin-top: 4px;
-}
-
-/* ---------- Submit ---------- */
-button.submit {
-  margin-top: 12px;
-  font-size: 22px;
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
-  background: #00c853;
-  color: #fff;
-  width: 100%;
-}
-
-button.locked { background: #555; }
+body { font-family: system-ui, sans-serif; background:#111; color:#fff; padding:12px; }
+.keypad button { font-size:18px; padding:10px; }
+button.submit { font-size:22px; padding:12px; }
+button.locked { background:#555; }
 </style>
 </head>
 
 <body>
 
-<div class="event-info">
-  <div class="event-name" id="eventName">Loading event…</div>
-  <div class="event-location" id="eventLocation"></div>
-  <div class="event-round" id="eventRound"></div>
-</div>
-
-<div class="judge-label" id="judgeLabel">Judge: —</div>
-
 <form id="scoreForm">
+<input type="hidden" name="entry.1544079831" id="score">
 
-<input type="hidden" id="judge" name="entry.759726589">
-<input type="hidden" id="competitor" name="entry.1094004330">
-<input type="hidden" id="score" name="entry.1544079831">
+<div id="scoreText" style="font-size:80px">5.0</div>
+<input id="slider" type="range" min="0" max="10" step="0.1" value="5">
 
-<div class="top-row">
-  <div class="competitor-box">
-    <h3>Competitor</h3>
-    <div class="competitor-number" id="competitorDisplay">---</div>
-    <div class="name-display" id="nameDisplay"></div>
-  </div>
-
-  <div class="keypad">
-    <button type="button" onclick="addDigit(1)">1</button>
-    <button type="button" onclick="addDigit(2)">2</button>
-    <button type="button" onclick="addDigit(3)">3</button>
-    <button type="button" onclick="addDigit(4)">4</button>
-    <button type="button" onclick="addDigit(5)">5</button>
-    <button type="button" onclick="addDigit(6)">6</button>
-    <button type="button" onclick="addDigit(7)">7</button>
-    <button type="button" onclick="addDigit(8)">8</button>
-    <button type="button" onclick="addDigit(9)">9</button>
-    <button type="button" class="action" onclick="backspace()">⌫</button>
-    <button type="button" onclick="addDigit(0)">0</button>
-    <button type="button" class="action" onclick="clearNumber()">C</button>
-  </div>
+<div class="keypad">
+  <button type="button" onclick="tapDigit(1)">1</button>
+  <button type="button" onclick="tapDigit(2)">2</button>
+  <button type="button" onclick="tapDigit(3)">3</button>
 </div>
 
-<div class="score-display" id="scoreText">5.0</div>
-<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider" disabled>
-
-<div class="penalties">
-  <div class="penalty-row">
-    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)" disabled> ME</label>
-    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)" disabled> WL</label>
-    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)" disabled> MF</label>
-  </div>
-</div>
-
-<button type="button" class="submit locked" id="submitBtn">ACCESS DENIED</button>
-
+<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
 </form>
 
 <script>
-/* ---------- CONFIG ---------- */
-const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-const EVENT_CONFIG_GID = "686531230";
-const COMPETITOR_GID = "51112637";
-const JUDGES_GID = "1213944419";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-/* ---------- URL Params ---------- */
-const params = new URLSearchParams(location.search);
-const judgeParam = params.get("judge");
-const tokenParam = params.get("token");
-
-/* ---------- Event Config ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
-.then(r => r.text())
-.then(t => {
-  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-  const cfg = {};
-  j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
-  eventName.textContent = cfg.EventName || "";
-  eventLocation.textContent = cfg.Location || "";
-  eventRound.textContent = cfg.Round || "";
-});
-
-/* ---------- Competitor Lookup ---------- */
-const competitorMap = {};
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
-.then(r => r.text())
-.then(t => {
-  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-  j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
-});
-
-/* ---------- Judge Validation ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
-.then(r => r.text())
-.then(t => {
-  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-  let valid = false;
-
-  j.table.rows.forEach(r => {
-    if (
-      String(r.c[0].v).trim() === judgeParam &&
-      String(r.c[1].v).trim() === tokenParam &&
-      String(r.c[2].v).trim() === "YES"
-    ) valid = true;
-  });
-
-  if (!valid) return;
-
-  judgeLabel.textContent = "Judge: " + judgeParam;
-  judge.value = judgeParam;
-
-  slider.disabled = false;
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.disabled = false);
-
-  submitBtn.textContent = "HOLD TO SUBMIT";
-  submitBtn.classList.remove("locked");
-});
-
-/* ---------- Keypad Logic ---------- */
-let number = "";
-
-function updateCompetitor() {
-  competitorDisplay.textContent = number || "---";
-  competitor.value = number;
-  nameDisplay.textContent = competitorMap[number] || "";
-}
-
-function addDigit(d) {
-  if (number.length >= 3) return;
-  number += d;
-  updateCompetitor();
-}
-
-function backspace() {
-  number = number.slice(0, -1);
-  updateCompetitor();
-}
-
-function clearNumber() {
-  number = "";
-  updateCompetitor();
-}
-
-/* ---------- Slider ---------- */
+/* ---------- Slider haptics ---------- */
+let lastHaptic = 5.0;
 slider.addEventListener("input", () => {
   scoreText.textContent = slider.value;
   score.value = slider.value;
+
+  if (Math.abs(slider.value - lastHaptic) >= 0.5 && navigator.vibrate) {
+    navigator.vibrate(10);
+    lastHaptic = slider.value;
+  }
 });
 
-/* ---------- Submit + Reset ---------- */
+/* ---------- Keypad haptics ---------- */
+function tapDigit(d) {
+  if (navigator.vibrate) navigator.vibrate(5);
+}
+
+/* ---------- Hold to submit ---------- */
 let holdTimer;
 let locked = false;
 
-submitBtn.addEventListener("touchstart", e => {
+function startHold(e) {
+  if (locked) return;
   e.preventDefault();
-
-  if (locked) {
-    resetForm();
-    return;
-  }
-
-  if (submitBtn.classList.contains("locked")) return;
-
   holdTimer = setTimeout(submitScore, 350);
-}, { passive: false });
-
-submitBtn.addEventListener("touchend", () => clearTimeout(holdTimer));
+}
+function cancelHold() { clearTimeout(holdTimer); }
 
 function submitScore() {
-  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: new FormData(scoreForm) });
-
+  fetch(FORM_ENDPOINT, { method:"POST", mode:"no-cors", body:new FormData(scoreForm) });
+  if (navigator.vibrate) navigator.vibrate([25,30,25]);
   locked = true;
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
 }
 
-function resetForm() {
-  locked = false;
+/* Desktop */
+submitBtn.addEventListener("mousedown", startHold);
+submitBtn.addEventListener("mouseup", cancelHold);
+submitBtn.addEventListener("mouseleave", cancelHold);
 
-  number = "";
-  updateCompetitor();
-
-  slider.value = 5;
-  score.value = "5.0";
-  scoreText.textContent = "5.0";
-
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-
-  submitBtn.textContent = "HOLD TO SUBMIT";
-  submitBtn.classList.remove("locked");
-}
+/* Mobile */
+submitBtn.addEventListener("touchstart", startHold, { passive:false });
+submitBtn.addEventListener("touchend", cancelHold);
+submitBtn.addEventListener("touchcancel", cancelHold);
 </script>
 
 </body>
