@@ -61,6 +61,29 @@ input[type=text] {
   min-height: 22px;
 }
 
+/* ---------- Competitor Success Tick ---------- */
+.competitor-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.success-tick {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.6);
+  font-size: 96px;
+  color: #00e676;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.success-tick.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
 /* ---------- Score ---------- */
 .score-display {
   font-size: 88px;
@@ -69,29 +92,6 @@ input[type=text] {
   transition: color 0.2s ease;
 }
 
-.score-wrap {
-  position: relative;
-  display: inline-block;
-}
-
-.success-tick {
-  position: absolute;
-  right: -10px;
-  bottom: -10px;
-  font-size: 72px;        /* smaller */
-  color: #00e676;
-  opacity: 0;
-  transform: scale(0.6);
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  pointer-events: none;
-}
-
-.success-tick.show {
-  opacity: 1;
-  transform: scale(1);
-}
-
-  
 /* ---------- Slider ---------- */
 .slider {
   width: 90%;
@@ -174,13 +174,17 @@ button.disabled {
 <input type="hidden" id="judge" name="entry.759726589">
 <input type="hidden" id="score" name="entry.1544079831">
 
-<h3>Competitor</h3>
-<input type="text" name="entry.1094004330" id="competitor" required>
-<div class="name-display" id="nameDisplay"></div>
+<div class="competitor-wrap">
+  <h3>Competitor</h3>
+  <input type="text" name="entry.1094004330" id="competitor" required>
+  <div class="name-display" id="nameDisplay"></div>
+
+  <div id="successTick" class="success-tick">✔</div>
+</div>
+
 
 <div class="score-wrap">
   <div class="score-display" id="scoreText">5.0</div>
-  <div id="successTick" class="success-tick">✔</div>
 </div>
 
 <input class="slider" type="range"
@@ -380,6 +384,7 @@ submitBtn.addEventListener("click", () => {
 
 </body>
 </html>
+
 
 
 
