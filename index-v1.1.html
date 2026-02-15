@@ -1,0 +1,75 @@
+<!--
+CP Freestyle Judging System
+File: index-v1.1.html
+Version: v1.1
+Date: 2026-02-15
+Notes:
+- Experimental mobile UX
+- Competitor block moves below scoring controls on small screens
+- Desktop layout unchanged from v1.0
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP Freestyle – Judge Panel (v1.1)</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 16px;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .competitor { order: 2; }
+  .scoring { order: 1; }
+}
+
+.score-display {
+  font-size: 88px;
+  font-weight: bold;
+}
+
+.slider {
+  width: 90%;
+  max-width: 420px;
+}
+
+button {
+  margin-top: 16px;
+  font-size: 24px;
+  padding: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="layout">
+
+  <div class="competitor">
+    <h3>Competitor</h3>
+    <input type="text" placeholder="Enter number">
+  </div>
+
+  <div class="scoring">
+    <div class="score-display">5.0</div>
+    <input class="slider" type="range" min="0" max="10" step="0.1" value="5">
+    <button>HOLD TO SUBMIT</button>
+  </div>
+
+</div>
+
+</body>
+</html>
