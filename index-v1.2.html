@@ -1,12 +1,13 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.2.html
-Version: v1.2 (FIXED)
+Version: v1.2 (keypad + desktop confirmation fix)
 Date: 2026-02-15
 Notes:
 - Numeric keypad competitor entry
-- FIX: Desktop + mobile hold-to-submit
-- FIX: Haptics restored (slider, submit, keypad)
+- Secure judge + token enforcement
+- Robust long-press submit (desktop + mobile)
+- Consistent READY FOR NEXT RUN confirmation
 -->
 
 <!DOCTYPE html>
@@ -17,79 +18,369 @@ Notes:
 <title>CP Freestyle – Judge Panel (v1.2)</title>
 
 <style>
-body { font-family: system-ui, sans-serif; background:#111; color:#fff; padding:12px; }
-.keypad button { font-size:18px; padding:10px; }
-button.submit { font-size:22px; padding:12px; }
-button.locked { background:#555; }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 12px;
+}
+
+/* ---------- Event Info ---------- */
+.event-info { margin-bottom: 8px; }
+.event-name { font-size: 18px; font-weight: 600; }
+.event-location,
+.event-round { font-size: 13px; color: #aaa; }
+
+.round-status { font-size: 12px; margin-top: 2px; }
+.round-open { color: #00e676; }
+.round-closed { color: #ff5252; }
+.access-denied { color: #ff5252; }
+
+/* ---------- Judge ---------- */
+.judge-label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* ---------- Competitor + Keypad ---------- */
+.top-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.competitor-box { flex: 1; }
+
+.competitor-number {
+  font-size: 42px;
+  font-weight: bold;
+}
+
+.name-display {
+  font-size: 16px;
+  color: #8bc34a;
+  min-height: 20px;
+}
+
+/* ---------- Keypad ---------- */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 140px;
+}
+
+.keypad button {
+  font-size: 18px;
+  padding: 10px 0;
+  border-radius: 10px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+
+.keypad button.action { background: #444; }
+
+/* ---------- Score ---------- */
+.score-display {
+  font-size: 80px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.slider {
+  width: 100%;
+  height: 22px;
+  appearance: none;
+  border-radius: 11px;
+  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
+}
+
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* ---------- Penalties ---------- */
+.penalties {
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.penalty-row {
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  margin-top: 4px;
+}
+
+/* ---------- Button ---------- */
+button.submit {
+  margin-top: 12px;
+  font-size: 22px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+  width: 100%;
+}
+
+button.locked,
+button.disabled {
+  background: #555;
+}
 </style>
 </head>
 
 <body>
 
+<div class="event-info">
+  <div class="event-name" id="eventName">Loading event…</div>
+  <div class="event-location" id="eventLocation"></div>
+  <div class="event-round" id="eventRound"></div>
+  <div class="round-status" id="roundStatus"></div>
+</div>
+
+<div class="judge-label" id="judgeLabel">Judge: —</div>
+
 <form id="scoreForm">
-<input type="hidden" name="entry.1544079831" id="score">
 
-<div id="scoreText" style="font-size:80px">5.0</div>
-<input id="slider" type="range" min="0" max="10" step="0.1" value="5">
+<input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="competitor" name="entry.1094004330">
+<input type="hidden" id="score" name="entry.1544079831">
 
-<div class="keypad">
-  <button type="button" onclick="tapDigit(1)">1</button>
-  <button type="button" onclick="tapDigit(2)">2</button>
-  <button type="button" onclick="tapDigit(3)">3</button>
+<div class="top-row">
+  <div class="competitor-box">
+    <h3>Competitor</h3>
+    <div class="competitor-number" id="competitorDisplay">---</div>
+    <div class="name-display" id="nameDisplay"></div>
+  </div>
+
+  <div class="keypad">
+    <button type="button" onclick="tapDigit(1)">1</button>
+    <button type="button" onclick="tapDigit(2)">2</button>
+    <button type="button" onclick="tapDigit(3)">3</button>
+    <button type="button" onclick="tapDigit(4)">4</button>
+    <button type="button" onclick="tapDigit(5)">5</button>
+    <button type="button" onclick="tapDigit(6)">6</button>
+    <button type="button" onclick="tapDigit(7)">7</button>
+    <button type="button" onclick="tapDigit(8)">8</button>
+    <button type="button" onclick="tapDigit(9)">9</button>
+    <button type="button" class="action" onclick="backspace()">⌫</button>
+    <button type="button" onclick="tapDigit(0)">0</button>
+    <button type="button" class="action" onclick="clearNumber()">C</button>
+  </div>
+</div>
+
+<div class="score-display" id="scoreText">5.0</div>
+<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
+
+<div class="penalties">
+  <div class="penalty-row">
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  </div>
 </div>
 
 <button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
+
 </form>
 
 <script>
+/* ---------- CONFIG ---------- */
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID = "686531230";
+const COMPETITOR_GID = "51112637";
+const JUDGES_GID = "1213944419";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-/* ---------- Slider haptics ---------- */
-let lastHaptic = 5.0;
-slider.addEventListener("input", () => {
-  scoreText.textContent = slider.value;
-  score.value = slider.value;
+/* ---------- URL Params ---------- */
+const params = new URLSearchParams(window.location.search);
+const judgeParam = params.get("judge");
+const tokenParam = params.get("token");
 
-  if (Math.abs(slider.value - lastHaptic) >= 0.5 && navigator.vibrate) {
-    navigator.vibrate(10);
-    lastHaptic = slider.value;
+/* ---------- State ---------- */
+let roundOpen = false;
+let accessGranted = false;
+let locked = false;
+let justSubmitted = false;
+
+/* ---------- Haptic Helper ---------- */
+function haptic(pattern = 10) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+/* ---------- Disable UI ---------- */
+function disableAll(message) {
+  roundStatus.textContent = message;
+  roundStatus.className = "round-status access-denied";
+  submitBtn.textContent = "ACCESS DENIED";
+  submitBtn.classList.add("disabled");
+  submitBtn.disabled = true;
+  slider.disabled = true;
+}
+
+/* ---------- Event Config ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
+.then(r => r.text())
+.then(t => {
+  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  const cfg = {};
+  j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
+
+  eventName.textContent = cfg.EventName || "";
+  eventLocation.textContent = cfg.Location || "";
+  eventRound.textContent = cfg.Round || "";
+
+  roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
+  roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
+  roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
+});
+
+/* ---------- Judge Auth ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
+.then(r => r.text())
+.then(t => {
+  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  j.table.rows.forEach(r => {
+    if (
+      r.c[0].v === judgeParam &&
+      r.c[1].v === tokenParam &&
+      r.c[2].v === "YES"
+    ) {
+      accessGranted = true;
+      judge.value = judgeParam;
+      judgeLabel.textContent = "Judge: " + judgeParam;
+    }
+  });
+
+  if (!accessGranted) {
+    disableAll("Access denied – invalid judge link");
   }
 });
 
-/* ---------- Keypad haptics ---------- */
+/* ---------- Competitor Lookup ---------- */
+const competitorMap = {};
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
+.then(r => r.text())
+.then(t => {
+  const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+  j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
+});
+
+/* ---------- Keypad Logic ---------- */
+let number = "";
+
+function updateCompetitor() {
+  competitorDisplay.textContent = number || "---";
+  competitor.value = number;
+  nameDisplay.textContent = competitorMap[number] || "Unknown competitor";
+}
+
 function tapDigit(d) {
-  if (navigator.vibrate) navigator.vibrate(5);
+  if (number.length >= 3) return;
+  number += d;
+  updateCompetitor();
+  haptic(5);
 }
 
-/* ---------- Hold to submit ---------- */
-let holdTimer;
-let locked = false;
+function backspace() {
+  number = number.slice(0, -1);
+  updateCompetitor();
+  haptic(5);
+}
 
-function startHold(e) {
-  if (locked) return;
+function clearNumber() {
+  number = "";
+  updateCompetitor();
+  haptic(5);
+}
+
+/* ---------- Slider ---------- */
+let lastHaptic = 5.0;
+slider.addEventListener("input", () => {
+  const v = parseFloat(slider.value).toFixed(1);
+  scoreText.textContent = v;
+  score.value = v;
+  scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
+
+  if (Math.abs(v - lastHaptic) >= 0.5) {
+    haptic(10);
+    lastHaptic = v;
+  }
+});
+
+/* ---------- Long Press Submit ---------- */
+let pressStart = null;
+const HOLD_MS = 350;
+
+function onPressStart(e) {
+  if (!roundOpen || !accessGranted || locked) return;
   e.preventDefault();
-  holdTimer = setTimeout(submitScore, 350);
+  pressStart = Date.now();
 }
-function cancelHold() { clearTimeout(holdTimer); }
+
+function onPressEnd() {
+  if (!pressStart) return;
+  const held = Date.now() - pressStart;
+  pressStart = null;
+  if (held >= HOLD_MS) submitScore();
+}
 
 function submitScore() {
-  fetch(FORM_ENDPOINT, { method:"POST", mode:"no-cors", body:new FormData(scoreForm) });
-  if (navigator.vibrate) navigator.vibrate([25,30,25]);
+  const data = new FormData(scoreForm);
+  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: data });
+
+  haptic([25, 30, 25]);
+
   locked = true;
+  justSubmitted = true;
+  slider.disabled = true;
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
 }
 
 /* Desktop */
-submitBtn.addEventListener("mousedown", startHold);
-submitBtn.addEventListener("mouseup", cancelHold);
-submitBtn.addEventListener("mouseleave", cancelHold);
+submitBtn.addEventListener("mousedown", onPressStart);
+submitBtn.addEventListener("mouseup", onPressEnd);
+submitBtn.addEventListener("mouseleave", () => pressStart = null);
 
 /* Mobile */
-submitBtn.addEventListener("touchstart", startHold, { passive:false });
-submitBtn.addEventListener("touchend", cancelHold);
-submitBtn.addEventListener("touchcancel", cancelHold);
+submitBtn.addEventListener("touchstart", onPressStart, { passive: false });
+submitBtn.addEventListener("touchend", onPressEnd);
+submitBtn.addEventListener("touchcancel", () => pressStart = null);
+
+/* ---------- Reset ---------- */
+submitBtn.addEventListener("click", () => {
+  if (justSubmitted) {
+    justSubmitted = false;
+    return;
+  }
+  if (!locked || !roundOpen || !accessGranted) return;
+
+  locked = false;
+  slider.disabled = false;
+  slider.value = 5;
+  lastHaptic = 5.0;
+  scoreText.textContent = "5.0";
+  score.value = "5.0";
+
+  number = "";
+  updateCompetitor();
+  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+
+  submitBtn.textContent = "HOLD TO SUBMIT";
+  submitBtn.classList.remove("locked");
+});
 </script>
 
 </body>
