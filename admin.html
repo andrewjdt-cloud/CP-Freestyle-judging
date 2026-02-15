@@ -1,17 +1,13 @@
 <!--
 CP Freestyle Judging System
-File: index.html
+File: admin.html
 Version: v1.0
 Date: 2026-02-15
 Notes:
-- Production baseline
-- Typed competitor number entry
-- Slider scoring (0–10, 0.1)
-- Penalties: ME / WL / MF
-- Hold-to-submit (mobile-safe)
-- Offline buffering
-- RoundOpen enforcement
-- Judge token security
+- Production admin panel
+- Round open / close control
+- Judge enable / disable
+- Token-secured
 -->
 
 <!DOCTYPE html>
@@ -19,197 +15,105 @@ Notes:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CP Freestyle – Judge Panel</title>
+<title>CP Freestyle – Admin Panel</title>
 
 <style>
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #111;
+  background: #0b0b0b;
   color: #fff;
-  text-align: center;
-  padding: 16px;
+  padding: 20px;
 }
 
-/* ---------- Event Info ---------- */
-.event-info {
+.section {
+  background: #111;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+h2 {
   margin-bottom: 12px;
 }
 
-.event-name {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.event-location,
-.event-round {
-  font-size: 14px;
-  color: #aaa;
-}
-
-/* ---------- Judge ---------- */
-.judge-label {
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #aaa;
-}
-
-/* ---------- Inputs ---------- */
-input[type=text] {
-  font-size: 22px;
-  padding: 10px;
-  width: 200px;
-  text-align: center;
-  border-radius: 10px;
-  border: none;
-}
-
-.name-display {
-  margin-top: 6px;
-  font-size: 18px;
-  color: #8bc34a;
-  min-height: 22px;
-}
-
-/* ---------- Score ---------- */
-.score-display {
-  font-size: 88px;
-  font-weight: bold;
-  margin: 16px 0;
-  transition: color 0.2s ease;
-}
-
-/* ---------- Slider ---------- */
-.slider {
-  width: 90%;
-  max-width: 420px;
-  height: 24px;
-  appearance: none;
-  border-radius: 12px;
-  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
-}
-
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fff;
-}
-
-/* ---------- Penalties ---------- */
-.penalties {
-  margin-top: 12px;
-  font-size: 18px;
-}
-
-.penalty-row {
-  display: flex;
-  justify-content: center;
-  gap: 28px;
-  margin-top: 6px;
-}
-
-.penalty-row label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* ---------- Button ---------- */
 button {
-  margin-top: 16px;
-  font-size: 24px;
-  padding: 14px 36px;
-  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 14px;
+  border-radius: 10px;
   border: none;
   background: #00c853;
   color: #fff;
-  width: 90%;
-  max-width: 320px;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
+  cursor: pointer;
 }
 
-button.locked {
-  background: #555;
+button.danger {
+  background: #ff5252;
 }
 
-/* ---------- Phone-height optimisation ---------- */
-@media (max-height: 750px) {
-  .score-display { font-size: 80px; margin: 14px 0; }
-  button { font-size: 22px; padding: 12px 32px; }
+button.small {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.judge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.error {
+  color: #ff5252;
+  margin-bottom: 12px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- Event Config -->
-<div class="event-info">
-  <div class="event-name" id="eventName">Loading event…</div>
-  <div class="event-location" id="eventLocation"></div>
-  <div class="event-round" id="eventRound"></div>
-</div>
+<h2>CP Freestyle – Admin Panel</h2>
+<div id="error" class="error"></div>
 
-<div class="judge-label" id="judgeLabel">Judge: UNKNOWN</div>
+<div id="adminContent" style="display:none;">
 
-<form id="scoreForm">
-
-<input type="hidden" id="judge" name="entry.759726589">
-<input type="hidden" id="score" name="entry.1544079831">
-
-<h3>Competitor</h3>
-<input type="text" name="entry.1094004330" id="competitor" required>
-<div class="name-display" id="nameDisplay"></div>
-
-<div class="score-display" id="scoreText">5.0</div>
-
-<input
-  class="slider"
-  type="range"
-  min="0"
-  max="10"
-  step="0.1"
-  value="5"
-  id="slider"
->
-
-<div class="penalties">
-  <h3>Penalties</h3>
-  <div class="penalty-row">
-    <label>
-      <input type="checkbox" name="entry.753299047" value="Missed Entry (ME)">
-      ME
-    </label>
-    <label>
-      <input type="checkbox" name="entry.753299047" value="Water Landing (WL)">
-      WL
-    </label>
-    <label>
-      <input type="checkbox" name="entry.753299047" value="Move Failure (MF)">
-      MF
-    </label>
+  <div class="section">
+    <h3>Round Control</h3>
+    <button onclick="setRound('YES')">OPEN ROUND</button>
+    <button class="danger" onclick="setRound('NO')">CLOSE ROUND</button>
+    <div id="roundStatus" style="margin-top:8px;"></div>
   </div>
+
+  <div class="section">
+    <h3>Judges</h3>
+    <div id="judges"></div>
+  </div>
+
 </div>
-
-<button type="button" id="submitBtn">HOLD TO SUBMIT</button>
-
-</form>
 
 <script>
 /* ---------- CONFIG ---------- */
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 const EVENT_CONFIG_GID = "686531230";
-const COMPETITOR_GID = "51112637";
-const FORM_ENDPOINT =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
+const JUDGES_GID = "1213944419";
 
-/* ---------- Judge ID ---------- */
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
+
+/* ---------- AUTH ---------- */
 const params = new URLSearchParams(window.location.search);
-const judge = params.get("judge") || "UNKNOWN";
-document.getElementById("judge").value = judge;
-document.getElementById("judgeLabel").textContent = "Judge: " + judge;
+const adminToken = params.get("token");
+
+/* ---------- API ---------- */
+function api(payload) {
+  payload.adminToken = adminToken;
+
+  fetch(SCRIPT_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain" },
+    body: JSON.stringify(payload)
+  });
+}
 
 /* ---------- Event Config ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
@@ -217,125 +121,57 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CO
   .then(t => {
     const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
     const cfg = {};
-    j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
-    eventName.textContent = cfg.EventName || "";
-    eventLocation.textContent = cfg.Location || "";
-    eventRound.textContent = cfg.Round || "";
+    j.table.rows.forEach(r => cfg[String(r.c[0].v).trim()] = String(r.c[1].v).trim());
+
+    if (!adminToken || cfg.AdminToken !== adminToken) {
+      document.getElementById("error").textContent = "Access denied";
+      return;
+    }
+
+    adminContent.style.display = "block";
+    roundStatus.textContent = "Current RoundOpen: " + (cfg.RoundOpen || "UNKNOWN");
   });
 
-/* ---------- Competitor Lookup ---------- */
-const competitorInput = document.getElementById("competitor");
-const nameDisplay = document.getElementById("nameDisplay");
-const competitorMap = {};
+/* ---------- Round Control ---------- */
+function setRound(value) {
+  api({ action: "setRoundOpen", value });
+  roundStatus.textContent = "Current RoundOpen: " + value;
+}
 
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
+/* ---------- Judges ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
   .then(r => r.text())
   .then(t => {
     const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
+
+    j.table.rows.forEach(r => {
+      let name = String(r.c[0].v).trim();
+      let active = String(r.c[2].v).trim();
+
+      const row = document.createElement("div");
+      row.className = "judge";
+
+      const label = document.createElement("span");
+      label.textContent = `${name} (${active})`;
+
+      const btn = document.createElement("button");
+      btn.className = "small " + (active === "YES" ? "danger" : "");
+      btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+
+      btn.onclick = () => {
+        const newValue = active === "YES" ? "NO" : "YES";
+        api({ action: "setJudgeActive", judge: name, value: newValue });
+        active = newValue;
+        label.textContent = `${name} (${active})`;
+        btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+        btn.className = "small " + (active === "YES" ? "danger" : "");
+      };
+
+      row.appendChild(label);
+      row.appendChild(btn);
+      judges.appendChild(row);
+    });
   });
-
-competitorInput.addEventListener("input", () => {
-  nameDisplay.textContent =
-    competitorMap[competitorInput.value] || "Unknown competitor";
-});
-
-/* ---------- Slider ---------- */
-const slider = document.getElementById("slider");
-const scoreText = document.getElementById("scoreText");
-const scoreInput = document.getElementById("score");
-
-function updateScore() {
-  const v = parseFloat(slider.value).toFixed(1);
-  scoreText.textContent = v;
-  scoreInput.value = v;
-  scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
-}
-
-slider.addEventListener("input", updateScore);
-updateScore();
-
-/* ---------- Offline Buffer ---------- */
-const QUEUE_KEY = "pendingSubmissions";
-
-function getQueue() {
-  return JSON.parse(localStorage.getItem(QUEUE_KEY) || "[]");
-}
-
-function saveToQueue(data) {
-  const q = getQueue();
-  q.push(Object.fromEntries(data.entries()));
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(q));
-}
-
-function flushQueue() {
-  if (!navigator.onLine) return;
-  const q = getQueue();
-  const remaining = [];
-
-  q.forEach(item => {
-    const fd = new FormData();
-    Object.keys(item).forEach(k => fd.append(k, item[k]));
-    fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: fd })
-      .catch(() => remaining.push(item));
-  });
-
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(remaining));
-}
-
-window.addEventListener("online", flushQueue);
-
-/* ---------- Hold-to-submit ---------- */
-const submitBtn = document.getElementById("submitBtn");
-let locked = false;
-let holdTimer;
-
-function startHold(e) {
-  if (locked) return;
-  e.preventDefault();
-  holdTimer = setTimeout(submitScore, 350);
-}
-
-function cancelHold() {
-  clearTimeout(holdTimer);
-}
-
-function submitScore() {
-  const data = new FormData(scoreForm);
-  saveToQueue(data);
-  flushQueue();
-
-  if (navigator.vibrate) navigator.vibrate([25, 30, 25]);
-
-  locked = true;
-  slider.disabled = true;
-  submitBtn.textContent = "READY FOR NEXT RUN";
-  submitBtn.classList.add("locked");
-}
-
-submitBtn.addEventListener("touchstart", startHold, { passive: false });
-submitBtn.addEventListener("touchend", cancelHold);
-submitBtn.addEventListener("touchcancel", cancelHold);
-submitBtn.addEventListener("mousedown", startHold);
-submitBtn.addEventListener("mouseup", cancelHold);
-submitBtn.addEventListener("mouseleave", cancelHold);
-
-/* ---------- Reset ---------- */
-submitBtn.addEventListener("click", () => {
-  if (!locked) return;
-
-  locked = false;
-  slider.disabled = false;
-  slider.value = 5;
-  updateScore();
-
-  competitorInput.value = "";
-  nameDisplay.textContent = "";
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-
-  submitBtn.textContent = "HOLD TO SUBMIT";
-  submitBtn.classList.remove("locked");
-});
 </script>
 
 </body>
