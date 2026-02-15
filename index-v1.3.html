@@ -1,13 +1,14 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.3.html
-Version: v1.3 (Prev / Next competitor navigation)
+Version: v1.3 (Prev/Next + nav lock + competitor move)
 Date: 2026-02-15
 Notes:
 - Competitor order driven by existing competitor tab
-- Uses CompetitorOrder column (Column A)
-- No typing / no keypad / no keyboard
-- Prev / Next navigation with auto-advance after submit
+- Uses CompetitorOrder column (A)
+- Displays competitor move / trick (Column D)
+- Prev/Next disabled while submission is locked
+- Auto-advance after READY FOR NEXT RUN
 - Secure judge + token enforcement
 - Robust long-press submit (desktop + mobile)
 - Success tick overlay confirmation
@@ -70,6 +71,7 @@ body {
   opacity: 0.3;
 }
 
+/* ---------- Competitor ---------- */
 .competitor-box {
   flex: 1;
 }
@@ -83,6 +85,18 @@ body {
   font-size: 16px;
   color: #8bc34a;
   min-height: 20px;
+}
+
+/* ---------- Competitor Move ---------- */
+.move-display {
+  font-size: 13px;
+  color: #ccc;
+  margin-top: 4px;
+  line-height: 1.3;
+  max-width: 260px;
+  margin-left: auto;
+  margin-right: auto;
+  word-wrap: break-word;
 }
 
 /* ---------- Success Tick ---------- */
@@ -108,7 +122,7 @@ body {
 .score-display {
   font-size: 80px;
   font-weight: bold;
-  margin: 12px 0;
+  margin: 18px 0 12px;
 }
 
 .slider {
@@ -182,6 +196,7 @@ button.disabled {
   <div class="competitor-box">
     <div class="competitor-number" id="competitorDisplay">—</div>
     <div class="name-display" id="nameDisplay"></div>
+    <div class="move-display" id="moveDisplay"></div>
   </div>
 
   <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
@@ -237,6 +252,8 @@ function disableAll(message) {
   submitBtn.classList.add("disabled");
   submitBtn.disabled = true;
   slider.disabled = true;
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
 }
 
 /* ---------- Event Config ---------- */
@@ -284,7 +301,8 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETIT
     .map(r => ({
       order: Number(r.c[0].v),
       number: r.c[1].v,
-      name: r.c[2].v
+      name: r.c[2].v,
+      move: r.c[3] ? r.c[3].v : ""
     }))
     .sort((a, b) => a.order - b.order);
 
@@ -298,13 +316,15 @@ function updateCompetitor() {
   competitor.value = c.number;
   competitorDisplay.textContent = c.number;
   nameDisplay.textContent = c.name;
+  moveDisplay.textContent = c.move || "";
 
-  prevBtn.disabled = index === 0;
-  nextBtn.disabled = index === competitors.length - 1;
+  prevBtn.disabled = locked || index === 0;
+  nextBtn.disabled = locked || index === competitors.length - 1;
 }
 
 /* ---------- Navigation ---------- */
 prevBtn.onclick = () => {
+  if (locked) return;
   if (index > 0) {
     index--;
     updateCompetitor();
@@ -313,6 +333,7 @@ prevBtn.onclick = () => {
 };
 
 nextBtn.onclick = () => {
+  if (locked) return;
   if (index < competitors.length - 1) {
     index++;
     updateCompetitor();
@@ -363,6 +384,9 @@ function submitScore() {
   submitBtn.textContent = "READY FOR NEXT RUN";
   submitBtn.classList.add("locked");
   successTick.classList.add("show");
+
+  prevBtn.disabled = true;
+  nextBtn.disabled = true;
 }
 
 /* Desktop */
@@ -398,8 +422,8 @@ submitBtn.addEventListener("click", () => {
 
   if (index < competitors.length - 1) {
     index++;
-    updateCompetitor();
   }
+  updateCompetitor();
 });
 </script>
 
