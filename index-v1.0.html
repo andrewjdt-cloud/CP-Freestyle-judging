@@ -1,13 +1,14 @@
 <!--
 CP Freestyle Judging System
 File: index.html
-Version: v1.0 (LOCKED – desktop confirmation fix)
-Date: 2026-02-15
+Version: v1.0 (Phase A – countdown + tick)
+Date: 2026-02-16
 Notes:
 - Secure judge + token enforcement
 - Robust long-press submit (desktop + mobile)
-- Consistent READY FOR NEXT RUN confirmation
-- Offline buffering + haptics preserved
+- Green tick + pulsing 3–2–1 countdown
+- UI locked during countdown
+- Automatic reset after countdown
 -->
 
 <!DOCTYPE html>
@@ -34,7 +35,7 @@ body {
 
 .round-status { font-size: 13px; margin-top: 2px; }
 .round-open { color: #00e676; }
-.round-closed { color: #ff5252; }
+.round-closed,
 .access-denied { color: #ff5252; }
 
 /* ---------- Judge ---------- */
@@ -61,27 +62,55 @@ input[type=text] {
   min-height: 22px;
 }
 
-/* ---------- Competitor Success Tick ---------- */
+/* ---------- Competitor Wrap ---------- */
 .competitor-wrap {
   position: relative;
   display: inline-block;
 }
 
-.success-tick {
+/* ---------- Success Overlay ---------- */
+.success-overlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%) scale(0.6);
-  font-size: 96px;
-  color: #00e676;
-  opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   pointer-events: none;
+  z-index: 5;
 }
 
-.success-tick.show {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
+.success-overlay.hidden { display: none; }
+
+.success-tick {
+  font-size: 96px;
+  color: #00e676;
+  animation: tickFade 3s ease-out forwards;
+}
+
+@keyframes tickFade {
+  0% { opacity: 1; transform: scale(1); }
+  60% { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.9); }
+}
+
+.countdown {
+  font-size: 72px;
+  font-weight: bold;
+  color: #ffeb3b;
+  background: rgba(0,0,0,0.65);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
+  100% { transform: scale(1); }
 }
 
 /* ---------- Score ---------- */
@@ -111,22 +140,13 @@ input[type=text] {
 }
 
 /* ---------- Penalties ---------- */
-.penalties {
-  margin-top: 12px;
-  font-size: 18px;
-}
+.penalties { margin-top: 12px; font-size: 18px; }
 
 .penalty-row {
   display: flex;
   justify-content: center;
   gap: 28px;
   margin-top: 6px;
-}
-
-.penalty-row label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 /* ---------- Button ---------- */
@@ -140,21 +160,10 @@ button {
   color: #fff;
   width: 90%;
   max-width: 320px;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
 }
 
 button.locked,
-button.disabled {
-  background: #555;
-}
-
-/* ---------- Phone-height optimisation ---------- */
-@media (max-height: 750px) {
-  .score-display { font-size: 80px; margin: 14px 0; }
-  button { font-size: 22px; padding: 12px 32px; }
-}
+button.disabled { background: #555; }
 </style>
 </head>
 
@@ -179,19 +188,17 @@ button.disabled {
   <input type="text" name="entry.1094004330" id="competitor" required>
   <div class="name-display" id="nameDisplay"></div>
 
-  <div id="successTick" class="success-tick">✔</div>
+  <div class="success-overlay hidden" id="successOverlay">
+    <div class="success-tick">✔</div>
+    <div class="countdown" id="countdownText">3</div>
+  </div>
 </div>
 
+<div class="score-display" id="scoreText">5.0</div>
 
-<div class="score-wrap">
-  <div class="score-display" id="scoreText">5.0</div>
-</div>
-
-<input class="slider" type="range"
-min="0" max="10" step="0.1" value="5" id="slider">
+<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
 
 <div class="penalties">
-  <h3>Penalties</h3>
   <div class="penalty-row">
     <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
     <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
@@ -221,169 +228,119 @@ const tokenParam = params.get("token");
 let roundOpen = false;
 let accessGranted = false;
 let locked = false;
-let justSubmitted = false;
 
-/* ---------- Haptic Helper ---------- */
-function haptic(pattern = 10) {
-  if (navigator.vibrate) navigator.vibrate(pattern);
-}
+/* ---------- Haptics ---------- */
+function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
 
-  function hasValidCompetitor() {
+/* ---------- Competitor Validation ---------- */
+function hasValidCompetitor() {
   return /^\d+$/.test(competitor.value.trim());
-}
-
-/* ---------- Disable UI ---------- */
-function disableAll(message) {
-  roundStatus.textContent = message;
-  roundStatus.className = "round-status access-denied";
-  submitBtn.textContent = "ACCESS DENIED";
-  submitBtn.classList.add("disabled");
-  submitBtn.disabled = true;
-  slider.disabled = true;
 }
 
 /* ---------- Event Config ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    const cfg = {};
-    j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1].v);
-
-    eventName.textContent = cfg.EventName || "";
-    eventLocation.textContent = cfg.Location || "";
-    eventRound.textContent = cfg.Round || "";
-
-    roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
-    roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
-    roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
-  });
+.then(r=>r.text()).then(t=>{
+  const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+  const cfg={}; j.table.rows.forEach(r=>cfg[r.c[0].v]=r.c[1].v);
+  eventName.textContent=cfg.EventName||"";
+  eventLocation.textContent=cfg.Location||"";
+  eventRound.textContent=cfg.Round||"";
+  roundOpen=(cfg.RoundOpen||"").toUpperCase()==="YES";
+  roundStatus.textContent=roundOpen?"● OPEN":"● CLOSED";
+  roundStatus.className="round-status "+(roundOpen?"round-open":"round-closed");
+});
 
 /* ---------- Judge Auth ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    j.table.rows.forEach(r => {
-      if (
-        r.c[0].v === judgeParam &&
-        r.c[1].v === tokenParam &&
-        r.c[2].v === "YES"
-      ) {
-        accessGranted = true;
-        judge.value = judgeParam;
-        judgeLabel.textContent = "Judge: " + judgeParam;
-      }
-    });
-
-    if (!accessGranted) {
-      disableAll("Access denied – invalid judge link");
+.then(r=>r.text()).then(t=>{
+  const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+  j.table.rows.forEach(r=>{
+    if(r.c[0].v===judgeParam && r.c[1].v===tokenParam && r.c[2].v==="YES"){
+      accessGranted=true;
+      judge.value=judgeParam;
+      judgeLabel.textContent="Judge: "+judgeParam;
     }
   });
+});
 
 /* ---------- Competitor Lookup ---------- */
-const competitorMap = {};
+const competitorMap={};
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    j.table.rows.forEach(r => competitorMap[r.c[0].v] = r.c[1].v);
-  });
+.then(r=>r.text()).then(t=>{
+  const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+  j.table.rows.forEach(r=>competitorMap[r.c[0].v]=r.c[1].v);
+});
 
-competitor.addEventListener("input", () => {
-  nameDisplay.textContent = competitorMap[competitor.value] || "Unknown competitor";
+competitor.addEventListener("input",()=>{
+  nameDisplay.textContent=competitorMap[competitor.value]||"Unknown competitor";
 });
 
 /* ---------- Slider ---------- */
-let lastHaptic = 5.0;
-slider.addEventListener("input", () => {
-  const v = parseFloat(slider.value).toFixed(1);
-  scoreText.textContent = v;
-  score.value = v;
-  scoreText.style.color = `hsl(${(v / 10) * 120}, 90%, 60%)`;
+let last=5;
+slider.oninput=()=>{
+  const v=+slider.value;
+  scoreText.textContent=v.toFixed(1);
+  score.value=v.toFixed(1);
+  scoreText.style.color=`hsl(${(v/10)*120},90%,60%)`;
+  if(Math.abs(v-last)>=0.5){haptic(10);last=v;}
+};
 
-  if (Math.abs(v - lastHaptic) >= 0.5) {
-    haptic(10);
-    lastHaptic = v;
-  }
-});
+/* ---------- Submit ---------- */
+let pressStart=null;
+submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
+  if(!roundOpen||!accessGranted||locked||!hasValidCompetitor()) return;
+  e.preventDefault(); pressStart=Date.now();
+};
 
-/* ---------- Long Press Submit ---------- */
-let pressStart = null;
-const HOLD_MS = 350;
+submitBtn.onmouseup=submitBtn.ontouchend=()=>{
+  if(!pressStart) return;
+  if(Date.now()-pressStart>=350) submit();
+  pressStart=null;
+};
 
-function onPressStart(e) {
-  if (!roundOpen || !accessGranted || locked) return;
-
-  // NEW: competitor required
-  if (!hasValidCompetitor()) {
-    haptic(30); // short error buzz
-    return;
-  }
-
-  e.preventDefault();
-  pressStart = Date.now();
-}
-
-
-function onPressEnd() {
-  if (!pressStart) return;
-  const held = Date.now() - pressStart;
-  pressStart = null;
-  if (held >= HOLD_MS) submitScore();
-}
-
-function submitScore() {
-  const data = new FormData(scoreForm);
-  fetch(FORM_ENDPOINT, { method: "POST", mode: "no-cors", body: data });
-
-  haptic([25, 30, 25]);
-
-  locked = true;
-  justSubmitted = true;
-  slider.disabled = true;
-  submitBtn.textContent = "READY FOR NEXT RUN";
+function submit(){
+  fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
+  haptic([25,30,25]);
+  locked=true;
+  slider.disabled=true;
   submitBtn.classList.add("locked");
-  successTick.classList.add("show");
+  showCountdown();
 }
 
-/* Desktop */
-submitBtn.addEventListener("mousedown", onPressStart);
-submitBtn.addEventListener("mouseup", onPressEnd);
-submitBtn.addEventListener("mouseleave", () => pressStart = null);
+function showCountdown(){
+  successOverlay.classList.remove("hidden");
+  startCountdown();
+}
 
-/* Mobile */
-submitBtn.addEventListener("touchstart", onPressStart, { passive: false });
-submitBtn.addEventListener("touchend", onPressEnd);
-submitBtn.addEventListener("touchcancel", () => pressStart = null);
+function startCountdown(){
+  let n=3;
+  updateCountdown(n);
+  const iv=setInterval(()=>{
+    n--;
+    if(n===0){clearInterval(iv);resetForm();}
+    else updateCountdown(n);
+  },1000);
+}
 
-/* ---------- Reset ---------- */
-submitBtn.addEventListener("click", () => {
-  if (justSubmitted) {
-    justSubmitted = false;
-    return;
-  }
-  if (!locked || !roundOpen || !accessGranted) return;
+function updateCountdown(v){
+  countdownText.textContent=v;
+  countdownText.style.animation="none";
+  countdownText.offsetHeight;
+  countdownText.style.animation="pulse 1s ease-in-out";
+}
 
-  locked = false;
-  slider.disabled = false;
-  slider.value = 5;
-  lastHaptic = 5.0;
-  scoreText.textContent = "5.0";
-  score.value = "5.0";
-
-  competitor.value = "";
-  nameDisplay.textContent = "";
-  document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
-
-  submitBtn.textContent = "HOLD TO SUBMIT";
-  submitBtn.classList.remove("locked");
-  successTick.classList.remove("show");
-});
+function resetForm(){
+  successOverlay.classList.add("hidden");
+  locked=false;
+  slider.disabled=false;
+  slider.value=5;
+  scoreText.textContent="5.0";
+  score.value="5.0";
+  competitor.value="";
+  nameDisplay.textContent="";
+  document.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.checked=false);
+}
 </script>
 
 </body>
 </html>
-
-
-
