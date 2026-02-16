@@ -102,6 +102,13 @@ body {
   font-size: 96px;
   color: #00e676;
   margin-bottom: 8px;
+  animation: tickFade 3s ease-out forwards;
+}
+
+@keyframes tickFade {
+  0%   { opacity: 1; transform: scale(1); }
+  60%  { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.9); }
 }
 
 .countdown {
@@ -335,6 +342,10 @@ function submit(){
   locked=true;
   slider.disabled=prevBtn.disabled=nextBtn.disabled=true;
   successOverlay.classList.remove("hidden");
+  const tick = document.querySelector(".success-tick");
+tick.style.animation = "none";
+tick.offsetHeight; // force reflow
+tick.style.animation = "tickFade 3s ease-out forwards";
   startCountdown();
 }
 
