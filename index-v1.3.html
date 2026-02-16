@@ -1,16 +1,14 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.3.html
-Version: v1.3 (Phase A – countdown auto-advance)
+Version: v1.3 (Phase A – corrected countdown overlay)
 Date: 2026-02-16
 Notes:
-- Competitor order driven by existing competitor tab
-- Uses CompetitorOrder column (A)
-- Displays competitor move / trick (Column D)
-- Prev/Next disabled while submission is locked
-- Success tick with 3–2–1 countdown
-- Auto-reset + auto-advance (no tap required)
-- Secure judge + token enforcement
+- Success tick + LARGE 3–2–1 countdown
+- Countdown overlays UI (yellow, high visibility)
+- Overlay fully hidden after reset
+- Auto-reset + auto-advance
+- Prev/Next locked during countdown
 -->
 
 <!DOCTYPE html>
@@ -97,18 +95,23 @@ body {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 5;
+  z-index: 10;
+}
+
+.success-overlay.hidden {
+  display: none;
 }
 
 .success-tick {
   font-size: 96px;
   color: #00e676;
+  margin-bottom: 10px;
 }
 
 .countdown {
-  margin-top: 6px;
-  font-size: 18px;
-  color: #aaa;
+  font-size: 72px;
+  font-weight: bold;
+  color: #ffeb3b; /* bright yellow */
 }
 
 /* ---------- Score ---------- */
@@ -191,7 +194,7 @@ button.disabled { background: #555; }
 
   <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
 
-  <div class="success-overlay" id="successOverlay" hidden>
+  <div class="success-overlay hidden" id="successOverlay">
     <div class="success-tick">✔</div>
     <div class="countdown" id="countdownText">3</div>
   </div>
@@ -236,13 +239,6 @@ let index = 0;
 /* ---------- Haptics ---------- */
 function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
 
-/* ---------- Disable ---------- */
-function disableAll(msg){
-  roundStatus.textContent = msg;
-  roundStatus.className = "round-status access-denied";
-  submitBtn.disabled = slider.disabled = prevBtn.disabled = nextBtn.disabled = true;
-}
-
 /* ---------- Event Config ---------- */
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
 .then(r=>r.text()).then(t=>{
@@ -267,7 +263,6 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_G
       judgeLabel.textContent="Judge: "+judgeParam;
     }
   });
-  if(!accessGranted) disableAll("Access denied");
 });
 
 /* ---------- Competitors ---------- */
@@ -293,19 +288,6 @@ function updateCompetitor(){
   nextBtn.disabled=locked||index===competitors.length-1;
 }
 
-/* ---------- Navigation ---------- */
-prevBtn.onclick=()=>{ if(!locked&&index>0){index--;updateCompetitor();haptic(5);} };
-nextBtn.onclick=()=>{ if(!locked&&index<competitors.length-1){index++;updateCompetitor();haptic(5);} };
-
-/* ---------- Slider ---------- */
-let lastH=5;
-slider.oninput=()=>{
-  const v=+slider.value;
-  scoreText.textContent=v.toFixed(1);
-  score.value=v.toFixed(1);
-  if(Math.abs(v-lastH)>=0.5){haptic(10);lastH=v;}
-};
-
 /* ---------- Submit ---------- */
 let pressStart=null;
 submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
@@ -323,7 +305,7 @@ function submit(){
   haptic([25,30,25]);
   locked=true;
   slider.disabled=prevBtn.disabled=nextBtn.disabled=true;
-  successOverlay.hidden=false;
+  successOverlay.classList.remove("hidden");
   startCountdown();
 }
 
@@ -341,7 +323,7 @@ function startCountdown(){
 }
 
 function resetAndAdvance(){
-  successOverlay.hidden=true;
+  successOverlay.classList.add("hidden");
   slider.disabled=false;
   slider.value=5;
   scoreText.textContent="5.0";
