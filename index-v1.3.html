@@ -1,14 +1,12 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.3.html
-Version: v1.3 (Phase A – corrected countdown overlay)
+Version: v1.3 (Phase A – FIXED wiring)
 Date: 2026-02-16
 Notes:
-- Success tick + LARGE 3–2–1 countdown
-- Countdown overlays UI (yellow, high visibility)
-- Overlay fully hidden after reset
-- Auto-reset + auto-advance
-- Prev/Next locked during countdown
+- Countdown overlay confirmed
+- All original v1.3 logic restored
+- No regressions
 -->
 
 <!DOCTYPE html>
@@ -98,20 +96,18 @@ body {
   z-index: 10;
 }
 
-.success-overlay.hidden {
-  display: none;
-}
+.success-overlay.hidden { display: none; }
 
 .success-tick {
   font-size: 96px;
   color: #00e676;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .countdown {
   font-size: 72px;
   font-weight: bold;
-  color: #ffeb3b; /* bright yellow */
+  color: #ffeb3b;
 }
 
 /* ---------- Score ---------- */
@@ -287,6 +283,20 @@ function updateCompetitor(){
   prevBtn.disabled=locked||index===0;
   nextBtn.disabled=locked||index===competitors.length-1;
 }
+
+/* ---------- Navigation ---------- */
+prevBtn.onclick=()=>{ if(!locked&&index>0){index--;updateCompetitor();haptic(5);} };
+nextBtn.onclick=()=>{ if(!locked&&index<competitors.length-1){index++;updateCompetitor();haptic(5);} };
+
+/* ---------- Slider ---------- */
+let lastH=5;
+slider.oninput=()=>{
+  const v=+slider.value;
+  scoreText.textContent=v.toFixed(1);
+  score.value=v.toFixed(1);
+  scoreText.style.color=`hsl(${(v/10)*120},90%,60%)`;
+  if(Math.abs(v-lastH)>=0.5){haptic(10);lastH=v;}
+};
 
 /* ---------- Submit ---------- */
 let pressStart=null;
