@@ -1,13 +1,14 @@
 <!--
 CP Freestyle Judging System
 File: index.html
-Version: v1.0 (Phase A + schema fix)
+Version: v1.0 (Phase A – countdown + tick)
 Date: 2026-02-16
 Notes:
-- Manual competitor entry
-- Ignores ExitOrder column
-- Uses CompetitorNumber → Name
-- 3–2–1 pulsing countdown + fading tick
+- Secure judge + token enforcement
+- Robust long-press submit (desktop + mobile)
+- Green tick + pulsing 3–2–1 countdown
+- UI locked during countdown
+- Automatic reset after countdown
 -->
 
 <!DOCTYPE html>
@@ -44,7 +45,7 @@ body {
   color: #aaa;
 }
 
-/* ---------- Competitor ---------- */
+/* ---------- Inputs ---------- */
 input[type=text] {
   font-size: 22px;
   padding: 10px;
@@ -61,20 +62,25 @@ input[type=text] {
   min-height: 22px;
 }
 
-/* ---------- Success Overlay ---------- */
-.comp-wrap { position: relative; display: inline-block; }
+/* ---------- Competitor Wrap ---------- */
+.competitor-wrap {
+  position: relative;
+  display: inline-block;
+}
 
+/* ---------- Success Overlay ---------- */
 .success-overlay {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   pointer-events: none;
+  z-index: 5;
 }
 
-.hidden { display: none; }
+.success-overlay.hidden { display: none; }
 
 .success-tick {
   font-size: 96px;
@@ -83,8 +89,9 @@ input[type=text] {
 }
 
 @keyframes tickFade {
-  0% { opacity: 1; }
-  100% { opacity: 0; }
+  0% { opacity: 1; transform: scale(1); }
+  60% { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.9); }
 }
 
 .countdown {
@@ -111,16 +118,38 @@ input[type=text] {
   font-size: 88px;
   font-weight: bold;
   margin: 16px 0;
+  transition: color 0.2s ease;
 }
 
+/* ---------- Slider ---------- */
 .slider {
   width: 90%;
   max-width: 420px;
   height: 24px;
+  appearance: none;
   border-radius: 12px;
+  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
 }
 
-/* ---------- Submit ---------- */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+/* ---------- Penalties ---------- */
+.penalties { margin-top: 12px; font-size: 18px; }
+
+.penalty-row {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-top: 6px;
+}
+
+/* ---------- Button ---------- */
 button {
   margin-top: 16px;
   font-size: 24px;
@@ -130,15 +159,18 @@ button {
   background: #00c853;
   color: #fff;
   width: 90%;
+  max-width: 320px;
 }
-button.locked { background: #555; }
+
+button.locked,
+button.disabled { background: #555; }
 </style>
 </head>
 
 <body>
 
 <div class="event-info">
-  <div class="event-name" id="eventName">Loading…</div>
+  <div class="event-name" id="eventName">Loading event…</div>
   <div class="event-location" id="eventLocation"></div>
   <div class="event-round" id="eventRound"></div>
   <div class="round-status" id="roundStatus"></div>
@@ -147,12 +179,13 @@ button.locked { background: #555; }
 <div class="judge-label" id="judgeLabel">Judge: —</div>
 
 <form id="scoreForm">
+
 <input type="hidden" id="judge" name="entry.759726589">
 <input type="hidden" id="score" name="entry.1544079831">
 
-<div class="comp-wrap">
+<div class="competitor-wrap">
   <h3>Competitor</h3>
-  <input type="text" id="competitor" name="entry.1094004330">
+  <input type="text" name="entry.1094004330" id="competitor" required>
   <div class="name-display" id="nameDisplay"></div>
 
   <div class="success-overlay hidden" id="successOverlay">
@@ -162,65 +195,152 @@ button.locked { background: #555; }
 </div>
 
 <div class="score-display" id="scoreText">5.0</div>
-<input type="range" min="0" max="10" step="0.1" value="5" id="slider" class="slider">
+
+<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
+
+<div class="penalties">
+  <div class="penalty-row">
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  </div>
+</div>
 
 <button type="button" id="submitBtn">HOLD TO SUBMIT</button>
+
 </form>
 
 <script>
-const SHEET_ID="1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-const COMPETITOR_GID="51112637";
-const FORM_ENDPOINT="https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
+/* ---------- CONFIG ---------- */
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID = "686531230";
+const COMPETITOR_GID = "51112637";
+const JUDGES_GID = "1213944419";
+const FORM_ENDPOINT =
+  "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-const competitorMap={};
+/* ---------- URL Params ---------- */
+const params = new URLSearchParams(window.location.search);
+const judgeParam = params.get("judge");
+const tokenParam = params.get("token");
 
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
+/* ---------- State ---------- */
+let roundOpen = false;
+let accessGranted = false;
+let locked = false;
+
+/* ---------- Haptics ---------- */
+function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
+
+/* ---------- Competitor Validation ---------- */
+function hasValidCompetitor() {
+  return /^\d+$/.test(competitor.value.trim());
+}
+
+/* ---------- Event Config ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
+.then(r=>r.text()).then(t=>{
+  const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+  const cfg={}; j.table.rows.forEach(r=>cfg[r.c[0].v]=r.c[1].v);
+  eventName.textContent=cfg.EventName||"";
+  eventLocation.textContent=cfg.Location||"";
+  eventRound.textContent=cfg.Round||"";
+  roundOpen=(cfg.RoundOpen||"").toUpperCase()==="YES";
+  roundStatus.textContent=roundOpen?"● OPEN":"● CLOSED";
+  roundStatus.className="round-status "+(roundOpen?"round-open":"round-closed");
+});
+
+/* ---------- Judge Auth ---------- */
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
 .then(r=>r.text()).then(t=>{
   const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
   j.table.rows.forEach(r=>{
-    competitorMap[r.c[1].v]=r.c[2].v; // B → C
+    if(r.c[0].v===judgeParam && r.c[1].v===tokenParam && r.c[2].v==="YES"){
+      accessGranted=true;
+      judge.value=judgeParam;
+      judgeLabel.textContent="Judge: "+judgeParam;
+    }
   });
 });
 
-competitor.oninput=()=>{
+/* ---------- Competitor Lookup ---------- */
+const competitorMap={};
+fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
+.then(r=>r.text()).then(t=>{
+  const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+  j.table.rows.forEach(r=>competitorMap[r.c[0].v]=r.c[1].v);
+});
+
+competitor.addEventListener("input",()=>{
   nameDisplay.textContent=competitorMap[competitor.value]||"Unknown competitor";
+});
+
+/* ---------- Slider ---------- */
+let last=5;
+slider.oninput=()=>{
+  const v=+slider.value;
+  scoreText.textContent=v.toFixed(1);
+  score.value=v.toFixed(1);
+  scoreText.style.color=`hsl(${(v/10)*120},90%,60%)`;
+  if(Math.abs(v-last)>=0.5){haptic(10);last=v;}
 };
 
+/* ---------- Submit ---------- */
 let pressStart=null;
-submitBtn.onmousedown=e=>{
-  if(!competitor.value) return;
-  pressStart=Date.now(); e.preventDefault();
+submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
+  if(!roundOpen||!accessGranted||locked||!hasValidCompetitor()) return;
+  e.preventDefault(); pressStart=Date.now();
 };
-submitBtn.onmouseup=()=>{
+
+submitBtn.onmouseup=submitBtn.ontouchend=()=>{
+  if(!pressStart) return;
   if(Date.now()-pressStart>=350) submit();
+  pressStart=null;
 };
 
 function submit(){
   fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
+  haptic([25,30,25]);
+  locked=true;
+  slider.disabled=true;
+  submitBtn.classList.add("locked");
+  showCountdown();
+}
+
+function showCountdown(){
   successOverlay.classList.remove("hidden");
   startCountdown();
 }
 
 function startCountdown(){
-  let n=3; pulse(n);
+  let n=3;
+  updateCountdown(n);
   const iv=setInterval(()=>{
-    n--; if(n===0){clearInterval(iv); reset();}
-    else pulse(n);
+    n--;
+    if(n===0){clearInterval(iv);resetForm();}
+    else updateCountdown(n);
   },1000);
 }
 
-function pulse(n){
-  countdownText.textContent=n;
+function updateCountdown(v){
+  countdownText.textContent=v;
   countdownText.style.animation="none";
   countdownText.offsetHeight;
-  countdownText.style.animation="pulse 1s";
+  countdownText.style.animation="pulse 1s ease-in-out";
 }
 
-function reset(){
+function resetForm(){
   successOverlay.classList.add("hidden");
+  locked=false;
+  slider.disabled=false;
+  slider.value=5;
+  scoreText.textContent="5.0";
+  score.value="5.0";
   competitor.value="";
   nameDisplay.textContent="";
+  document.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.checked=false);
 }
 </script>
+
 </body>
 </html>
