@@ -274,8 +274,6 @@ fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETIT
   if (number) competitorMap[number] = name;
 });
 
-});
-
 competitor.addEventListener("input",()=>{
   nameDisplay.textContent=competitorMap[competitor.value]||"Unknown competitor";
 });
