@@ -271,16 +271,22 @@ function headerMap(table){
 }
 
 /* ---------- Event Config ---------- */
-fetchSheet(EVENT_CONFIG_GID).then(j=>{
-  const cfg={};
-  j.table.rows.forEach(r=>cfg[r.c[0].v]=r.c[1].v);
-  eventName.textContent=cfg.EventName||"";
-  eventLocation.textContent=cfg.Location||"";
-  eventRound.textContent=cfg.Round||"";
-  roundNumber=parseInt(cfg.RoundNumber||"1",10);
-  roundOpen=(cfg.RoundOpen||"").toUpperCase()==="YES";
-  roundStatus.textContent=roundOpen?"● OPEN":"● CLOSED";
-  roundStatus.className="round-status "+(roundOpen?"round-open":"round-closed");
+fetchSheet(EVENT_CONFIG_GID).then(j => {
+  const cfg = {};
+  j.table.rows.forEach(r => {
+    if (r.c[0]?.v) cfg[r.c[0].v] = r.c[1]?.v;
+  });
+
+  eventName.textContent     = cfg.EventName || "";
+  eventLocation.textContent = cfg.Location || "";
+  eventRound.textContent    = cfg.Round || "";
+
+  roundNumber = parseInt(cfg.Round || "1", 10);
+
+  roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
+  roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
+  roundStatus.className =
+    "round-status " + (roundOpen ? "round-open" : "round-closed");
 });
 
 /* ---------- Judges (HEADER-DETECT) ---------- */
