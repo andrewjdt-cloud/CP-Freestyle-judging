@@ -290,23 +290,25 @@ fetchSheet(EVENT_CONFIG_GID).then(j => {
 });
 
 /* ---------- Judges (HEADER-DETECT) ---------- */
-fetchSheet(JUDGES_GID).then(j=>{
-  const h=headerMap(j.table);
-  j.table.rows.forEach(r=>{
-    if(
-      r.c[h.JudgeName]?.v===judgeParam &&
-      r.c[h.JudgeToken]?.v===tokenParam &&
-      r.c[h.JudgeActive]?.v==="YES"
-    ){
-      accessGranted=true;
-      judge.value=judgeParam;
-      judgeLabel.textContent="Judge: "+judgeParam;
+fetchSheet(JUDGES_GID).then(j => {
+  const h = headerMap(j.table);
+
+  j.table.rows.forEach(r => {
+    const name  = r.c[h["JudgeName"]]?.v;
+    const token = r.c[h["JudgeToken"]]?.v;
+    const live  = r.c[h["JudgeActive"]]?.v;
+
+    if (name === judgeParam && token === tokenParam && live === "YES") {
+      accessGranted = true;
+      judge.value = name;
+      judgeLabel.textContent = "Judge: " + name;
     }
   });
-  if(!accessGranted){
-    roundStatus.textContent="Access denied";
-    roundStatus.className="round-status access-denied";
-    submitBtn.disabled=true;
+
+  if (!accessGranted) {
+    roundStatus.textContent = "Access denied";
+    roundStatus.className = "round-status access-denied";
+    submitBtn.disabled = true;
   }
 });
 
