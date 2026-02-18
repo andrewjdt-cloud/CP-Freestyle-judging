@@ -268,7 +268,12 @@ const competitorMap={};
 fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`)
 .then(r=>r.text()).then(t=>{
   const j=JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
-  j.table.rows.forEach(r=>competitorMap[r.c[0].v]=r.c[1].v);
+  j.table.rows.forEach(r => {
+  const number = r.c[1]?.v; // Column B
+  const name   = r.c[2]?.v; // Column C
+  if (number) competitorMap[number] = name;
+});
+
 });
 
 competitor.addEventListener("input",()=>{
