@@ -1,19 +1,3 @@
-<!--
-CP Freestyle Judging System
-File: index-v1.3.html
-Version: v1.3 (Phase A – header-detect, round-safe, race-free)
-Date: 2026-02-17
-
-Notes:
-- Header-detect for Competitors + Judges
-- Event Config uses key/value rows (not headers)
-- Numeric round only, displayed as "Round X"
-- Correct Move_R{round} selection
-- Green tick + pulsing 3–2–1 countdown
-- Auto-advance to next competitor
-- Prev/Next locked during submit
--->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +32,7 @@ body {
   color: #aaa;
 }
 
-/* ---------- Competitor Nav ---------- */
+/* ---------- Competitor Navigation ---------- */
 .competitor-nav {
   position: relative;
   display: flex;
@@ -66,7 +50,6 @@ body {
   background: #222;
   color: #fff;
 }
-
 .nav-btn:disabled { opacity: 0.3; }
 
 /* ---------- Competitor ---------- */
@@ -84,7 +67,7 @@ body {
   color: #ccc;
   margin-top: 4px;
   line-height: 1.3;
-  max-width: 260px;
+  max-width: 280px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -100,7 +83,6 @@ body {
   pointer-events: none;
   z-index: 10;
 }
-
 .success-overlay.hidden { display: none; }
 
 .success-tick {
@@ -159,7 +141,10 @@ body {
 }
 
 /* ---------- Penalties ---------- */
-.penalties { margin-top: 8px; font-size: 16px; }
+.penalties {
+  margin-top: 8px;
+  font-size: 16px;
+}
 
 .penalty-row {
   display: flex;
@@ -179,7 +164,6 @@ button.submit {
   color: #fff;
   width: 100%;
 }
-
 button.disabled { background: #555; }
 </style>
 </head>
@@ -196,47 +180,47 @@ button.disabled { background: #555; }
 <div class="judge-label" id="judgeLabel">Judge: —</div>
 
 <form id="scoreForm">
-  <input type="hidden" id="judge" name="entry.759726589">
-  <input type="hidden" id="competitor" name="entry.1094004330">
-  <input type="hidden" id="score" name="entry.1544079831">
+<input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="competitor" name="entry.1094004330">
+<input type="hidden" id="score" name="entry.1544079831">
 
-  <div class="competitor-nav">
-    <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
+<div class="competitor-nav">
+  <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
 
-    <div class="competitor-box">
-      <div class="competitor-number" id="competitorDisplay">—</div>
-      <div class="name-display" id="nameDisplay"></div>
-      <div class="move-display" id="moveDisplay"></div>
-    </div>
-
-    <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
-
-    <div class="success-overlay hidden" id="successOverlay">
-      <div class="success-tick">✔</div>
-      <div class="countdown" id="countdownText">3</div>
-    </div>
+  <div class="competitor-box">
+    <div class="competitor-number" id="competitorDisplay">—</div>
+    <div class="name-display" id="nameDisplay"></div>
+    <div class="move-display" id="moveDisplay"></div>
   </div>
 
-  <div class="score-display" id="scoreText">5.0</div>
-  <input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
+  <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
 
-  <div class="penalties">
-    <div class="penalty-row">
-      <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
-      <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
-      <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
-    </div>
+  <div class="success-overlay hidden" id="successOverlay">
+    <div class="success-tick">✔</div>
+    <div class="countdown" id="countdownText">3</div>
   </div>
+</div>
 
-  <button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
+<div class="score-display" id="scoreText">5.0</div>
+<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
+
+<div class="penalties">
+  <div class="penalty-row">
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  </div>
+</div>
+
+<button type="button" class="submit disabled" id="submitBtn">HOLD TO SUBMIT</button>
 </form>
 
 <script>
 /* ---------- CONFIG ---------- */
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 const EVENT_CONFIG_GID = "686531230";
-const COMPETITOR_GID   = "51112637";
-const JUDGES_GID       = "1213944419";
+const COMPETITOR_GID = "51112637";
+const JUDGES_GID = "1213944419";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
@@ -246,82 +230,91 @@ const judgeParam = params.get("judge");
 const tokenParam = params.get("token");
 
 /* ---------- State ---------- */
+let roundNumber = 1;
 let roundOpen = false;
 let accessGranted = false;
 let locked = false;
-let roundNumber = 1;
 let competitors = [];
 let index = 0;
 
-/* ---------- Helpers ---------- */
+/* ---------- Haptics ---------- */
 function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
 
-function fetchSheet(gid){
-  return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json`)
-    .then(r=>r.text())
-    .then(t=>JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}")+1)));
+/* ---------- Helpers ---------- */
+function parseGViz(text){
+  return JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
 }
 
-function headerMap(table){
-  const map = {};
-  table.cols.forEach((c,i)=>map[c.label]=i);
-  return map;
-}
-
-/* ---------- Event Config (key/value) ---------- */
-const eventConfigPromise = fetchSheet(EVENT_CONFIG_GID).then(j=>{
+/* ---------- Load Event Config (FIRST) ---------- */
+async function loadEventConfig(){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`);
+  const j = parseGViz(await r.text());
   const cfg = {};
-  j.table.rows.forEach(r=>{
-    if(r.c[0]?.v) cfg[r.c[0].v] = String(r.c[1]?.v||"").trim();
-  });
+  j.table.rows.forEach(row => cfg[row.c[0].v] = row.c[1]?.v ?? "");
 
   eventName.textContent = cfg.EventName || "";
   eventLocation.textContent = cfg.Location || "";
 
-  roundNumber = Number(cfg.Round);
-  if(!Number.isInteger(roundNumber) || roundNumber < 1) roundNumber = 1;
-  eventRound.textContent = `Round ${roundNumber}`;
+  roundNumber = parseInt(cfg.Round, 10);
+  if (!Number.isInteger(roundNumber) || roundNumber < 1) roundNumber = 1;
 
-  roundOpen = cfg.RoundOpen.toUpperCase() === "YES";
+  eventRound.textContent = `Round ${roundNumber}`;
+  roundOpen = String(cfg.RoundOpen).toUpperCase() === "YES";
   roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
   roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
-});
+}
 
-/* ---------- Judge Auth ---------- */
-const judgePromise = fetchSheet(JUDGES_GID).then(j=>{
-  const h = headerMap(j.table);
-  j.table.rows.forEach(r=>{
-    const name  = r.c[h["JudgeName"]]?.v;
-    const token = r.c[h["JudgeToken"]]?.v;
-    const live  = r.c[h["JudgeActive"]]?.v;
-    if(name===judgeParam && token===tokenParam && live==="YES"){
+/* ---------- Load Judge Auth ---------- */
+async function loadJudgeAuth(){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
+  const j = parseGViz(await r.text());
+
+  const headers = j.table.cols.map(c => c.label);
+  const h = Object.fromEntries(headers.map((k,i)=>[k,i]));
+
+  j.table.rows.forEach(row=>{
+    if (
+      row.c[h.JudgeName]?.v === judgeParam &&
+      row.c[h.JudgeToken]?.v === tokenParam &&
+      String(row.c[h.JudgeActive]?.v).toUpperCase() === "YES"
+    ){
       accessGranted = true;
-      judge.value = name;
-      judgeLabel.textContent = "Judge: " + name;
+      judge.value = judgeParam;
+      judgeLabel.textContent = "Judge: " + judgeParam;
     }
   });
-});
 
-/* ---------- Competitors ---------- */
-const competitorPromise = fetchSheet(COMPETITOR_GID).then(j=>{
-  const h = headerMap(j.table);
-  competitors = j.table.rows.map(r=>({
-    order: Number(r.c[h["CompetitorOrder"]]?.v||0),
-    number: r.c[h["CompetitorNumber"]]?.v,
-    name:   r.c[h["CompetitorName"]]?.v,
-    move:   r.c[h[`Move_R${roundNumber}`]]?.v || ""
-  })).sort((a,b)=>a.order-b.order);
-  updateCompetitor();
-});
-
-/* ---------- Final Gate ---------- */
-Promise.all([eventConfigPromise, judgePromise, competitorPromise]).then(()=>{
-  if(!accessGranted){
+  if (!accessGranted) {
     roundStatus.textContent = "Access denied";
     roundStatus.className = "round-status access-denied";
-    submitBtn.disabled = true;
+    throw new Error("Access denied");
   }
-});
+}
+
+/* ---------- Load Competitors (AFTER ROUND) ---------- */
+async function loadCompetitors(){
+  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
+  const j = parseGViz(await r.text());
+
+  const headers = j.table.cols.map(c => c.label);
+  const h = Object.fromEntries(headers.map((k,i)=>[k,i]));
+
+  competitors = j.table.rows.map(row=>({
+    order: Number(row.c[h.CompetitorOrder]?.v || 0),
+    number: row.c[h.CompetitorNumber]?.v,
+    name:   row.c[h.CompetitorName]?.v,
+    moves: {
+      1: row.c[h.Move_R1]?.v,
+      2: row.c[h.Move_R2]?.v,
+      3: row.c[h.Move_R3]?.v,
+      4: row.c[h.Move_R4]?.v,
+      5: row.c[h.Move_R5]?.v,
+      6: row.c[h.Move_R6]?.v
+    }
+  })).sort((a,b)=>a.order-b.order);
+
+  updateCompetitor();
+}
 
 /* ---------- UI ---------- */
 function updateCompetitor(){
@@ -329,14 +322,14 @@ function updateCompetitor(){
   competitor.value = c.number;
   competitorDisplay.textContent = c.number;
   nameDisplay.textContent = c.name;
-  moveDisplay.textContent = c.move;
-  prevBtn.disabled = locked || index===0;
-  nextBtn.disabled = locked || index===competitors.length-1;
+  moveDisplay.textContent = c.moves[roundNumber] || "";
+  prevBtn.disabled = locked || index === 0;
+  nextBtn.disabled = locked || index === competitors.length - 1;
 }
 
 /* ---------- Navigation ---------- */
-prevBtn.onclick=()=>{ if(!locked&&index>0){index--;updateCompetitor();haptic(5);} };
-nextBtn.onclick=()=>{ if(!locked&&index<competitors.length-1){index++;updateCompetitor();haptic(5);} };
+prevBtn.onclick=()=>{ if(!locked && index>0){ index--; updateCompetitor(); haptic(5); }};
+nextBtn.onclick=()=>{ if(!locked && index<competitors.length-1){ index++; updateCompetitor(); haptic(5); }};
 
 /* ---------- Slider ---------- */
 let last=5;
@@ -345,17 +338,17 @@ slider.oninput=()=>{
   scoreText.textContent=v.toFixed(1);
   score.value=v.toFixed(1);
   scoreText.style.color=`hsl(${(v/10)*120},90%,60%)`;
-  if(Math.abs(v-last)>=0.5){haptic(10);last=v;}
+  if(Math.abs(v-last)>=0.5){ haptic(10); last=v; }
 };
 
 /* ---------- Submit ---------- */
 let pressStart=null;
 submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
-  if(!roundOpen||!accessGranted||locked)return;
+  if(!roundOpen||!accessGranted||locked) return;
   e.preventDefault(); pressStart=Date.now();
 };
 submitBtn.onmouseup=submitBtn.ontouchend=()=>{
-  if(!pressStart)return;
+  if(!pressStart) return;
   if(Date.now()-pressStart>=350) submit();
   pressStart=null;
 };
@@ -371,15 +364,15 @@ function submit(){
 
 function startCountdown(){
   let n=3;
-  tick();
+  updateCountdown(n);
   const iv=setInterval(()=>{
     n--;
-    if(n===0){clearInterval(iv);resetAndAdvance();}
-    else tick(n);
+    if(n===0){ clearInterval(iv); resetAndAdvance(); }
+    else updateCountdown(n);
   },1000);
 }
 
-function tick(v=3){
+function updateCountdown(v){
   countdownText.textContent=v;
   countdownText.style.animation="none";
   countdownText.offsetHeight;
@@ -397,6 +390,18 @@ function resetAndAdvance(){
   if(index<competitors.length-1) index++;
   updateCompetitor();
 }
+
+/* ---------- BOOT ---------- */
+(async()=>{
+  try{
+    await loadEventConfig();
+    await loadJudgeAuth();
+    await loadCompetitors();
+    submitBtn.classList.remove("disabled");
+  }catch(e){
+    console.error(e);
+  }
+})();
 </script>
 
 </body>
