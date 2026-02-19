@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP Freestyle – Judge Auth Diagnostic</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #111;
+  color: #fff;
+  padding: 16px;
+}
+h1 { font-size: 20px; }
+pre {
+  background: #000;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 13px;
+}
+.ok { color: #00e676; }
+.bad { color: #ff5252; }
+</style>
+</head>
+
+<body>
+
+<h1>Judge Auth Diagnostic</h1>
+
+<div id="status">Loading…</div>
+
+<h3>URL Parameters</h3>
+<pre id="urlDump"></pre>
+
+<h3>Detected Sheet Headers</h3>
+<pre id="headerDump"></pre>
+
+<h3>Judge Rows (raw)</h3>
+<pre id="rowDump"></pre>
+
+<h3>Match Result</h3>
+<pre id="matchDump"></pre>
+
+<script>
+const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const JUDGES_GID = "1213944419";
+
+const params = new URLSearchParams(location.search);
+const judgeParam = params.get("judge");
+const tokenParam = params.get("token");
+
+document.getElementById("urlDump").textContent = JSON.stringify(
+  { judge: judgeParam, token: tokenParam },
+  null,
+  2
+);
+
+function parseGViz(text){
+  return JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
+}
+
+function norm(v){
+  return String(v ?? "").trim().toLowerCase();
+}
+
+(async () => {
+  try {
+    const r = await fetch(
+      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`
+    );
+    const j = parseGViz(await r.text());
+
+    // Dump headers exactly as GViz sees them
+    const headers = j.table.cols.map((c, i) => ({
+      index: i,
+      label: c.label,
+      id: c.id,
+      type: c.type
+    }));
+    document.getElementById("headerDump").textContent =
+      JSON.stringify(headers, null, 2);
+
+    // Dump raw rows
+    const rows = j.table.rows.map(r =>
+      r.c.map(c => c?.v ?? null)
+    );
+    document.getElementById("rowDump").textContent =
+      JSON.stringify(rows, null, 2);
+
+    // Attempt matching (simple positional first)
+    let matchedRow = null;
+
+    j.table.rows.forEach(row => {
+      const name = norm(row.c[0]?.v);
+      const token = norm(row.c[1]?.v);
+
+      if (name === norm(judgeParam) && token === norm(tokenParam)) {
+        matchedRow = {
+          JudgeName: row.c[0]?.v,
+          JudgeToken: row.c[1]?.v
+        };
+      }
+    });
+
+    if (matchedRow) {
+      document.getElementById("status").innerHTML =
+        `<span class="ok">MATCH FOUND ✅</span>`;
+      document.getElementById("matchDump").textContent =
+        JSON.stringify(matchedRow, null, 2);
+    } else {
+      document.getElementById("status").innerHTML =
+        `<span class="bad">NO MATCH ❌</span>`;
+      document.getElementById("matchDump").textContent =
+        "No judge row matched the URL parameters.";
+    }
+
+  } catch (e) {
+    document.getElementById("status").innerHTML =
+      `<span class="bad">ERROR</span>`;
+    document.getElementById("matchDump").textContent =
+      String(e);
+  }
+})();
+</script>
+
+</body>
+</html>
