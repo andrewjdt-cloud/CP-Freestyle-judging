@@ -1,14 +1,17 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.3.html
-Version: v1.3 (HEADER-DETECT + Phase A)
-Date: 2026-02-16
+Version: v1.3 (Phase A – header-detect, round-safe, race-free)
+Date: 2026-02-17
+
 Notes:
-- Header-detect competitor + judge fetch
-- Round-driven move selection (Move_R{n})
-- Prev/Next navigation
+- Header-detect for Competitors + Judges
+- Event Config uses key/value rows (not headers)
+- Numeric round only, displayed as "Round X"
+- Correct Move_R{round} selection
 - Green tick + pulsing 3–2–1 countdown
-- Auto-advance after submit
+- Auto-advance to next competitor
+- Prev/Next locked during submit
 -->
 
 <!DOCTYPE html>
@@ -21,170 +24,163 @@ Notes:
 <style>
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background:#111;
-  color:#fff;
-  text-align:center;
-  padding:14px;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 14px;
 }
 
-/* ---------- Event ---------- */
-.event-info { margin-bottom:8px; }
-.event-name { font-size:18px; font-weight:600; }
+/* ---------- Event Info ---------- */
+.event-info { margin-bottom: 8px; }
+.event-name { font-size: 18px; font-weight: 600; }
 .event-location,
-.event-round { font-size:13px; color:#aaa; }
+.event-round { font-size: 13px; color: #aaa; }
 
-.round-status { font-size:12px; margin-top:2px; }
-.round-open { color:#00e676; }
+.round-status { font-size: 12px; margin-top: 2px; }
+.round-open { color: #00e676; }
 .round-closed,
-.access-denied { color:#ff5252; }
+.access-denied { color: #ff5252; }
 
 /* ---------- Judge ---------- */
 .judge-label {
-  font-size:14px;
-  color:#aaa;
-  margin-bottom:6px;
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #aaa;
 }
 
 /* ---------- Competitor Nav ---------- */
 .competitor-nav {
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin:10px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
 }
 
 .nav-btn {
-  font-size:18px;
-  padding:10px 14px;
-  border-radius:12px;
-  border:none;
-  background:#222;
-  color:#fff;
+  font-size: 18px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: none;
+  background: #222;
+  color: #fff;
 }
 
-.nav-btn:disabled { opacity:0.3; }
+.nav-btn:disabled { opacity: 0.3; }
 
 /* ---------- Competitor ---------- */
-.competitor-box { flex:1; }
-
-.competitor-number {
-  font-size:42px;
-  font-weight:bold;
-}
+.competitor-box { flex: 1; }
+.competitor-number { font-size: 42px; font-weight: bold; }
 
 .name-display {
-  font-size:16px;
-  color:#8bc34a;
-  min-height:20px;
+  font-size: 16px;
+  color: #8bc34a;
+  min-height: 20px;
 }
 
 .move-display {
-  font-size:13px;
-  color:#ccc;
-  margin-top:4px;
-  line-height:1.3;
-  max-width:260px;
-  margin-left:auto;
-  margin-right:auto;
+  font-size: 13px;
+  color: #ccc;
+  margin-top: 4px;
+  line-height: 1.3;
+  max-width: 260px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* ---------- Success Overlay ---------- */
 .success-overlay {
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-  z-index:10;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
 }
 
-.success-overlay.hidden { display:none; }
+.success-overlay.hidden { display: none; }
 
 .success-tick {
-  font-size:96px;
-  color:#00e676;
-  margin-bottom:8px;
-  animation:tickFade 3s ease-out forwards;
+  font-size: 96px;
+  color: #00e676;
+  margin-bottom: 8px;
+  animation: tickFade 3s ease-out forwards;
 }
 
 @keyframes tickFade {
-  0% { opacity:1; transform:scale(1); }
-  60% { opacity:0.6; transform:scale(0.95); }
-  100% { opacity:0; transform:scale(0.9); }
+  0%   { opacity: 1; transform: scale(1); }
+  60%  { opacity: 0.6; transform: scale(0.95); }
+  100% { opacity: 0; transform: scale(0.9); }
 }
 
 .countdown {
-  font-size:72px;
-  font-weight:bold;
-  color:#ffeb3b;
-  background:rgba(0,0,0,0.65);
-  width:96px;
-  height:96px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  font-size: 72px;
+  font-weight: bold;
+  color: #ffeb3b;
+  background: rgba(0,0,0,0.65);
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes pulse {
-  0% { transform:scale(1); }
-  40% { transform:scale(1.18); }
-  100% { transform:scale(1); }
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.18); }
+  100% { transform: scale(1); }
 }
 
 /* ---------- Score ---------- */
 .score-display {
-  font-size:80px;
-  font-weight:bold;
-  margin:18px 0 12px;
+  font-size: 80px;
+  font-weight: bold;
+  margin: 18px 0 12px;
 }
 
 .slider {
-  width:100%;
-  height:22px;
-  appearance:none;
-  border-radius:11px;
-  background:linear-gradient(to right,#c62828,#f9a825,#2e7d32);
+  width: 100%;
+  height: 22px;
+  appearance: none;
+  border-radius: 11px;
+  background: linear-gradient(to right, #c62828, #f9a825, #2e7d32);
 }
 
 .slider::-webkit-slider-thumb {
-  appearance:none;
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:#fff;
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
 }
 
 /* ---------- Penalties ---------- */
-.penalties {
-  margin-top:8px;
-  font-size:16px;
-}
+.penalties { margin-top: 8px; font-size: 16px; }
 
 .penalty-row {
-  display:flex;
-  justify-content:center;
-  gap:26px;
-  margin-top:4px;
+  display: flex;
+  justify-content: center;
+  gap: 26px;
+  margin-top: 4px;
 }
 
 /* ---------- Submit ---------- */
 button.submit {
-  margin-top:12px;
-  font-size:22px;
-  padding:12px;
-  border-radius:14px;
-  border:none;
-  background:#00c853;
-  color:#fff;
-  width:100%;
+  margin-top: 12px;
+  font-size: 22px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+  width: 100%;
 }
 
-button.disabled { background:#555; }
+button.disabled { background: #555; }
 </style>
 </head>
 
@@ -200,39 +196,39 @@ button.disabled { background:#555; }
 <div class="judge-label" id="judgeLabel">Judge: —</div>
 
 <form id="scoreForm">
-<input type="hidden" id="judge" name="entry.759726589">
-<input type="hidden" id="competitor" name="entry.1094004330">
-<input type="hidden" id="score" name="entry.1544079831">
+  <input type="hidden" id="judge" name="entry.759726589">
+  <input type="hidden" id="competitor" name="entry.1094004330">
+  <input type="hidden" id="score" name="entry.1544079831">
 
-<div class="competitor-nav">
-  <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
+  <div class="competitor-nav">
+    <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
 
-  <div class="competitor-box">
-    <div class="competitor-number" id="competitorDisplay">—</div>
-    <div class="name-display" id="nameDisplay"></div>
-    <div class="move-display" id="moveDisplay"></div>
+    <div class="competitor-box">
+      <div class="competitor-number" id="competitorDisplay">—</div>
+      <div class="name-display" id="nameDisplay"></div>
+      <div class="move-display" id="moveDisplay"></div>
+    </div>
+
+    <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
+
+    <div class="success-overlay hidden" id="successOverlay">
+      <div class="success-tick">✔</div>
+      <div class="countdown" id="countdownText">3</div>
+    </div>
   </div>
 
-  <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
+  <div class="score-display" id="scoreText">5.0</div>
+  <input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
 
-  <div class="success-overlay hidden" id="successOverlay">
-    <div class="success-tick">✔</div>
-    <div class="countdown" id="countdownText">3</div>
+  <div class="penalties">
+    <div class="penalty-row">
+      <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+      <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+      <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+    </div>
   </div>
-</div>
 
-<div class="score-display" id="scoreText">5.0</div>
-<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
-
-<div class="penalties">
-  <div class="penalty-row">
-    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
-    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
-    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
-  </div>
-</div>
-
-<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
+  <button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
 </form>
 
 <script>
@@ -244,98 +240,98 @@ const JUDGES_GID       = "1213944419";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-/* ---------- URL ---------- */
+/* ---------- URL Params ---------- */
 const params = new URLSearchParams(location.search);
 const judgeParam = params.get("judge");
 const tokenParam = params.get("token");
 
 /* ---------- State ---------- */
-let roundOpen=false, roundNumber=1;
-let accessGranted=false, locked=false;
-let competitors=[], index=0;
+let roundOpen = false;
+let accessGranted = false;
+let locked = false;
+let roundNumber = 1;
+let competitors = [];
+let index = 0;
 
-/* ---------- Utils ---------- */
+/* ---------- Helpers ---------- */
 function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
 
-/* ---------- Fetch Helper ---------- */
 function fetchSheet(gid){
   return fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json`)
     .then(r=>r.text())
-    .then(t=>JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1)));
+    .then(t=>JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}")+1)));
 }
 
 function headerMap(table){
-  const h={};
-  table.cols.forEach((c,i)=>h[c.label]=i);
-  return h;
+  const map = {};
+  table.cols.forEach((c,i)=>map[c.label]=i);
+  return map;
 }
 
-/* ---------- Event Config ---------- */
-fetchSheet(EVENT_CONFIG_GID).then(j => {
+/* ---------- Event Config (key/value) ---------- */
+const eventConfigPromise = fetchSheet(EVENT_CONFIG_GID).then(j=>{
   const cfg = {};
-  j.table.rows.forEach(r => {
-    if (r.c[0]?.v) cfg[r.c[0].v] = r.c[1]?.v;
+  j.table.rows.forEach(r=>{
+    if(r.c[0]?.v) cfg[r.c[0].v] = String(r.c[1]?.v||"").trim();
   });
 
-  eventName.textContent     = cfg.EventName || "";
+  eventName.textContent = cfg.EventName || "";
   eventLocation.textContent = cfg.Location || "";
-  eventRound.textContent    = cfg.Round || "";
 
-  roundNumber = parseInt(cfg.Round || "1", 10);
+  roundNumber = Number(cfg.Round);
+  if(!Number.isInteger(roundNumber) || roundNumber < 1) roundNumber = 1;
+  eventRound.textContent = `Round ${roundNumber}`;
 
-  roundOpen = (cfg.RoundOpen || "").toUpperCase() === "YES";
+  roundOpen = cfg.RoundOpen.toUpperCase() === "YES";
   roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
-  roundStatus.className =
-    "round-status " + (roundOpen ? "round-open" : "round-closed");
+  roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
 });
 
-/* ---------- Judges (HEADER-DETECT) ---------- */
-fetchSheet(JUDGES_GID).then(j => {
+/* ---------- Judge Auth ---------- */
+const judgePromise = fetchSheet(JUDGES_GID).then(j=>{
   const h = headerMap(j.table);
-
-  j.table.rows.forEach(r => {
+  j.table.rows.forEach(r=>{
     const name  = r.c[h["JudgeName"]]?.v;
     const token = r.c[h["JudgeToken"]]?.v;
     const live  = r.c[h["JudgeActive"]]?.v;
-
-    if (name === judgeParam && token === tokenParam && live === "YES") {
+    if(name===judgeParam && token===tokenParam && live==="YES"){
       accessGranted = true;
       judge.value = name;
       judgeLabel.textContent = "Judge: " + name;
     }
   });
+});
 
-  if (!accessGranted) {
+/* ---------- Competitors ---------- */
+const competitorPromise = fetchSheet(COMPETITOR_GID).then(j=>{
+  const h = headerMap(j.table);
+  competitors = j.table.rows.map(r=>({
+    order: Number(r.c[h["CompetitorOrder"]]?.v||0),
+    number: r.c[h["CompetitorNumber"]]?.v,
+    name:   r.c[h["CompetitorName"]]?.v,
+    move:   r.c[h[`Move_R${roundNumber}`]]?.v || ""
+  })).sort((a,b)=>a.order-b.order);
+  updateCompetitor();
+});
+
+/* ---------- Final Gate ---------- */
+Promise.all([eventConfigPromise, judgePromise, competitorPromise]).then(()=>{
+  if(!accessGranted){
     roundStatus.textContent = "Access denied";
     roundStatus.className = "round-status access-denied";
     submitBtn.disabled = true;
   }
 });
 
-/* ---------- Competitors (HEADER-DETECT) ---------- */
-fetchSheet(COMPETITOR_GID).then(j=>{
-  const h=headerMap(j.table);
-  const moveCol = `Move_R${roundNumber}`;
-
-  competitors = j.table.rows.map(r=>({
-    order:+r.c[h.CompetitorOrder]?.v,
-    number:r.c[h.CompetitorNumber]?.v,
-    name:r.c[h.CompetitorName]?.v,
-    move:r.c[h[moveCol]]?.v || ""
-  })).sort((a,b)=>a.order-b.order);
-
-  updateCompetitor();
-});
-
+/* ---------- UI ---------- */
 function updateCompetitor(){
-  const c=competitors[index];
-  if(!c) return;
-  competitor.value=c.number;
-  competitorDisplay.textContent=c.number;
-  nameDisplay.textContent=c.name;
-  moveDisplay.textContent=c.move;
-  prevBtn.disabled=locked||index===0;
-  nextBtn.disabled=locked||index===competitors.length-1;
+  const c = competitors[index];
+  competitor.value = c.number;
+  competitorDisplay.textContent = c.number;
+  nameDisplay.textContent = c.name;
+  moveDisplay.textContent = c.move;
+  prevBtn.disabled = locked || index===0;
+  nextBtn.disabled = locked || index===competitors.length-1;
 }
 
 /* ---------- Navigation ---------- */
@@ -355,11 +351,11 @@ slider.oninput=()=>{
 /* ---------- Submit ---------- */
 let pressStart=null;
 submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
-  if(!roundOpen||!accessGranted||locked) return;
+  if(!roundOpen||!accessGranted||locked)return;
   e.preventDefault(); pressStart=Date.now();
 };
 submitBtn.onmouseup=submitBtn.ontouchend=()=>{
-  if(!pressStart) return;
+  if(!pressStart)return;
   if(Date.now()-pressStart>=350) submit();
   pressStart=null;
 };
@@ -375,29 +371,29 @@ function submit(){
 
 function startCountdown(){
   let n=3;
-  updateCountdown(n);
+  tick();
   const iv=setInterval(()=>{
     n--;
-    if(n===0){clearInterval(iv);resetAdvance();}
-    else updateCountdown(n);
+    if(n===0){clearInterval(iv);resetAndAdvance();}
+    else tick(n);
   },1000);
 }
 
-function updateCountdown(v){
+function tick(v=3){
   countdownText.textContent=v;
   countdownText.style.animation="none";
   countdownText.offsetHeight;
   countdownText.style.animation="pulse 1s ease-in-out";
 }
 
-function resetAdvance(){
+function resetAndAdvance(){
   successOverlay.classList.add("hidden");
+  locked=false;
   slider.disabled=false;
   slider.value=5;
   scoreText.textContent="5.0";
   score.value="5.0";
   document.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.checked=false);
-  locked=false;
   if(index<competitors.length-1) index++;
   updateCompetitor();
 }
