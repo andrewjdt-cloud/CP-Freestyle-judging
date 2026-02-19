@@ -269,14 +269,21 @@ async function loadJudgeAuth(){
   const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
   const j = parseGViz(await r.text());
 
-  const headers = j.table.cols.map(c => c.label);
-  const h = Object.fromEntries(headers.map((k,i)=>[k,i]));
+  const headers = j.table.cols.map(c =>
+  c.label
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "")
+);
+
+const h = Object.fromEntries(headers.map((k, i) => [k, i]));
+
 
   j.table.rows.forEach(row=>{
     if (
-      row.c[h.JudgeName]?.v === judgeParam &&
-      row.c[h.JudgeToken]?.v === tokenParam &&
-      String(row.c[h.JudgeActive]?.v).toUpperCase() === "YES"
+      row.c[h.judgename]?.v === judgeParam &&
+      row.c[h.judgetoken]?.v === tokenParam &&
+      String(row.c[h.judgeactive]?.v).toUpperCase() === "YES"
     ){
       accessGranted = true;
       judge.value = judgeParam;
