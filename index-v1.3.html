@@ -237,32 +237,26 @@ let locked = false;
 let competitors = [];
 let index = 0;
 
-/* ---------- Helpers ---------- */
+/* ---------- Utils ---------- */
 function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
-
-function norm(s){
-  return String(s || "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
+function parseGViz(t){
+  return JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
 }
 
-function parseGViz(text){
-  return JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
-}
-
-/* ---------- Load Event Config ---------- */
+/* ---------- Event Config ---------- */
 async function loadEventConfig(){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`);
-  const j = parseGViz(await r.text());
+  const j = parseGViz(await (await fetch(
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`
+  )).text());
+
   const cfg = {};
-  j.table.rows.forEach(row => cfg[row.c[0].v] = row.c[1]?.v ?? "");
+  j.table.rows.forEach(r => cfg[r.c[0].v] = r.c[1]?.v ?? "");
 
   eventName.textContent = cfg.EventName || "";
   eventLocation.textContent = cfg.Location || "";
 
   roundNumber = parseInt(cfg.Round, 10);
-  if (!Number.isInteger(roundNumber) || roundNumber < 1) roundNumber = 1;
+  if (!Number.isInteger(roundNumber)) roundNumber = 1;
 
   eventRound.textContent = `Round ${roundNumber}`;
   roundOpen = String(cfg.RoundOpen).toUpperCase() === "YES";
@@ -270,25 +264,23 @@ async function loadEventConfig(){
   roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
 }
 
-/* ---------- Load Judge Auth (FIXED) ---------- */
+/* ---------- Judge Auth (NO JudgeActive) ---------- */
 async function loadJudgeAuth(){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
-  const j = parseGViz(await r.text());
+  const j = parseGViz(await (await fetch(
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`
+  )).text());
 
-  const headers = j.table.cols.map(c =>
-    c.label.trim().toLowerCase().replace(/\s+/g, "")
-  );
-  const h = Object.fromEntries(headers.map((k, i) => [k, i]));
+  const headers = j.table.cols.map(c => c.label.toLowerCase());
+  const h = Object.fromEntries(headers.map((k,i)=>[k,i]));
 
-  j.table.rows.forEach(row=>{
+  j.table.rows.forEach(r=>{
     if (
-      norm(row.c[h.judgename]?.v) === norm(judgeParam) &&
-      norm(row.c[h.judgetoken]?.v) === norm(tokenParam) &&
-      String(row.c[h.judgeactive]?.v).toUpperCase() === "YES"
+      r.c[h.judgename]?.v === judgeParam &&
+      r.c[h.judgetoken]?.v === tokenParam
     ){
       accessGranted = true;
-      judge.value = row.c[h.judgename].v;
-      judgeLabel.textContent = "Judge: " + row.c[h.judgename].v;
+      judge.value = judgeParam;
+      judgeLabel.textContent = "Judge: " + judgeParam;
     }
   });
 
@@ -299,25 +291,26 @@ async function loadJudgeAuth(){
   }
 }
 
-/* ---------- Load Competitors ---------- */
+/* ---------- Competitors ---------- */
 async function loadCompetitors(){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
-  const j = parseGViz(await r.text());
+  const j = parseGViz(await (await fetch(
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`
+  )).text());
 
   const headers = j.table.cols.map(c => c.label);
   const h = Object.fromEntries(headers.map((k,i)=>[k,i]));
 
-  competitors = j.table.rows.map(row=>({
-    order: Number(row.c[h.CompetitorOrder]?.v || 0),
-    number: row.c[h.CompetitorNumber]?.v,
-    name:   row.c[h.CompetitorName]?.v,
-    moves: {
-      1: row.c[h.Move_R1]?.v,
-      2: row.c[h.Move_R2]?.v,
-      3: row.c[h.Move_R3]?.v,
-      4: row.c[h.Move_R4]?.v,
-      5: row.c[h.Move_R5]?.v,
-      6: row.c[h.Move_R6]?.v
+  competitors = j.table.rows.map(r=>({
+    order:+r.c[h.CompetitorOrder]?.v,
+    number:r.c[h.CompetitorNumber]?.v,
+    name:r.c[h.CompetitorName]?.v,
+    moves:{
+      1:r.c[h.Move_R1]?.v,
+      2:r.c[h.Move_R2]?.v,
+      3:r.c[h.Move_R3]?.v,
+      4:r.c[h.Move_R4]?.v,
+      5:r.c[h.Move_R5]?.v,
+      6:r.c[h.Move_R6]?.v
     }
   })).sort((a,b)=>a.order-b.order);
 
@@ -335,9 +328,8 @@ function updateCompetitor(){
   nextBtn.disabled = locked || index === competitors.length - 1;
 }
 
-/* ---------- Navigation ---------- */
-prevBtn.onclick=()=>{ if(!locked && index>0){ index--; updateCompetitor(); haptic(5); }};
-nextBtn.onclick=()=>{ if(!locked && index<competitors.length-1){ index++; updateCompetitor(); haptic(5); }};
+prevBtn.onclick=()=>{ if(!locked&&index>0){index--;updateCompetitor();haptic(5);} };
+nextBtn.onclick=()=>{ if(!locked&&index<competitors.length-1){index++;updateCompetitor();haptic(5);} };
 
 /* ---------- Slider ---------- */
 let last=5;
@@ -346,7 +338,7 @@ slider.oninput=()=>{
   scoreText.textContent=v.toFixed(1);
   score.value=v.toFixed(1);
   scoreText.style.color=`hsl(${(v/10)*120},90%,60%)`;
-  if(Math.abs(v-last)>=0.5){ haptic(10); last=v; }
+  if(Math.abs(v-last)>=0.5){haptic(10);last=v;}
 };
 
 /* ---------- Submit ---------- */
@@ -375,7 +367,7 @@ function startCountdown(){
   updateCountdown(n);
   const iv=setInterval(()=>{
     n--;
-    if(n===0){ clearInterval(iv); resetAndAdvance(); }
+    if(n===0){clearInterval(iv);resetAndAdvance();}
     else updateCountdown(n);
   },1000);
 }
