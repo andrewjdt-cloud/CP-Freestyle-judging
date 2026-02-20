@@ -1,18 +1,19 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.3.html
-Version: v1.3 (STABLE + Ghost Submit Fix)
+Version: v1.3 (Round Start Overlay Edition)
 Date: 2026-02-20
 
 Notes:
-- Fixed-column GViz parsing (NO header-detect)
-- Judge auth via JudgeName + JudgeToken + JudgeActive (YES/NO)
-- Event Config controls Round number and RoundOpen
-- Competitor order driven by CompetitorOrder
+- Fixed-column GViz parsing
+- Judge auth via JudgeName + JudgeToken + JudgeActive
+- Event Config controls Round number + RoundOpen
+- Competitor order via CompetitorOrder
 - Move displayed based on Round number
-- Phase A UX: SVG green tick + pulsing 3–2–1 countdown
-- Auto-advance competitor after submit
-- Ghost-submit protection added (mobile safe)
+- SVG green tick (iOS safe)
+- 3–2–1 pulsing countdown
+- Auto-advance competitor
+- NEW: Branded START ROUND overlay (required activation)
 -->
 
 <!DOCTYPE html>
@@ -29,6 +30,66 @@ body {
   color: #fff;
   text-align: center;
   padding: 14px;
+  margin: 0;
+}
+
+/* DIMMED STATE */
+body.locked-ui .main-content {
+  filter: blur(6px);
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* START OVERLAY */
+.start-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.start-box {
+  text-align: center;
+  padding: 30px;
+  max-width: 420px;
+}
+
+.start-event {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.start-location {
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 12px;
+}
+
+.start-round {
+  font-size: 26px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.start-judge {
+  font-size: 14px;
+  color: #8bc34a;
+  margin-bottom: 20px;
+}
+
+.start-btn {
+  font-size: 22px;
+  padding: 14px 28px;
+  border-radius: 14px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+  width: 100%;
 }
 
 /* EVENT INFO */
@@ -42,11 +103,7 @@ body {
 .access-denied { color: #ff5252; }
 
 /* JUDGE */
-.judge-label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #aaa;
-}
+.judge-label { margin-bottom: 6px; font-size: 14px; color: #aaa; }
 
 /* NAV */
 .competitor-nav {
@@ -98,14 +155,8 @@ body {
   height: 96px;
   margin-bottom: 8px;
   animation: tickFade 3s ease-out forwards;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
-.tick-svg {
-  width: 100%;
-  height: 100%;
-}
+.tick-svg { width: 100%; height: 100%; }
 
 @keyframes tickFade {
   0%   { opacity: 1; transform: scale(1); }
@@ -126,8 +177,8 @@ body {
   justify-content: center;
 }
 @keyframes pulse {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.18); }
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); }
   100% { transform: scale(1); }
 }
 
@@ -176,16 +227,28 @@ button.disabled { background: #555; }
 </style>
 </head>
 
-<body>
+<body class="locked-ui">
+
+<div class="start-overlay" id="startOverlay">
+  <div class="start-box">
+    <div class="start-event" id="startEvent"></div>
+    <div class="start-location" id="startLocation"></div>
+    <div class="start-round" id="startRound"></div>
+    <div class="start-judge" id="startJudge"></div>
+    <button class="start-btn" id="startBtn">START ROUND</button>
+  </div>
+</div>
+
+<div class="main-content">
 
 <div class="event-info">
-  <div class="event-name" id="eventName">Loading event…</div>
+  <div class="event-name" id="eventName"></div>
   <div class="event-location" id="eventLocation"></div>
   <div class="event-round" id="eventRound"></div>
   <div class="round-status" id="roundStatus"></div>
 </div>
 
-<div class="judge-label" id="judgeLabel">Judge: —</div>
+<div class="judge-label" id="judgeLabel"></div>
 
 <form id="scoreForm">
 <input type="hidden" id="judge" name="entry.759726589">
@@ -196,7 +259,7 @@ button.disabled { background: #555; }
   <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
 
   <div class="competitor-box">
-    <div class="competitor-number" id="competitorDisplay">—</div>
+    <div class="competitor-number" id="competitorDisplay"></div>
     <div class="name-display" id="nameDisplay"></div>
     <div class="move-display" id="moveDisplay"></div>
   </div>
@@ -229,72 +292,66 @@ button.disabled { background: #555; }
   </div>
 </div>
 
-<button type="button" class="submit disabled" id="submitBtn">HOLD TO SUBMIT</button>
+<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
 </form>
 
-<script>
-/* CONFIG */
-const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-const EVENT_CONFIG_GID = "686531230";
-const COMPETITOR_GID = "51112637";
-const JUDGES_GID = "1213944419";
-const FORM_ENDPOINT =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
+</div>
 
-/* STATE */
-const state = {
-  roundNumber: 1,
-  roundOpen: false,
-  accessGranted: false,
-  locked: false,
-  competitors: [],
-  index: 0,
-  hasUserInteracted: false
+<script>
+const SHEET_ID="1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID="686531230";
+const COMPETITOR_GID="51112637";
+const JUDGES_GID="1213944419";
+const FORM_ENDPOINT="https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
+
+const state={
+  roundNumber:1,
+  roundOpen:false,
+  accessGranted:false,
+  locked:false,
+  competitors:[],
+  index:0
 };
 
-const params = new URLSearchParams(location.search);
-const judgeParam = params.get("judge");
-const tokenParam = params.get("token");
+const params=new URLSearchParams(location.search);
+const judgeParam=params.get("judge");
+const tokenParam=params.get("token");
 
 function parseGViz(text){
-  return JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
-}
-function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
-
-/* USER INTERACTION GUARD */
-window.addEventListener("touchstart", () => state.hasUserInteracted = true, { once:true });
-window.addEventListener("mousedown", () => state.hasUserInteracted = true, { once:true });
-
-/* LOAD EVENT */
-async function loadEventConfig(){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`);
-  const j = parseGViz(await r.text());
-  const cfg = {};
-  j.table.rows.forEach(row => cfg[row.c[0].v] = row.c[1]?.v ?? "");
-
-  eventName.textContent = cfg.EventName || "";
-  eventLocation.textContent = cfg.Location || "";
-
-  state.roundNumber = parseInt(cfg.Round,10) || 1;
-  eventRound.textContent = `Round ${state.roundNumber}`;
-  state.roundOpen = String(cfg.RoundOpen).toUpperCase() === "YES";
-  roundStatus.textContent = state.roundOpen ? "● OPEN" : "● CLOSED";
-  roundStatus.className = "round-status " + (state.roundOpen ? "round-open" : "round-closed");
+  return JSON.parse(text.substring(text.indexOf("{"),text.lastIndexOf("}")+1));
 }
 
-/* LOAD JUDGE */
-async function loadJudgeAuth(){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
-  const j = parseGViz(await r.text());
+async function loadEvent(){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
+  const cfg={};
+  j.table.rows.forEach(row=>cfg[row.c[0].v]=row.c[1]?.v||"");
+
+  eventName.textContent=cfg.EventName||"";
+  eventLocation.textContent=cfg.Location||"";
+  state.roundNumber=parseInt(cfg.Round,10)||1;
+  eventRound.textContent=`Round ${state.roundNumber}`;
+  state.roundOpen=String(cfg.RoundOpen).toUpperCase()==="YES";
+  roundStatus.textContent=state.roundOpen?"● OPEN":"● CLOSED";
+  roundStatus.className="round-status "+(state.roundOpen?"round-open":"round-closed");
+
+  startEvent.textContent=cfg.EventName||"";
+  startLocation.textContent=cfg.Location||"";
+  startRound.textContent=`Round ${state.roundNumber}`;
+}
+
+async function loadJudge(){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
 
   j.table.rows.forEach(row=>{
-    const name=row.c[0]?.v;
-    const token=row.c[1]?.v;
-    const active=String(row.c[2]?.v).toUpperCase();
-    if(name===judgeParam && token===tokenParam && active==="YES"){
+    if(row.c[0]?.v===judgeParam &&
+       row.c[1]?.v===tokenParam &&
+       String(row.c[2]?.v).toUpperCase()==="YES"){
       state.accessGranted=true;
       judge.value=judgeParam;
       judgeLabel.textContent="Judge: "+judgeParam;
+      startJudge.textContent="Judge: "+judgeParam;
     }
   });
 
@@ -305,12 +362,11 @@ async function loadJudgeAuth(){
   }
 }
 
-/* LOAD COMPETITORS */
 async function loadCompetitors(){
-  const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
-  const j = parseGViz(await r.text());
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
 
-  state.competitors = j.table.rows.map(row=>({
+  state.competitors=j.table.rows.map(row=>({
     order:Number(row.c[0]?.v||0),
     number:row.c[1]?.v,
     name:row.c[2]?.v,
@@ -337,18 +393,20 @@ function renderCompetitor(){
   nextBtn.disabled=state.locked||state.index===state.competitors.length-1;
 }
 
-/* NAV */
+startBtn.onclick=()=>{
+  startOverlay.style.display="none";
+  document.body.classList.remove("locked-ui");
+};
+
 prevBtn.onclick=()=>{ if(!state.locked&&state.index>0){state.index--;renderCompetitor();}};
 nextBtn.onclick=()=>{ if(!state.locked&&state.index<state.competitors.length-1){state.index++;renderCompetitor();}};
 
-/* SLIDER */
 slider.oninput=()=>{
   const v=+slider.value;
   scoreText.textContent=v.toFixed(1);
   score.value=v.toFixed(1);
 };
 
-/* SUBMIT */
 let pressStart=null;
 submitBtn.onpointerdown=e=>{
   if(!state.roundOpen||!state.accessGranted||state.locked) return;
@@ -356,14 +414,11 @@ submitBtn.onpointerdown=e=>{
 };
 submitBtn.onpointerup=()=>{
   if(!pressStart) return;
-  if(Date.now()-pressStart>=350) submitScore();
+  if(Date.now()-pressStart>=350) submit();
   pressStart=null;
 };
 
-function submitScore(){
-  if(!state.hasUserInteracted) return;
-  if(!score.value) return;
-
+function submit(){
   fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
   state.locked=true;
   slider.disabled=prevBtn.disabled=nextBtn.disabled=true;
@@ -400,13 +455,11 @@ function reset(){
   renderCompetitor();
 }
 
-/* BOOT */
 (async()=>{
   try{
-    await loadEventConfig();
-    await loadJudgeAuth();
+    await loadEvent();
+    await loadJudge();
     await loadCompetitors();
-    submitBtn.classList.remove("disabled");
   }catch(e){console.error(e);}
 })();
 </script>
