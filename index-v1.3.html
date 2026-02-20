@@ -401,11 +401,17 @@ startBtn.onclick=()=>{
 prevBtn.onclick=()=>{ if(!state.locked&&state.index>0){state.index--;renderCompetitor();}};
 nextBtn.onclick=()=>{ if(!state.locked&&state.index<state.competitors.length-1){state.index++;renderCompetitor();}};
 
-slider.oninput=()=>{
-  const v=+slider.value;
-  scoreText.textContent=v.toFixed(1);
-  score.value=v.toFixed(1);
+function updateScoreDisplay(v){
+  scoreText.textContent = Number(v).toFixed(1);
+  score.value = Number(v).toFixed(1);
+}
+
+slider.oninput = () => {
+  updateScoreDisplay(slider.value);
 };
+
+// Initialize score immediately so 5.0 works without movement
+updateScoreDisplay(slider.value);
 
 let pressStart=null;
 submitBtn.onpointerdown=e=>{
