@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CP Freestyle – Judge Panel (v1.4)</title>
+
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #111;
+  color: #fff;
+  text-align: center;
+  padding: 14px;
+  margin:0;
+}
+
+/* Blur wrapper */
+#appWrapper.blurred {
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* START ROUND Overlay */
+.start-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:100;
+}
+
+.start-overlay.hidden { display:none; }
+
+.start-box {
+  background:#1c1c1c;
+  padding:24px;
+  border-radius:14px;
+  width:90%;
+  max-width:420px;
+}
+
+.start-box h2 { margin-bottom:12px; }
+
+.start-box button {
+  margin-top:16px;
+  padding:12px 20px;
+  border-radius:10px;
+  border:none;
+  background:#00c853;
+  color:#fff;
+  font-size:18px;
+}
+
+/* Event Info */
+.event-info { margin-bottom: 8px; }
+.event-name { font-size: 18px; font-weight: 600; }
+.event-location,
+.event-round { font-size: 13px; color: #aaa; }
+
+.round-status { font-size: 12px; margin-top: 2px; }
+.round-open { color: #00e676; }
+.round-closed,
+.access-denied { color: #ff5252; }
+
+/* Judge */
+.judge-label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: #aaa;
+}
+
+/* Competitor */
+.competitor-nav {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.nav-btn {
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: #222;
+  color: #fff;
+}
+.nav-btn:disabled { opacity: 0.3; }
+
+.competitor-box { flex: 1; }
+.competitor-number { font-size: 40px; font-weight: bold; }
+
+.name-display {
+  font-size: 16px;
+  color: #8bc34a;
+  min-height: 20px;
+}
+
+.move-display {
+  font-size: 13px;
+  color: #ccc;
+  margin-top: 4px;
+  line-height: 1.4;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+/* Success Overlay */
+.success-overlay {
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  pointer-events:none;
+  z-index:10;
+}
+.success-overlay.hidden { display:none; }
+
+.success-tick {
+  width:96px;
+  height:96px;
+  margin-bottom:10px;
+  animation: tickFade 3s ease-out forwards;
+}
+
+.success-tick svg {
+  width:100%;
+  height:100%;
+  stroke:#00e676;
+  stroke-width:8;
+  fill:none;
+}
+
+@keyframes tickFade {
+  0% { opacity:1; transform:scale(1); }
+  60% { opacity:0.6; transform:scale(0.95); }
+  100% { opacity:0; transform:scale(0.9); }
+}
+
+.countdown {
+  font-size: 70px;
+  font-weight: bold;
+  color: #ffeb3b;
+  background: rgba(0,0,0,0.65);
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+@keyframes pulse {
+  0% { transform:scale(1); }
+  40% { transform:scale(1.18); }
+  100% { transform:scale(1); }
+}
+
+/* Score */
+.score-display {
+  font-size: 80px;
+  font-weight: bold;
+  margin: 18px 0 12px;
+}
+
+.slider {
+  width:100%;
+  height:22px;
+  appearance:none;
+  border-radius:11px;
+  background: linear-gradient(to right,#c62828,#f9a825,#2e7d32);
+}
+
+.slider::-webkit-slider-thumb {
+  appearance:none;
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:#fff;
+}
+
+/* Panel Drawer */
+.panel-drawer { margin-top:14px; text-align:left; }
+
+.panel-toggle {
+  background:#222;
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  width:100%;
+  text-align:left;
+}
+
+.panel-content { margin-top:8px; font-size:14px; color:#ccc; }
+.panel-content.hidden { display:none; }
+
+/* Submit */
+button.submit {
+  margin-top: 12px;
+  font-size: 22px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #00c853;
+  color: #fff;
+  width: 100%;
+  -webkit-user-select:none;
+  user-select:none;
+}
+button.disabled { background:#555; }
+</style>
+</head>
+
+<body>
+
+<div id="startOverlay" class="start-overlay">
+  <div class="start-box">
+    <h2 id="startEventName"></h2>
+    <div id="startLocation"></div>
+    <div id="startRound"></div>
+    <button id="startBtn">START ROUND</button>
+  </div>
+</div>
+
+<div id="appWrapper">
+
+<div class="event-info">
+  <div class="event-name" id="eventName"></div>
+  <div class="event-location" id="eventLocation"></div>
+  <div class="event-round" id="eventRound"></div>
+  <div class="round-status" id="roundStatus"></div>
+</div>
+
+<div class="judge-label" id="judgeLabel">Judge: —</div>
+
+<form id="scoreForm">
+<input type="hidden" id="judge" name="entry.759726589">
+<input type="hidden" id="competitor" name="entry.1094004330">
+<input type="hidden" id="score" name="entry.1544079831">
+<input type="hidden" id="round" name="entry.1291687984">
+
+<div class="competitor-nav">
+  <button type="button" class="nav-btn" id="prevBtn">◀</button>
+
+  <div class="competitor-box">
+    <div class="competitor-number" id="competitorDisplay">—</div>
+    <div class="name-display" id="nameDisplay"></div>
+    <div class="move-display" id="moveDisplay"></div>
+  </div>
+
+  <button type="button" class="nav-btn" id="nextBtn">▶</button>
+
+  <div class="success-overlay hidden" id="successOverlay">
+    <div class="success-tick">
+      <svg viewBox="0 0 52 52">
+        <path d="M14 27 L22 35 L38 17"/>
+      </svg>
+    </div>
+    <div class="countdown" id="countdownText">3</div>
+  </div>
+</div>
+
+<div class="score-display" id="scoreText">5.0</div>
+<input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
+
+<div class="panel-drawer">
+  <button type="button" id="panelToggle" class="panel-toggle">
+    ▼ Panel Insights
+  </button>
+  <div id="panelContent" class="panel-content hidden">
+    <div id="yourScoreLine"></div>
+    <div id="panelAverageLine"></div>
+  </div>
+</div>
+
+<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
+</form>
+
+</div>
+
+<script>
+const SHEET_ID="1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+const EVENT_CONFIG_GID="686531230";
+const COMPETITOR_GID="51112637";
+const JUDGES_GID="1213944419";
+const RESPONSES_GID="152250623";
+const FORM_ENDPOINT="https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
+
+const params=new URLSearchParams(location.search);
+const judgeParam=params.get("judge");
+const tokenParam=params.get("token");
+
+let state={
+  roundNumber:1,
+  roundOpen:false,
+  accessGranted:false,
+  competitors:[],
+  index:0,
+  activeJudgeCount:0,
+  locked:false
+};
+
+function parseGViz(t){return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));}
+
+/* Load Event Config */
+async function loadEventConfig(){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
+  const cfg={};
+  j.table.rows.forEach(row=>cfg[row.c[0].v]=row.c[1]?.v ?? "");
+
+  state.roundNumber=parseInt(cfg.Round,10)||1;
+  state.roundOpen=String(cfg.RoundOpen).toUpperCase()==="YES";
+
+  eventName.textContent=cfg.EventName||"";
+  eventLocation.textContent=cfg.Location||"";
+  eventRound.textContent=`Round ${state.roundNumber}`;
+  roundStatus.textContent=state.roundOpen?"● OPEN":"● CLOSED";
+  roundStatus.className="round-status "+(state.roundOpen?"round-open":"round-closed");
+
+  startEventName.textContent=cfg.EventName;
+  startLocation.textContent=cfg.Location;
+  startRound.textContent=`Round ${state.roundNumber}`;
+}
+
+/* Load Judges */
+async function loadJudges(){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
+
+  j.table.rows.forEach(row=>{
+    const name=row.c[0]?.v;
+    const token=row.c[1]?.v;
+    const active=String(row.c[2]?.v).toUpperCase();
+
+    if(active==="YES") state.activeJudgeCount++;
+
+    if(name===judgeParam && token===tokenParam && active==="YES"){
+      state.accessGranted=true;
+      judge.value=name;
+      judgeLabel.textContent="Judge: "+name;
+    }
+  });
+
+  if(!state.accessGranted){
+    roundStatus.textContent="Access denied";
+    roundStatus.className="round-status access-denied";
+    throw new Error("Auth failed");
+  }
+}
+
+/* Load Competitors */
+async function loadCompetitors(){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
+
+  state.competitors=j.table.rows.map(row=>({
+    order:Number(row.c[0]?.v||0),
+    number:row.c[1]?.v,
+    name:row.c[2]?.v,
+    move:row.c[state.roundNumber+2]?.v || ""
+  })).sort((a,b)=>a.order-b.order);
+
+  updateCompetitor();
+}
+
+function updateCompetitor(){
+  const c=state.competitors[state.index];
+  competitor.value=c.number;
+  competitorDisplay.textContent=c.number;
+  nameDisplay.textContent=c.name;
+  moveDisplay.textContent=c.move;
+}
+
+prevBtn.onclick=()=>{if(state.index>0&&!state.locked){state.index--;updateCompetitor();}};
+nextBtn.onclick=()=>{if(state.index<state.competitors.length-1&&!state.locked){state.index++;updateCompetitor();}};
+
+/* Slider */
+slider.oninput=()=>{
+  const v=parseFloat(slider.value).toFixed(1);
+  scoreText.textContent=v;
+  score.value=v;
+};
+
+/* Submit */
+let pressStart=null;
+submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
+  if(!state.roundOpen||!state.accessGranted||state.locked)return;
+  e.preventDefault();
+  pressStart=Date.now();
+};
+submitBtn.onmouseup=submitBtn.ontouchend=()=>{
+  if(!pressStart)return;
+  if(Date.now()-pressStart>=350) submitScore();
+  pressStart=null;
+};
+
+async function submitScore(){
+  round.value=state.roundNumber;
+  fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
+  yourScoreLine.textContent=`Your Score: ${score.value}`;
+  await fetchPanelData(competitor.value);
+  state.locked=true;
+  successOverlay.classList.remove("hidden");
+  startCountdown();
+}
+
+async function fetchPanelData(compNumber){
+  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
+  const j=parseGViz(await r.text());
+  const scores=[];
+  j.table.rows.forEach(row=>{
+    if(row.c[1]?.v==compNumber &&
+       String(row.c[4]?.v)==String(state.roundNumber)){
+      scores.push(Number(row.c[2]?.v));
+    }
+  });
+  if(scores.length===state.activeJudgeCount){
+    const mean=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+    panelAverageLine.textContent=`Panel Average: ${mean}`;
+  }else{
+    panelAverageLine.textContent="Panel Average: Waiting for panel…";
+  }
+}
+
+function startCountdown(){
+  let n=3;
+  updateCountdown(n);
+  const iv=setInterval(()=>{
+    n--;
+    if(n===0){clearInterval(iv);reset();}
+    else updateCountdown(n);
+  },1000);
+}
+
+function updateCountdown(v){
+  countdownText.textContent=v;
+  countdownText.style.animation="none";
+  countdownText.offsetHeight;
+  countdownText.style.animation="pulse 1s ease-in-out";
+}
+
+function reset(){
+  successOverlay.classList.add("hidden");
+  state.locked=false;
+  slider.value=5;
+  scoreText.textContent="5.0";
+  state.index++;
+  if(state.index>=state.competitors.length) state.index=state.competitors.length-1;
+  updateCompetitor();
+}
+
+/* Panel Drawer */
+panelToggle.onclick=()=>{
+  panelContent.classList.toggle("hidden");
+  panelToggle.textContent=panelContent.classList.contains("hidden")
+    ?"▼ Panel Insights":"▲ Panel Insights";
+};
+
+/* Start Overlay */
+startBtn.onclick=()=>{
+  startOverlay.classList.add("hidden");
+  appWrapper.classList.remove("blurred");
+};
+
+(async()=>{
+  try{
+    appWrapper.classList.add("blurred");
+    await loadEventConfig();
+    await loadJudges();
+    await loadCompetitors();
+  }catch(e){console.error(e);}
+})();
+</script>
+
+</body>
+</html>
