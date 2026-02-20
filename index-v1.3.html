@@ -1,8 +1,8 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.3.html
-Version: v1.3 (STABLE – fixed column auth)
-Date: 2026-02-19
+Version: v1.3 (STABLE – cleaned structure)
+Date: 2026-02-20
 
 Notes:
 - Fixed-column Google GViz parsing (NO header-detect)
@@ -12,6 +12,7 @@ Notes:
 - Move displayed based on Round number (Move_R1 … Move_R6)
 - Phase A UX: green tick + pulsing 3–2–1 countdown
 - Auto-advance competitor after submit
+- Internal code reorganised for clarity (NO behaviour change)
 -->
 
 <!DOCTYPE html>
@@ -22,6 +23,9 @@ Notes:
 <title>CP Freestyle – Judge Panel (v1.3)</title>
 
 <style>
+/* ===============================
+   BASE
+================================= */
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: #111;
@@ -30,7 +34,9 @@ body {
   padding: 14px;
 }
 
-/* ---------- Event Info ---------- */
+/* ===============================
+   EVENT INFO
+================================= */
 .event-info { margin-bottom: 8px; }
 .event-name { font-size: 18px; font-weight: 600; }
 .event-location,
@@ -41,14 +47,18 @@ body {
 .round-closed,
 .access-denied { color: #ff5252; }
 
-/* ---------- Judge ---------- */
+/* ===============================
+   JUDGE LABEL
+================================= */
 .judge-label {
   margin-bottom: 6px;
   font-size: 14px;
   color: #aaa;
 }
 
-/* ---------- Competitor Navigation ---------- */
+/* ===============================
+   COMPETITOR NAV
+================================= */
 .competitor-nav {
   position: relative;
   display: flex;
@@ -68,7 +78,6 @@ body {
 }
 .nav-btn:disabled { opacity: 0.3; }
 
-/* ---------- Competitor ---------- */
 .competitor-box { flex: 1; }
 .competitor-number { font-size: 42px; font-weight: bold; }
 
@@ -88,7 +97,9 @@ body {
   margin-right: auto;
 }
 
-/* ---------- Success Overlay ---------- */
+/* ===============================
+   SUCCESS OVERLAY
+================================= */
 .success-overlay {
   position: absolute;
   inset: 0;
@@ -133,7 +144,9 @@ body {
   100% { transform: scale(1); }
 }
 
-/* ---------- Score ---------- */
+/* ===============================
+   SCORE
+================================= */
 .score-display {
   font-size: 80px;
   font-weight: bold;
@@ -156,7 +169,9 @@ body {
   background: #fff;
 }
 
-/* ---------- Penalties ---------- */
+/* ===============================
+   PENALTIES
+================================= */
 .penalties {
   margin-top: 8px;
   font-size: 16px;
@@ -169,7 +184,9 @@ body {
   margin-top: 4px;
 }
 
-/* ---------- Submit ---------- */
+/* ===============================
+   SUBMIT
+================================= */
 button.submit {
   margin-top: 12px;
   font-size: 22px;
@@ -186,6 +203,9 @@ button.disabled { background: #555; }
 
 <body>
 
+<!-- ===============================
+     EVENT HEADER
+================================= -->
 <div class="event-info">
   <div class="event-name" id="eventName">Loading event…</div>
   <div class="event-location" id="eventLocation"></div>
@@ -200,6 +220,9 @@ button.disabled { background: #555; }
 <input type="hidden" id="competitor" name="entry.1094004330">
 <input type="hidden" id="score" name="entry.1544079831">
 
+<!-- ===============================
+     COMPETITOR SECTION
+================================= -->
 <div class="competitor-nav">
   <button type="button" class="nav-btn" id="prevBtn">◀ PREV</button>
 
@@ -217,6 +240,9 @@ button.disabled { background: #555; }
   </div>
 </div>
 
+<!-- ===============================
+     SCORE SECTION
+================================= -->
 <div class="score-display" id="scoreText">5.0</div>
 <input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
 
@@ -232,7 +258,10 @@ button.disabled { background: #555; }
 </form>
 
 <script>
-/* ---------- CONFIG ---------- */
+
+/* =========================================================
+   CONFIG
+========================================================= */
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 const EVENT_CONFIG_GID = "686531230";
 const COMPETITOR_GID = "51112637";
@@ -240,45 +269,74 @@ const JUDGES_GID = "1213944419";
 const FORM_ENDPOINT =
   "https://docs.google.com/forms/d/e/1FAIpQLSfb2JIBic9mirDg9_CX80br3jmQ74vaLM3BJITnUDEXfmi0pg/formResponse";
 
-/* ---------- URL Params ---------- */
+/* =========================================================
+   STATE
+========================================================= */
+const state = {
+  roundNumber: 1,
+  roundOpen: false,
+  accessGranted: false,
+  locked: false,
+  competitors: [],
+  index: 0
+};
+
+/* =========================================================
+   DOM REFERENCES
+========================================================= */
 const params = new URLSearchParams(location.search);
 const judgeParam = params.get("judge");
 const tokenParam = params.get("token");
 
-/* ---------- State ---------- */
-let roundNumber = 1;
-let roundOpen = false;
-let accessGranted = false;
-let locked = false;
-let competitors = [];
-let index = 0;
+const dom = {
+  eventName,
+  eventLocation,
+  eventRound,
+  roundStatus,
+  judgeLabel,
+  competitorDisplay,
+  nameDisplay,
+  moveDisplay,
+  prevBtn,
+  nextBtn,
+  slider,
+  scoreText,
+  submitBtn,
+  successOverlay,
+  countdownText
+};
 
-/* ---------- Helpers ---------- */
+/* =========================================================
+   HELPERS
+========================================================= */
 function parseGViz(text){
   return JSON.parse(text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1));
 }
 function haptic(p=10){ if(navigator.vibrate) navigator.vibrate(p); }
 
-/* ---------- Event Config ---------- */
+/* =========================================================
+   DATA LOADERS
+========================================================= */
 async function loadEventConfig(){
   const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`);
   const j = parseGViz(await r.text());
   const cfg = {};
   j.table.rows.forEach(row => cfg[row.c[0].v] = row.c[1]?.v ?? "");
 
-  eventName.textContent = cfg.EventName || "";
-  eventLocation.textContent = cfg.Location || "";
+  dom.eventName.textContent = cfg.EventName || "";
+  dom.eventLocation.textContent = cfg.Location || "";
 
-  roundNumber = parseInt(cfg.Round, 10);
-  if (!Number.isInteger(roundNumber)) roundNumber = 1;
+  state.roundNumber = parseInt(cfg.Round, 10);
+  if (!Number.isInteger(state.roundNumber)) state.roundNumber = 1;
 
-  eventRound.textContent = `Round ${roundNumber}`;
-  roundOpen = String(cfg.RoundOpen).toUpperCase() === "YES";
-  roundStatus.textContent = roundOpen ? "● OPEN" : "● CLOSED";
-  roundStatus.className = "round-status " + (roundOpen ? "round-open" : "round-closed");
+  dom.eventRound.textContent = `Round ${state.roundNumber}`;
+  state.roundOpen = String(cfg.RoundOpen).toUpperCase() === "YES";
+
+  dom.roundStatus.textContent = state.roundOpen ? "● OPEN" : "● CLOSED";
+  dom.roundStatus.className =
+    "round-status " + (state.roundOpen ? "round-open" : "round-closed");
 }
 
-/* ---------- Judge Auth (FIXED COLUMNS) ---------- */
 async function loadJudgeAuth(){
   const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
   const j = parseGViz(await r.text());
@@ -289,25 +347,24 @@ async function loadJudgeAuth(){
     const active = String(row.c[2]?.v).toUpperCase();
 
     if(name === judgeParam && token === tokenParam && active === "YES"){
-      accessGranted = true;
+      state.accessGranted = true;
       judge.value = judgeParam;
-      judgeLabel.textContent = "Judge: " + judgeParam;
+      dom.judgeLabel.textContent = "Judge: " + judgeParam;
     }
   });
 
-  if(!accessGranted){
-    roundStatus.textContent = "Access denied";
-    roundStatus.className = "round-status access-denied";
+  if(!state.accessGranted){
+    dom.roundStatus.textContent = "Access denied";
+    dom.roundStatus.className = "round-status access-denied";
     throw new Error("Access denied");
   }
 }
 
-/* ---------- Competitors ---------- */
 async function loadCompetitors(){
   const r = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
   const j = parseGViz(await r.text());
 
-  competitors = j.table.rows.map(row=>({
+  state.competitors = j.table.rows.map(row=>({
     order: Number(row.c[0]?.v || 0),
     number: row.c[1]?.v,
     name: row.c[2]?.v,
@@ -321,91 +378,136 @@ async function loadCompetitors(){
     }
   })).sort((a,b)=>a.order-b.order);
 
-  updateCompetitor();
+  renderCompetitor();
 }
 
-/* ---------- UI ---------- */
-function updateCompetitor(){
-  const c = competitors[index];
+/* =========================================================
+   RENDER
+========================================================= */
+function renderCompetitor(){
+  const c = state.competitors[state.index];
   competitor.value = c.number;
-  competitorDisplay.textContent = c.number;
-  nameDisplay.textContent = c.name;
-  moveDisplay.textContent = c.moves[roundNumber] || "";
-  prevBtn.disabled = locked || index === 0;
-  nextBtn.disabled = locked || index === competitors.length - 1;
+  dom.competitorDisplay.textContent = c.number;
+  dom.nameDisplay.textContent = c.name;
+  dom.moveDisplay.textContent = c.moves[state.roundNumber] || "";
+
+  dom.prevBtn.disabled = state.locked || state.index === 0;
+  dom.nextBtn.disabled = state.locked || state.index === state.competitors.length - 1;
 }
 
-/* ---------- Navigation ---------- */
-prevBtn.onclick=()=>{ if(!locked&&index>0){ index--; updateCompetitor(); haptic(5); } };
-nextBtn.onclick=()=>{ if(!locked&&index<competitors.length-1){ index++; updateCompetitor(); haptic(5); } };
-
-/* ---------- Slider ---------- */
-let last=5;
-slider.oninput=()=>{
-  const v=+slider.value;
-  scoreText.textContent=v.toFixed(1);
-  score.value=v.toFixed(1);
-  scoreText.style.color=`hsl(${(v/10)*120},90%,60%)`;
-  if(Math.abs(v-last)>=0.5){ haptic(10); last=v; }
+/* =========================================================
+   NAVIGATION
+========================================================= */
+dom.prevBtn.onclick = () => {
+  if(!state.locked && state.index > 0){
+    state.index--;
+    renderCompetitor();
+    haptic(5);
+  }
 };
 
-/* ---------- Submit ---------- */
-let pressStart=null;
-submitBtn.onmousedown=submitBtn.ontouchstart=e=>{
-  if(!roundOpen||!accessGranted||locked) return;
-  e.preventDefault(); pressStart=Date.now();
+dom.nextBtn.onclick = () => {
+  if(!state.locked && state.index < state.competitors.length - 1){
+    state.index++;
+    renderCompetitor();
+    haptic(5);
+  }
 };
-submitBtn.onmouseup=submitBtn.ontouchend=()=>{
+
+/* =========================================================
+   SLIDER
+========================================================= */
+let lastValue = 5;
+dom.slider.oninput = () => {
+  const v = +dom.slider.value;
+  dom.scoreText.textContent = v.toFixed(1);
+  score.value = v.toFixed(1);
+  dom.scoreText.style.color = `hsl(${(v/10)*120},90%,60%)`;
+
+  if(Math.abs(v-lastValue)>=0.5){
+    haptic(10);
+    lastValue = v;
+  }
+};
+
+/* =========================================================
+   SUBMIT
+========================================================= */
+let pressStart = null;
+
+dom.submitBtn.onmousedown =
+dom.submitBtn.ontouchstart = e => {
+  if(!state.roundOpen || !state.accessGranted || state.locked) return;
+  e.preventDefault();
+  pressStart = Date.now();
+};
+
+dom.submitBtn.onmouseup =
+dom.submitBtn.ontouchend = () => {
   if(!pressStart) return;
-  if(Date.now()-pressStart>=350) submit();
-  pressStart=null;
+  if(Date.now() - pressStart >= 350) submitScore();
+  pressStart = null;
 };
 
-function submit(){
+function submitScore(){
   fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
   haptic([25,30,25]);
-  locked=true;
-  slider.disabled=prevBtn.disabled=nextBtn.disabled=true;
-  successOverlay.classList.remove("hidden");
+
+  state.locked = true;
+  dom.slider.disabled = dom.prevBtn.disabled = dom.nextBtn.disabled = true;
+
+  dom.successOverlay.classList.remove("hidden");
   startCountdown();
 }
 
 function startCountdown(){
-  let n=3;
+  let n = 3;
   updateCountdown(n);
-  const iv=setInterval(()=>{
+
+  const iv = setInterval(()=>{
     n--;
-    if(n===0){ clearInterval(iv); resetAndAdvance(); }
-    else updateCountdown(n);
+    if(n===0){
+      clearInterval(iv);
+      resetAndAdvance();
+    } else {
+      updateCountdown(n);
+    }
   },1000);
 }
 
 function updateCountdown(v){
-  countdownText.textContent=v;
-  countdownText.style.animation="none";
-  countdownText.offsetHeight;
-  countdownText.style.animation="pulse 1s ease-in-out";
+  dom.countdownText.textContent = v;
+  dom.countdownText.style.animation="none";
+  dom.countdownText.offsetHeight;
+  dom.countdownText.style.animation="pulse 1s ease-in-out";
 }
 
 function resetAndAdvance(){
-  successOverlay.classList.add("hidden");
-  locked=false;
-  slider.disabled=false;
-  slider.value=5;
-  scoreText.textContent="5.0";
-  score.value="5.0";
+  dom.successOverlay.classList.add("hidden");
+  state.locked = false;
+
+  dom.slider.disabled = false;
+  dom.slider.value = 5;
+  dom.scoreText.textContent = "5.0";
+  score.value = "5.0";
+
   document.querySelectorAll("input[type=checkbox]").forEach(cb=>cb.checked=false);
-  if(index<competitors.length-1) index++;
-  updateCompetitor();
+
+  if(state.index < state.competitors.length - 1){
+    state.index++;
+  }
+  renderCompetitor();
 }
 
-/* ---------- BOOT ---------- */
+/* =========================================================
+   BOOTSTRAP
+========================================================= */
 (async()=>{
   try{
     await loadEventConfig();
     await loadJudgeAuth();
     await loadCompetitors();
-    submitBtn.classList.remove("disabled");
+    dom.submitBtn.classList.remove("disabled");
   }catch(e){
     console.error(e);
   }
