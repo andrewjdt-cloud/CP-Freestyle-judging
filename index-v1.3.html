@@ -235,7 +235,18 @@ button.disabled { background: #555; }
   <button type="button" class="nav-btn" id="nextBtn">NEXT ▶</button>
 
   <div class="success-overlay hidden" id="successOverlay">
-    <div class="success-tick">✔</div>
+    <div class="success-tick">
+  <svg viewBox="0 0 24 24" width="96" height="96" class="tick-svg">
+    <path
+      d="M20 6L9 17l-5-5"
+      fill="none"
+      stroke="#00e676"
+      stroke-width="3"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+</div>
     <div class="countdown" id="countdownText">3</div>
   </div>
 </div>
