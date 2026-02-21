@@ -1,19 +1,20 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.4.html
-Version: v1.4 (Panel Insights + History + Stable Polling)
+Version: v1.4 (Stable Panel Insights + History)
 Date: 2026-02-20
 
 Features:
 - EventName stored (entry.720710451)
 - Round stored (entry.1291687984)
+- Stable slider submission
 - SVG tick (iOS + Android safe)
 - START ROUND overlay
-- Stable slider submission
 - Penalties restored + cleared
-- Panel average polling (2s up to 60s)
-- Shows average when all active judges submit
-- Shows last 5 historic competitors
+- Panel polling (2s up to 60s)
+- Shows panel average when all active judges submit
+- Last 5 historic competitors
+- All values formatted to 1 decimal place
 -->
 
 <!DOCTYPE html>
@@ -21,7 +22,6 @@ Features:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>CP Freestyle – Judge Panel (v1.4)</title>
 
 <style>
@@ -34,6 +34,7 @@ body{
   text-align:center;
 }
 
+/* Blur */
 #appWrapper.blurred{
   filter:blur(6px);
   pointer-events:none;
@@ -316,7 +317,8 @@ index:0,
 activeJudgeCount:0,
 locked:false,
 eventName:"",
-history:[]
+history:[],
+lastSubmittedScore:null
 };
 
 function parseGViz(t){
@@ -401,9 +403,9 @@ nextBtn.onclick=()=>{if(state.index<state.competitors.length-1&&!state.locked){s
 /* SLIDER */
 slider.oninput=()=>{
 scoreText.textContent=parseFloat(slider.value).toFixed(1);
-score.value=slider.value;
+score.value=parseFloat(slider.value).toFixed(1);
 };
-score.value=slider.value;
+score.value=parseFloat(slider.value).toFixed(1);
 
 /* SUBMIT */
 let pressStart=null;
@@ -421,12 +423,14 @@ pressStart=null;
 async function submitScore(){
 round.value=state.roundNumber;
 eventNameField.value=state.eventName;
-score.value=slider.value;
+
+state.lastSubmittedScore=parseFloat(slider.value).toFixed(1);
+score.value=state.lastSubmittedScore;
 
 fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
 
 currentInsight.textContent=
-`R${state.roundNumber} | Comp ${competitor.value} | You: ${score.value} | Panel: Waiting…`;
+`R${state.roundNumber} | Comp ${competitor.value} | You: ${state.lastSubmittedScore} | Panel: Waiting…`;
 
 pollPanelAverage(competitor.value);
 
@@ -437,13 +441,11 @@ startCountdown();
 
 /* PANEL POLLING */
 function pollPanelAverage(compNumber){
-
 let elapsed=0;
 const interval=2000;
 const maxTime=60000;
 
 const timer=setInterval(async()=>{
-
 const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
 const j=parseGViz(await r.text());
 
@@ -451,7 +453,6 @@ const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""
 const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
 
 const scores=[];
-
 j.table.rows.forEach(row=>{
 const competitorVal=row.c[h["competitornumber"]]?.v;
 const scoreVal=row.c[h["score"]]?.v;
@@ -463,10 +464,12 @@ scores.push(Number(scoreVal));
 
 if(scores.length===state.activeJudgeCount){
 clearInterval(timer);
-const mean=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+const mean=parseFloat(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+
 currentInsight.textContent=
-`R${state.roundNumber} | Comp ${compNumber} | You: ${score.value} | Panel: ${mean}`;
-addToHistory(state.roundNumber,compNumber,score.value,mean);
+`R${state.roundNumber} | Comp ${compNumber} | You: ${state.lastSubmittedScore} | Panel: ${mean}`;
+
+addToHistory(state.roundNumber,compNumber,state.lastSubmittedScore,mean);
 }
 
 elapsed+=interval;
@@ -476,7 +479,12 @@ if(elapsed>=maxTime) clearInterval(timer);
 }
 
 function addToHistory(round,comp,yourScore,panelAvg){
-state.history.unshift({round,comp,yourScore,panelAvg});
+state.history.unshift({
+round,
+comp,
+yourScore:parseFloat(yourScore).toFixed(1),
+panelAvg:parseFloat(panelAvg).toFixed(1)
+});
 if(state.history.length>5) state.history.pop();
 renderHistory();
 }
@@ -508,7 +516,7 @@ successOverlay.classList.add("hidden");
 state.locked=false;
 slider.value=5;
 scoreText.textContent="5.0";
-score.value=slider.value;
+score.value="5.0";
 document.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.checked=false);
 if(state.index<state.competitors.length-1) state.index++;
 updateCompetitor();
