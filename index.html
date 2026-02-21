@@ -451,33 +451,48 @@ async function submitScore(){
 
 /* Panel Average */
 async function fetchPanelData(compNumber){
-  const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
-  const j=parseGViz(await r.text());
 
-  const headers=j.table.cols.map(c=>c.label);
-  const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
+  const r = await fetch(
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`
+  );
 
-  const scores=[];
+  const j = parseGViz(await r.text());
+
+  // Normalize headers
+  const headers = j.table.cols.map(c =>
+    c.label.trim().toLowerCase().replace(/\s+/g,"")
+  );
+
+  const h = Object.fromEntries(headers.map((k,i)=>[k,i]));
+
+  const scores = [];
 
   j.table.rows.forEach(row=>{
-    const competitorVal=row.c[h["Competitor number"]]?.v;
-    const scoreVal=row.c[h["Score"]]?.v;
-    const roundVal=row.c[h["Round"]]?.v;
+
+    const competitorVal = row.c[h["competitornumber"]]?.v;
+    const scoreVal      = row.c[h["score"]]?.v;
+    const roundVal      = row.c[h["round"]]?.v;
 
     if(
-      competitorVal==compNumber &&
-      String(roundVal)==String(state.roundNumber)
+      competitorVal == compNumber &&
+      String(roundVal) == String(state.roundNumber)
     ){
       scores.push(Number(scoreVal));
     }
   });
 
-  if(scores.length===state.activeJudgeCount){
-    const mean=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
-    panelAverageLine.textContent=
+  if(scores.length === state.activeJudgeCount){
+
+    const mean = (
+      scores.reduce((a,b)=>a+b,0) / scores.length
+    ).toFixed(1);
+
+    panelAverageLine.textContent =
       `Panel Average (Comp ${compNumber}, R${state.roundNumber}): ${mean}`;
+
   } else {
-    panelAverageLine.textContent=
+
+    panelAverageLine.textContent =
       `Panel Average (Comp ${compNumber}, R${state.roundNumber}): Waiting for panel…`;
   }
 }
@@ -502,6 +517,10 @@ function reset(){
   slider.value=5;
   scoreText.textContent="5.0";
   score.value=slider.value;
+
+    // Clear penalties
+  document.querySelectorAll('input[type=checkbox]')
+    .forEach(cb => cb.checked = false);
 
   if(state.index<state.competitors.length-1){
     state.index++;
@@ -539,3 +558,4 @@ startBtn.onclick=()=>{
 
 </body>
 </html>
+
