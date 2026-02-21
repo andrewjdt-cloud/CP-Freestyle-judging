@@ -473,6 +473,8 @@ async function fetchPanelData(compNumber){
     const scoreVal      = row.c[h["score"]]?.v;
     const roundVal      = row.c[h["round"]]?.v;
 
+    console.log("Scores:", scores.length, "Active Judges:", state.activeJudgeCount);
+    
     if(
       competitorVal == compNumber &&
       String(roundVal) == String(state.roundNumber)
@@ -558,4 +560,5 @@ startBtn.onclick=()=>{
 
 </body>
 </html>
+
 
