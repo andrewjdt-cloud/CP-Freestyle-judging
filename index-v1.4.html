@@ -1,3 +1,21 @@
+<!--
+CP Freestyle Judging System
+File: index-v1.4.html
+Version: v1.4 (Panel Insights + EventName + Stable Submission)
+Date: 2026-02-20
+
+Changes:
+- EventName stored (entry.720710451)
+- Round stored (entry.1291687984)
+- Panel Insights below Submit
+- Penalties restored
+- Slider default bug fixed
+- Panel average uses header-detect
+- Mean shown to 1 decimal
+- SVG tick (iOS + Android safe)
+- START ROUND overlay retained
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,32 +25,30 @@
 
 <style>
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #111;
-  color: #fff;
-  text-align: center;
-  padding: 14px;
+  font-family: system-ui, sans-serif;
+  background:#111;
+  color:#fff;
+  text-align:center;
+  padding:14px;
   margin:0;
 }
 
-/* Blur wrapper */
+/* Blur */
 #appWrapper.blurred {
-  filter: blur(6px);
-  pointer-events: none;
+  filter:blur(6px);
+  pointer-events:none;
 }
 
 /* START ROUND Overlay */
 .start-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
   z-index:100;
 }
-
 .start-overlay.hidden { display:none; }
 
 .start-box {
@@ -42,9 +58,6 @@ body {
   width:90%;
   max-width:420px;
 }
-
-.start-box h2 { margin-bottom:12px; }
-
 .start-box button {
   margin-top:16px;
   padding:12px 20px;
@@ -56,62 +69,47 @@ body {
 }
 
 /* Event Info */
-.event-info { margin-bottom: 8px; }
-.event-name { font-size: 18px; font-weight: 600; }
-.event-location,
-.event-round { font-size: 13px; color: #aaa; }
+.event-info { margin-bottom:8px; }
+.event-name { font-size:18px; font-weight:600; }
+.event-location, .event-round { font-size:13px; color:#aaa; }
 
-.round-status { font-size: 12px; margin-top: 2px; }
-.round-open { color: #00e676; }
-.round-closed,
-.access-denied { color: #ff5252; }
+.round-status { font-size:12px; margin-top:2px; }
+.round-open { color:#00e676; }
+.round-closed, .access-denied { color:#ff5252; }
 
-/* Judge */
-.judge-label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  color: #aaa;
-}
+.judge-label { margin-bottom:6px; font-size:14px; color:#aaa; }
 
 /* Competitor */
 .competitor-nav {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 10px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin:10px 0;
+  position:relative;
 }
-
 .nav-btn {
-  font-size: 16px;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: none;
-  background: #222;
-  color: #fff;
+  font-size:16px;
+  padding:8px 12px;
+  border-radius:10px;
+  border:none;
+  background:#222;
+  color:#fff;
 }
-.nav-btn:disabled { opacity: 0.3; }
+.nav-btn:disabled { opacity:0.3; }
 
-.competitor-box { flex: 1; }
-.competitor-number { font-size: 40px; font-weight: bold; }
-
-.name-display {
-  font-size: 16px;
-  color: #8bc34a;
-  min-height: 20px;
-}
-
+.competitor-number { font-size:40px; font-weight:bold; }
+.name-display { font-size:16px; color:#8bc34a; min-height:20px; }
 .move-display {
-  font-size: 13px;
-  color: #ccc;
-  margin-top: 4px;
-  line-height: 1.4;
-  white-space: normal;
-  word-wrap: break-word;
+  font-size:13px;
+  color:#ccc;
+  margin-top:4px;
+  line-height:1.4;
+  white-space:normal;
+  word-wrap:break-word;
 }
 
-/* Success Overlay */
+/* Success */
 .success-overlay {
   position:absolute;
   inset:0;
@@ -120,7 +118,6 @@ body {
   align-items:center;
   justify-content:center;
   pointer-events:none;
-  z-index:10;
 }
 .success-overlay.hidden { display:none; }
 
@@ -128,9 +125,8 @@ body {
   width:96px;
   height:96px;
   margin-bottom:10px;
-  animation: tickFade 3s ease-out forwards;
+  animation:tickFade 3s ease-out forwards;
 }
-
 .success-tick svg {
   width:100%;
   height:100%;
@@ -138,47 +134,37 @@ body {
   stroke-width:8;
   fill:none;
 }
-
 @keyframes tickFade {
-  0% { opacity:1; transform:scale(1); }
-  60% { opacity:0.6; transform:scale(0.95); }
-  100% { opacity:0; transform:scale(0.9); }
+  0%{opacity:1;transform:scale(1);}
+  100%{opacity:0;transform:scale(0.9);}
 }
 
 .countdown {
-  font-size: 70px;
-  font-weight: bold;
-  color: #ffeb3b;
-  background: rgba(0,0,0,0.65);
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
+  font-size:70px;
+  font-weight:bold;
+  color:#ffeb3b;
+  background:rgba(0,0,0,0.65);
+  width:90px;
+  height:90px;
+  border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
 }
 
-@keyframes pulse {
-  0% { transform:scale(1); }
-  40% { transform:scale(1.18); }
-  100% { transform:scale(1); }
-}
-
 /* Score */
 .score-display {
-  font-size: 80px;
-  font-weight: bold;
-  margin: 18px 0 12px;
+  font-size:80px;
+  font-weight:bold;
+  margin:18px 0 12px;
 }
-
 .slider {
   width:100%;
   height:22px;
   appearance:none;
   border-radius:11px;
-  background: linear-gradient(to right,#c62828,#f9a825,#2e7d32);
+  background:linear-gradient(to right,#c62828,#f9a825,#2e7d32);
 }
-
 .slider::-webkit-slider-thumb {
   appearance:none;
   width:36px;
@@ -187,9 +173,34 @@ body {
   background:#fff;
 }
 
-/* Panel Drawer */
-.panel-drawer { margin-top:14px; text-align:left; }
+/* Penalties */
+.penalties { margin-top:12px; font-size:16px; }
+.penalty-row {
+  display:flex;
+  justify-content:center;
+  gap:24px;
+  margin-top:4px;
+}
 
+/* Submit */
+button.submit {
+  margin-top:14px;
+  font-size:22px;
+  padding:12px;
+  border-radius:14px;
+  border:none;
+  background:#00c853;
+  color:#fff;
+  width:100%;
+  -webkit-user-select:none;
+  user-select:none;
+}
+
+/* Panel Drawer */
+.panel-drawer {
+  margin-top:18px;
+  text-align:left;
+}
 .panel-toggle {
   background:#222;
   color:#fff;
@@ -199,27 +210,15 @@ body {
   width:100%;
   text-align:left;
 }
-
-.panel-content { margin-top:8px; font-size:14px; color:#ccc; }
+.panel-content {
+  margin-top:8px;
+  font-size:14px;
+  color:#ccc;
+}
 .panel-content.hidden { display:none; }
 
-/* Submit */
-button.submit {
-  margin-top: 12px;
-  font-size: 22px;
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
-  background: #00c853;
-  color: #fff;
-  width: 100%;
-  -webkit-user-select:none;
-  user-select:none;
-}
-button.disabled { background:#555; }
 </style>
 </head>
-
 <body>
 
 <div id="startOverlay" class="start-overlay">
@@ -243,6 +242,7 @@ button.disabled { background:#555; }
 <div class="judge-label" id="judgeLabel">Judge: —</div>
 
 <form id="scoreForm">
+<input type="hidden" id="eventNameField" name="entry.720710451">
 <input type="hidden" id="judge" name="entry.759726589">
 <input type="hidden" id="competitor" name="entry.1094004330">
 <input type="hidden" id="score" name="entry.1544079831">
@@ -251,7 +251,7 @@ button.disabled { background:#555; }
 <div class="competitor-nav">
   <button type="button" class="nav-btn" id="prevBtn">◀</button>
 
-  <div class="competitor-box">
+  <div>
     <div class="competitor-number" id="competitorDisplay">—</div>
     <div class="name-display" id="nameDisplay"></div>
     <div class="move-display" id="moveDisplay"></div>
@@ -272,6 +272,16 @@ button.disabled { background:#555; }
 <div class="score-display" id="scoreText">5.0</div>
 <input class="slider" type="range" min="0" max="10" step="0.1" value="5" id="slider">
 
+<div class="penalties">
+  <div class="penalty-row">
+    <label><input type="checkbox" name="entry.753299047" value="Missed Entry (ME)"> ME</label>
+    <label><input type="checkbox" name="entry.753299047" value="Water Landing (WL)"> WL</label>
+    <label><input type="checkbox" name="entry.753299047" value="Move Failure (MF)"> MF</label>
+  </div>
+</div>
+
+<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
+
 <div class="panel-drawer">
   <button type="button" id="panelToggle" class="panel-toggle">
     ▼ Panel Insights
@@ -282,9 +292,7 @@ button.disabled { background:#555; }
   </div>
 </div>
 
-<button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
 </form>
-
 </div>
 
 <script>
@@ -306,10 +314,13 @@ let state={
   competitors:[],
   index:0,
   activeJudgeCount:0,
-  locked:false
+  locked:false,
+  eventName:""
 };
 
-function parseGViz(t){return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));}
+function parseGViz(t){
+  return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+}
 
 /* Load Event Config */
 async function loadEventConfig(){
@@ -318,18 +329,22 @@ async function loadEventConfig(){
   const cfg={};
   j.table.rows.forEach(row=>cfg[row.c[0].v]=row.c[1]?.v ?? "");
 
+  state.eventName=cfg.EventName || "";
   state.roundNumber=parseInt(cfg.Round,10)||1;
   state.roundOpen=String(cfg.RoundOpen).toUpperCase()==="YES";
 
-  eventName.textContent=cfg.EventName||"";
+  eventName.textContent=state.eventName;
   eventLocation.textContent=cfg.Location||"";
   eventRound.textContent=`Round ${state.roundNumber}`;
   roundStatus.textContent=state.roundOpen?"● OPEN":"● CLOSED";
   roundStatus.className="round-status "+(state.roundOpen?"round-open":"round-closed");
 
-  startEventName.textContent=cfg.EventName;
-  startLocation.textContent=cfg.Location;
+  startEventName.textContent=state.eventName;
+  startLocation.textContent=cfg.Location||"";
   startRound.textContent=`Round ${state.roundNumber}`;
+
+  eventNameField.value=state.eventName;
+  round.value=state.roundNumber;
 }
 
 /* Load Judges */
@@ -373,6 +388,7 @@ async function loadCompetitors(){
   updateCompetitor();
 }
 
+/* Update Competitor UI */
 function updateCompetitor(){
   const c=state.competitors[state.index];
   competitor.value=c.number;
@@ -381,8 +397,19 @@ function updateCompetitor(){
   moveDisplay.textContent=c.move;
 }
 
-prevBtn.onclick=()=>{if(state.index>0&&!state.locked){state.index--;updateCompetitor();}};
-nextBtn.onclick=()=>{if(state.index<state.competitors.length-1&&!state.locked){state.index++;updateCompetitor();}};
+/* Navigation */
+prevBtn.onclick=()=>{
+  if(state.index>0 && !state.locked){
+    state.index--;
+    updateCompetitor();
+  }
+};
+nextBtn.onclick=()=>{
+  if(state.index<state.competitors.length-1 && !state.locked){
+    state.index++;
+    updateCompetitor();
+  }
+};
 
 /* Slider */
 slider.oninput=()=>{
@@ -390,6 +417,7 @@ slider.oninput=()=>{
   scoreText.textContent=v;
   score.value=v;
 };
+score.value=slider.value; // initialize immediately
 
 /* Submit */
 let pressStart=null;
@@ -406,47 +434,66 @@ submitBtn.onmouseup=submitBtn.ontouchend=()=>{
 
 async function submitScore(){
   round.value=state.roundNumber;
+  eventNameField.value=state.eventName;
+  score.value=slider.value;
+
   fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
-  yourScoreLine.textContent=`Your Score: ${score.value}`;
+
+  yourScoreLine.textContent=
+    `Your Score (Comp ${competitor.value}, R${state.roundNumber}): ${score.value}`;
+
   await fetchPanelData(competitor.value);
+
   state.locked=true;
   successOverlay.classList.remove("hidden");
   startCountdown();
 }
 
+/* Panel Average */
 async function fetchPanelData(compNumber){
   const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
   const j=parseGViz(await r.text());
+
+  const headers=j.table.cols.map(c=>c.label);
+  const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
+
   const scores=[];
+
   j.table.rows.forEach(row=>{
-    if(row.c[1]?.v==compNumber &&
-       String(row.c[4]?.v)==String(state.roundNumber)){
-      scores.push(Number(row.c[2]?.v));
+    const competitorVal=row.c[h["Competitor number"]]?.v;
+    const scoreVal=row.c[h["Score"]]?.v;
+    const roundVal=row.c[h["Round"]]?.v;
+
+    if(
+      competitorVal==compNumber &&
+      String(roundVal)==String(state.roundNumber)
+    ){
+      scores.push(Number(scoreVal));
     }
   });
+
   if(scores.length===state.activeJudgeCount){
     const mean=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
-    panelAverageLine.textContent=`Panel Average: ${mean}`;
-  }else{
-    panelAverageLine.textContent="Panel Average: Waiting for panel…";
+    panelAverageLine.textContent=
+      `Panel Average (Comp ${compNumber}, R${state.roundNumber}): ${mean}`;
+  } else {
+    panelAverageLine.textContent=
+      `Panel Average (Comp ${compNumber}, R${state.roundNumber}): Waiting for panel…`;
   }
 }
 
+/* Countdown */
 function startCountdown(){
   let n=3;
-  updateCountdown(n);
+  countdownText.textContent=n;
   const iv=setInterval(()=>{
     n--;
-    if(n===0){clearInterval(iv);reset();}
-    else updateCountdown(n);
+    countdownText.textContent=n;
+    if(n===0){
+      clearInterval(iv);
+      reset();
+    }
   },1000);
-}
-
-function updateCountdown(v){
-  countdownText.textContent=v;
-  countdownText.style.animation="none";
-  countdownText.offsetHeight;
-  countdownText.style.animation="pulse 1s ease-in-out";
 }
 
 function reset(){
@@ -454,16 +501,21 @@ function reset(){
   state.locked=false;
   slider.value=5;
   scoreText.textContent="5.0";
-  state.index++;
-  if(state.index>=state.competitors.length) state.index=state.competitors.length-1;
+  score.value=slider.value;
+
+  if(state.index<state.competitors.length-1){
+    state.index++;
+  }
   updateCompetitor();
 }
 
-/* Panel Drawer */
+/* Drawer */
 panelToggle.onclick=()=>{
   panelContent.classList.toggle("hidden");
-  panelToggle.textContent=panelContent.classList.contains("hidden")
-    ?"▼ Panel Insights":"▲ Panel Insights";
+  panelToggle.textContent=
+    panelContent.classList.contains("hidden")
+      ?"▼ Panel Insights"
+      :"▲ Panel Insights";
 };
 
 /* Start Overlay */
@@ -472,13 +524,16 @@ startBtn.onclick=()=>{
   appWrapper.classList.remove("blurred");
 };
 
+/* Boot */
 (async()=>{
   try{
     appWrapper.classList.add("blurred");
     await loadEventConfig();
     await loadJudges();
     await loadCompetitors();
-  }catch(e){console.error(e);}
+  }catch(e){
+    console.error(e);
+  }
 })();
 </script>
 
