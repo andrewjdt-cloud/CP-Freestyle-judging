@@ -1,20 +1,8 @@
 <!--
 CP Freestyle Judging System
 File: index-v1.4.html
-Version: v1.4 (Stable Panel Insights + History)
+Version: v1.4 (Resume + Duplicate Protection + Panel Insights)
 Date: 2026-02-20
-
-Features:
-- EventName stored (entry.720710451)
-- Round stored (entry.1291687984)
-- Stable slider submission
-- SVG tick (iOS + Android safe)
-- START ROUND overlay
-- Penalties restored + cleared
-- Panel polling (2s up to 60s)
-- Shows panel average when all active judges submit
-- Last 5 historic competitors
-- All values formatted to 1 decimal place
 -->
 
 <!DOCTYPE html>
@@ -25,196 +13,47 @@ Features:
 <title>CP Freestyle – Judge Panel (v1.4)</title>
 
 <style>
-body{
-  font-family:system-ui,sans-serif;
-  background:#111;
-  color:#fff;
-  margin:0;
-  padding:14px;
-  text-align:center;
-}
-
-/* Blur */
-#appWrapper.blurred{
-  filter:blur(6px);
-  pointer-events:none;
-}
-
-/* START OVERLAY */
-.start-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.85);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:100;
-}
+body{font-family:system-ui,sans-serif;background:#111;color:#fff;margin:0;padding:14px;text-align:center;}
+#appWrapper.blurred{filter:blur(6px);pointer-events:none;}
+.start-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);display:flex;justify-content:center;align-items:center;z-index:100;}
 .start-overlay.hidden{display:none;}
+.start-box{background:#1c1c1c;padding:24px;border-radius:14px;width:90%;max-width:420px;}
+.start-box button{margin-top:16px;padding:12px 20px;border:none;border-radius:10px;background:#00c853;color:#fff;font-size:18px;}
 
-.start-box{
-  background:#1c1c1c;
-  padding:24px;
-  border-radius:14px;
-  width:90%;
-  max-width:420px;
-}
-.start-box button{
-  margin-top:16px;
-  padding:12px 20px;
-  border:none;
-  border-radius:10px;
-  background:#00c853;
-  color:#fff;
-  font-size:18px;
-}
-
-/* EVENT */
 .event-info{margin-bottom:8px;}
 .event-name{font-size:18px;font-weight:600;}
 .event-location,.event-round{font-size:13px;color:#aaa;}
-
 .round-status{font-size:12px;margin-top:2px;}
 .round-open{color:#00e676;}
 .round-closed,.access-denied{color:#ff5252;}
-
 .judge-label{margin-bottom:6px;font-size:14px;color:#aaa;}
 
-/* COMPETITOR */
-.competitor-nav{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin:10px 0;
-  position:relative;
-}
-.nav-btn{
-  font-size:16px;
-  padding:8px 12px;
-  border-radius:10px;
-  border:none;
-  background:#222;
-  color:#fff;
-}
+.competitor-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;position:relative;}
+.nav-btn{font-size:16px;padding:8px 12px;border-radius:10px;border:none;background:#222;color:#fff;}
 .nav-btn:disabled{opacity:0.3;}
-
 .competitor-number{font-size:40px;font-weight:bold;}
 .name-display{font-size:16px;color:#8bc34a;}
-.move-display{
-  font-size:13px;
-  color:#ccc;
-  margin-top:4px;
-  line-height:1.4;
-  word-break:break-word;
-}
+.move-display{font-size:13px;color:#ccc;margin-top:4px;line-height:1.4;word-break:break-word;}
 
-/* SUCCESS */
-.success-overlay{
-  position:absolute;
-  inset:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-}
+.success-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
 .success-overlay.hidden{display:none;}
+.success-tick{width:96px;height:96px;margin-bottom:10px;animation:tickFade 3s ease-out forwards;}
+.success-tick svg{width:100%;height:100%;stroke:#00e676;stroke-width:8;fill:none;}
+@keyframes tickFade{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(0.9);}}
+.countdown{font-size:70px;font-weight:bold;color:#ffeb3b;background:rgba(0,0,0,0.65);width:90px;height:90px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
 
-.success-tick{
-  width:96px;
-  height:96px;
-  margin-bottom:10px;
-  animation:tickFade 3s ease-out forwards;
-}
-.success-tick svg{
-  width:100%;
-  height:100%;
-  stroke:#00e676;
-  stroke-width:8;
-  fill:none;
-}
-@keyframes tickFade{
-  0%{opacity:1;transform:scale(1);}
-  100%{opacity:0;transform:scale(0.9);}
-}
+.score-display{font-size:80px;font-weight:bold;margin:18px 0 12px;}
+.slider{width:100%;height:22px;appearance:none;border-radius:11px;background:linear-gradient(to right,#c62828,#f9a825,#2e7d32);}
+.slider::-webkit-slider-thumb{appearance:none;width:36px;height:36px;border-radius:50%;background:#fff;}
 
-.countdown{
-  font-size:70px;
-  font-weight:bold;
-  color:#ffeb3b;
-  background:rgba(0,0,0,0.65);
-  width:90px;
-  height:90px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* SCORE */
-.score-display{
-  font-size:80px;
-  font-weight:bold;
-  margin:18px 0 12px;
-}
-.slider{
-  width:100%;
-  height:22px;
-  appearance:none;
-  border-radius:11px;
-  background:linear-gradient(to right,#c62828,#f9a825,#2e7d32);
-}
-.slider::-webkit-slider-thumb{
-  appearance:none;
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  background:#fff;
-}
-
-/* PENALTIES */
 .penalties{margin-top:12px;font-size:16px;}
-.penalty-row{
-  display:flex;
-  justify-content:center;
-  gap:24px;
-  margin-top:4px;
-}
+.penalty-row{display:flex;justify-content:center;gap:24px;margin-top:4px;}
 
-/* SUBMIT */
-button.submit{
-  margin-top:14px;
-  font-size:22px;
-  padding:12px;
-  border-radius:14px;
-  border:none;
-  background:#00c853;
-  color:#fff;
-  width:100%;
-  -webkit-user-select:none;
-  user-select:none;
-}
+button.submit{margin-top:14px;font-size:22px;padding:12px;border-radius:14px;border:none;background:#00c853;color:#fff;width:100%;-webkit-user-select:none;user-select:none;}
 
-/* PANEL DRAWER */
-.panel-drawer{
-  margin-top:18px;
-  text-align:left;
-}
-.panel-toggle{
-  background:#222;
-  color:#fff;
-  border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  width:100%;
-  text-align:left;
-}
-.panel-content{
-  margin-top:8px;
-  font-size:14px;
-  color:#ccc;
-}
+.panel-drawer{margin-top:18px;text-align:left;}
+.panel-toggle{background:#222;color:#fff;border:none;padding:8px 12px;border-radius:8px;width:100%;text-align:left;}
+.panel-content{margin-top:8px;font-size:14px;color:#ccc;}
 .panel-content.hidden{display:none;}
 .history-line{margin-bottom:4px;}
 .current-line{font-weight:bold;margin-bottom:8px;}
@@ -223,21 +62,21 @@ button.submit{
 <body>
 
 <div id="startOverlay" class="start-overlay">
-  <div class="start-box">
-    <h2 id="startEventName"></h2>
-    <div id="startLocation"></div>
-    <div id="startRound"></div>
-    <button id="startBtn">START ROUND</button>
-  </div>
+<div class="start-box">
+<h2 id="startEventName"></h2>
+<div id="startLocation"></div>
+<div id="startRound"></div>
+<button id="startBtn">START ROUND</button>
+</div>
 </div>
 
 <div id="appWrapper">
 
 <div class="event-info">
-  <div class="event-name" id="eventName"></div>
-  <div class="event-location" id="eventLocation"></div>
-  <div class="event-round" id="eventRound"></div>
-  <div class="round-status" id="roundStatus"></div>
+<div class="event-name" id="eventName"></div>
+<div class="event-location" id="eventLocation"></div>
+<div class="event-round" id="eventRound"></div>
+<div class="round-status" id="roundStatus"></div>
 </div>
 
 <div class="judge-label" id="judgeLabel">Judge: —</div>
@@ -251,20 +90,16 @@ button.submit{
 
 <div class="competitor-nav">
 <button type="button" class="nav-btn" id="prevBtn">◀</button>
-
 <div>
 <div class="competitor-number" id="competitorDisplay">—</div>
 <div class="name-display" id="nameDisplay"></div>
 <div class="move-display" id="moveDisplay"></div>
 </div>
-
 <button type="button" class="nav-btn" id="nextBtn">▶</button>
 
 <div class="success-overlay hidden" id="successOverlay">
 <div class="success-tick">
-<svg viewBox="0 0 52 52">
-<path d="M14 27 L22 35 L38 17"/>
-</svg>
+<svg viewBox="0 0 52 52"><path d="M14 27 L22 35 L38 17"/></svg>
 </div>
 <div class="countdown" id="countdownText">3</div>
 </div>
@@ -284,9 +119,7 @@ button.submit{
 <button type="button" class="submit" id="submitBtn">HOLD TO SUBMIT</button>
 
 <div class="panel-drawer">
-<button type="button" id="panelToggle" class="panel-toggle">
-▼ Panel Insights
-</button>
+<button type="button" id="panelToggle" class="panel-toggle">▼ Panel Insights</button>
 <div id="panelContent" class="panel-content hidden">
 <div id="currentInsight" class="current-line"></div>
 <div id="historyList"></div>
@@ -321,9 +154,7 @@ history:[],
 lastSubmittedScore:null
 };
 
-function parseGViz(t){
-return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
-}
+function parseGViz(t){return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));}
 
 /* EVENT CONFIG */
 async function loadEventConfig(){
@@ -331,7 +162,6 @@ const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?
 const j=parseGViz(await r.text());
 const cfg={};
 j.table.rows.forEach(row=>cfg[row.c[0].v]=row.c[1]?.v??"");
-
 state.eventName=cfg.EventName||"";
 state.roundNumber=parseInt(cfg.Round,10)||1;
 state.roundOpen=String(cfg.RoundOpen).toUpperCase()==="YES";
@@ -354,7 +184,6 @@ round.value=state.roundNumber;
 async function loadJudges(){
 const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`);
 const j=parseGViz(await r.text());
-
 j.table.rows.forEach(row=>{
 const name=row.c[0]?.v;
 const token=row.c[1]?.v;
@@ -377,14 +206,33 @@ throw new Error("Auth failed");
 async function loadCompetitors(){
 const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`);
 const j=parseGViz(await r.text());
-
 state.competitors=j.table.rows.map(row=>({
 order:Number(row.c[0]?.v||0),
 number:row.c[1]?.v,
 name:row.c[2]?.v,
 move:row.c[state.roundNumber+2]?.v||""
 })).sort((a,b)=>a.order-b.order);
+}
 
+/* RESUME LOGIC */
+async function resumeJudgePosition(){
+const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
+const j=parseGViz(await r.text());
+const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
+const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
+
+const scored=new Set();
+j.table.rows.forEach(row=>{
+const judgeVal=row.c[h["judgeid"]]?.v;
+const compVal=row.c[h["competitornumber"]]?.v;
+const roundVal=row.c[h["round"]]?.v;
+if(judgeVal===judgeParam && String(roundVal)===String(state.roundNumber)){
+scored.add(String(compVal));
+}
+});
+
+const nextIndex=state.competitors.findIndex(c=>!scored.has(String(c.number)));
+state.index=(nextIndex!==-1)?nextIndex:state.competitors.length-1;
 updateCompetitor();
 }
 
@@ -421,11 +269,33 @@ pressStart=null;
 };
 
 async function submitScore(){
-round.value=state.roundNumber;
-eventNameField.value=state.eventName;
+
+// duplicate protection
+const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
+const j=parseGViz(await r.text());
+const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
+const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
+
+let already=false;
+j.table.rows.forEach(row=>{
+const judgeVal=row.c[h["judgeid"]]?.v;
+const compVal=row.c[h["competitornumber"]]?.v;
+const roundVal=row.c[h["round"]]?.v;
+if(judgeVal===judgeParam &&
+String(compVal)===String(competitor.value) &&
+String(roundVal)===String(state.roundNumber)){
+already=true;
+}
+});
+if(already){
+alert("Score already submitted for this competitor in this round.");
+return;
+}
 
 state.lastSubmittedScore=parseFloat(slider.value).toFixed(1);
 score.value=state.lastSubmittedScore;
+round.value=state.roundNumber;
+eventNameField.value=state.eventName;
 
 fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)});
 
@@ -448,7 +318,6 @@ const maxTime=60000;
 const timer=setInterval(async()=>{
 const r=await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`);
 const j=parseGViz(await r.text());
-
 const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
 const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
 
@@ -465,16 +334,13 @@ scores.push(Number(scoreVal));
 if(scores.length===state.activeJudgeCount){
 clearInterval(timer);
 const mean=parseFloat(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
-
 currentInsight.textContent=
 `R${state.roundNumber} | Comp ${compNumber} | You: ${state.lastSubmittedScore} | Panel: ${mean}`;
-
 addToHistory(state.roundNumber,compNumber,state.lastSubmittedScore,mean);
 }
 
 elapsed+=interval;
 if(elapsed>=maxTime) clearInterval(timer);
-
 },interval);
 }
 
@@ -544,6 +410,7 @@ appWrapper.classList.add("blurred");
 await loadEventConfig();
 await loadJudges();
 await loadCompetitors();
+await resumeJudgePosition();
 }catch(e){console.error(e);}
 })();
 </script>
