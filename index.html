@@ -168,7 +168,7 @@ state.eventName=cfg.EventName||"";
 state.roundNumber=parseInt(cfg.Round,10)||1;
 state.roundOpen=String(cfg.RoundOpen).toUpperCase()==="YES";
 state.panelInsightsEnabled =
-  String(cfg.PanelInsights).toUpperCase() === "YES";
+  (cfg.PanelInsights || "").toString().trim().toUpperCase() === "YES";
 
 eventName.textContent=state.eventName;
 eventLocation.textContent=cfg.Location||"";
@@ -425,3 +425,4 @@ await resumeJudgePosition();
 </script>
 </body>
 </html>
+
