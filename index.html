@@ -1,3 +1,4 @@
+
 <!--
 CP Freestyle Judging System
 File: index-v1.4.html
@@ -165,8 +166,6 @@ j.table.rows.forEach(row=>cfg[row.c[0].v]=row.c[1]?.v??"");
 state.eventName=cfg.EventName||"";
 state.roundNumber=parseInt(cfg.Round,10)||1;
 state.roundOpen=String(cfg.RoundOpen).toUpperCase()==="YES";
-state.panelInsightsEnabled =
-  String(cfg.PanelInsights).toUpperCase() === "YES";
 
 eventName.textContent=state.eventName;
 eventLocation.textContent=cfg.Location||"";
@@ -180,9 +179,6 @@ startRound.textContent=`Round ${state.roundNumber}`;
 
 eventNameField.value=state.eventName;
 round.value=state.roundNumber;
-if(!state.panelInsightsEnabled){
-  document.getElementById("panelDrawer").style.display = "none";
-}
 }
 
 /* JUDGES */
@@ -307,9 +303,7 @@ fetch(FORM_ENDPOINT,{method:"POST",mode:"no-cors",body:new FormData(scoreForm)})
 currentInsight.textContent=
 `R${state.roundNumber} | Comp ${competitor.value} | You: ${state.lastSubmittedScore} | Panel: Waiting…`;
 
-if(state.panelInsightsEnabled){
-  pollPanelAverage(competitor.value);
-}
+pollPanelAverage(competitor.value);
 
 state.locked=true;
 successOverlay.classList.remove("hidden");
@@ -423,4 +417,3 @@ await resumeJudgePosition();
 </script>
 </body>
 </html>
-
