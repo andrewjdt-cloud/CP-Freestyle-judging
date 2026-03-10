@@ -16,26 +16,15 @@ padding:20px;
 text-align:center;
 }
 
-/* EVENT HEADER */
+/* HEADER */
 
 .event{margin-bottom:20px;}
 
-.event-name{
-font-size:28px;
-font-weight:bold;
-}
+.event-name{font-size:28px;font-weight:bold;}
+.event-location{font-size:16px;color:#bbb;}
+.event-round{font-size:18px;color:#aaa;}
 
-.event-location{
-font-size:16px;
-color:#bbb;
-}
-
-.event-round{
-font-size:18px;
-color:#aaa;
-}
-
-/* CURRENT COMPETITOR */
+/* CURRENT COMP */
 
 .current{margin-top:30px;}
 
@@ -45,21 +34,19 @@ font-weight:bold;
 margin-bottom:25px;
 }
 
-/* JUDGES */
+/* JUDGE GRID */
 
 .judges{
 display:grid;
-grid-template-columns:repeat(5,100px);
+grid-template-columns:repeat(auto-fit,100px);
 justify-content:center;
 font-size:30px;
 margin-bottom:10px;
 }
 
-/* SCORES */
-
 .scores{
 display:grid;
-grid-template-columns:repeat(5,100px);
+grid-template-columns:repeat(auto-fit,100px);
 justify-content:center;
 font-size:48px;
 font-weight:bold;
@@ -71,29 +58,27 @@ color:#ff7a00;
 .score{
 opacity:0;
 transform:translateY(10px);
-animation:scoreIn 0.35s ease forwards;
+animation:scoreIn .35s ease forwards;
 }
 
 @keyframes scoreIn{
-to{
-opacity:1;
-transform:translateY(0);
-}
+to{opacity:1;transform:translateY(0);}
 }
 
-.waiting{
-color:#444;
-}
+.waiting{color:#444}
 
 /* HISTORY */
 
 .history{
 margin-top:40px;
-font-size:18px;
+font-size:20px;
 color:#bbb;
 }
 
 .history-row{
+display:grid;
+grid-template-columns:80px repeat(auto-fit,100px);
+justify-content:center;
 margin:6px 0;
 }
 
@@ -101,8 +86,6 @@ margin:6px 0;
 </head>
 
 <body>
-
-<div id="app">
 
 <div class="event">
 <div id="eventName" class="event-name"></div>
@@ -115,14 +98,11 @@ margin:6px 0;
 <div id="compNumber" class="comp-number">—</div>
 
 <div id="judgeHeaders" class="judges"></div>
-
 <div id="scoreRow" class="scores"></div>
 
 </div>
 
 <div id="history" class="history"></div>
-
-</div>
 
 <script>
 
@@ -146,13 +126,13 @@ competitors:[],
 currentComp:null
 };
 
-/* -------- GVIZ PARSER -------- */
+/* ---------- PARSE GOOGLE GVIZ ---------- */
 
 function parseGViz(t){
 return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
 }
 
-/* -------- EVENT CONFIG -------- */
+/* ---------- EVENT CONFIG ---------- */
 
 async function loadEventConfig(){
 
@@ -174,10 +154,8 @@ state.round=parseInt(cfg.Round,10)||1;
 state.liveToken=cfg.LiveToken||"";
 
 if(tokenParam!==state.liveToken){
-
 document.body.innerHTML="<h1>Access denied</h1>";
 throw new Error("Bad token");
-
 }
 
 eventName.textContent=state.eventName;
@@ -186,7 +164,7 @@ eventRound.textContent=`Round ${state.round}`;
 
 }
 
-/* -------- JUDGES -------- */
+/* ---------- JUDGES ---------- */
 
 async function loadJudges(){
 
@@ -218,16 +196,14 @@ function renderJudgeHeaders(){
 judgeHeaders.innerHTML="";
 
 state.judges.forEach(j=>{
-
 const div=document.createElement("div");
 div.textContent=j;
 judgeHeaders.appendChild(div);
-
 });
 
 }
 
-/* -------- COMPETITORS -------- */
+/* ---------- COMPETITORS ---------- */
 
 async function loadCompetitors(){
 
@@ -238,15 +214,13 @@ const r=await fetch(
 const j=parseGViz(await r.text());
 
 state.competitors=j.table.rows.map(row=>({
-
 order:Number(row.c[0]?.v||0),
 number:String(row.c[1]?.v)
-
 })).sort((a,b)=>a.order-b.order);
 
 }
 
-/* -------- POLL RESPONSES -------- */
+/* ---------- POLL RESPONSES ---------- */
 
 async function pollResponses(){
 
@@ -259,10 +233,10 @@ const j=parseGViz(await r.text());
 const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
 const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
 
-const judgeCol = h["judgeid"];
-const compCol = h["competitornumber"];
-const scoreCol = h["score"];
-const roundCol = h["round"];
+const judgeCol=h["judgeid"];
+const compCol=h["competitornumber"];
+const scoreCol=h["score"];
+const roundCol=h["round"];
 
 const scores={};
 
@@ -272,23 +246,22 @@ const round=row.c[roundCol]?.v;
 if(String(round)!==String(state.round)) return;
 
 let judge=row.c[judgeCol]?.v;
-const comp=row.c[compCol]?.v;
+let comp=String(row.c[compCol]?.v);
 const score=row.c[scoreCol]?.v;
 
-if(judge){
-judge = judge.split(" ")[0]; // convert "J1 Andrew D" → "J1"
-}
+if(judge) judge=judge.split(" ")[0];
 
 if(!scores[comp]) scores[comp]={};
 
-scores[String(comp)][judge]=Number(score);
+scores[comp][judge]=Number(score);
+
 });
 
 updateScoreboard(scores);
 
 }
 
-/* -------- SCOREBOARD LOGIC -------- */
+/* ---------- SCOREBOARD LOGIC ---------- */
 
 function updateScoreboard(scores){
 
@@ -328,7 +301,7 @@ buildHistory(scores);
 
 }
 
-/* -------- RENDER CURRENT -------- */
+/* ---------- CURRENT ---------- */
 
 function renderCurrent(scoreObj){
 
@@ -342,7 +315,7 @@ const div=document.createElement("div");
 
 if(scoreObj[j]!==undefined){
 
-div.textContent=parseFloat(scoreObj[j]).toFixed(1);
+div.textContent=scoreObj[j].toFixed(1);
 div.className="score";
 
 }else{
@@ -358,54 +331,57 @@ scoreRow.appendChild(div);
 
 }
 
-/* -------- HISTORY -------- */
+/* ---------- HISTORY ---------- */
 
 function buildHistory(scores){
 
-const ordered = state.competitors.map(c=>String(c.number));
+const ordered=state.competitors.map(c=>c.number);
 
 history.innerHTML="";
 
-const completed = [];
+const completed=[];
 
 ordered.forEach(c=>{
 
-const judgeScores = scores[c];
+const judgeScores=scores[c];
 if(!judgeScores) return;
 
-/* competitor complete when all judges scored */
-if(state.judges.every(j => judgeScores[j] !== undefined)){
+if(state.judges.every(j=>judgeScores[j]!==undefined)){
 completed.push(c);
 }
 
 });
 
-/* remove the current competitor */
-const filtered = completed.filter(c => c !== state.currentComp);
+const filtered=completed.filter(c=>c!==state.currentComp);
 
-/* show latest 3 */
 filtered.reverse().slice(0,3).forEach(c=>{
 
 const row=document.createElement("div");
 row.className="history-row";
 
-let text=`R${state.round} | ${c} | `;
+const comp=document.createElement("div");
+comp.textContent=c;
+row.appendChild(comp);
 
 state.judges.forEach(j=>{
 
-const s = scores[c]?.[j];
-text += s ? parseFloat(s).toFixed(1)+" " : "— ";
+const cell=document.createElement("div");
+
+const s=scores[c]?.[j];
+
+cell.textContent=s?Number(s).toFixed(1):"—";
+
+row.appendChild(cell);
 
 });
 
-row.textContent=text;
 history.appendChild(row);
 
 });
 
 }
 
-/* -------- BOOT -------- */
+/* ---------- BOOT ---------- */
 
 async function boot(){
 
@@ -420,6 +396,5 @@ setInterval(pollResponses,2000);
 boot();
 
 </script>
-
 </body>
 </html>
