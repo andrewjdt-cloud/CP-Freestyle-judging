@@ -328,24 +328,25 @@ scoreRow.appendChild(div);
 
 function buildHistory(scores){
 
-const ordered=state.competitors.map(c=>c.number);
+const ordered = state.competitors.map(c=>c.number);
 
 history.innerHTML="";
 
-const completed=[];
+const finished=[];
 
-ordered.forEach(c=>{
+for(let i=0;i<ordered.length;i++){
 
-const judgeScores=scores[c];
-if(!judgeScores) return;
+const current = ordered[i];
+const next = ordered[i+1];
 
-if(state.judges.every(j=>judgeScores[j]!==undefined)){
-completed.push(c);
+if(scores[current] && scores[next]){
+finished.push(current);
 }
 
-});
+}
 
-const filtered=completed.filter(c=>c!==state.currentComp);
+/* remove active competitor */
+const filtered = finished.filter(c => c !== state.currentComp);
 
 filtered.reverse().slice(0,3).forEach(c=>{
 
@@ -362,7 +363,7 @@ const cell=document.createElement("div");
 
 const s=scores[c]?.[j];
 
-cell.textContent=s?Number(s).toFixed(1):"—";
+cell.textContent=s ? Number(s).toFixed(1) : "—";
 
 row.appendChild(cell);
 
