@@ -1,59 +1,362 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CP Freestyle – Live Scores</title>
+<title>CP Freestyle – Live Scoreboard</title>
 
 <style>
-body {
-  background: #000;
-  color: #fff;
-  font-family: system-ui, sans-serif;
-  padding: 20px;
+
+body{
+font-family:system-ui,sans-serif;
+background:#000;
+color:#fff;
+margin:0;
+padding:20px;
+text-align:center;
 }
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
+.event{
+margin-bottom:20px;
 }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 30px;
+.event-name{
+font-size:28px;
+font-weight:bold;
 }
 
-th, td {
-  padding: 12px;
-  text-align: center;
-  border-bottom: 1px solid #333;
+.event-location{
+font-size:16px;
+color:#bbb;
 }
 
-th {
-  color: #aaa;
+.event-round{
+font-size:18px;
+color:#aaa;
 }
 
-.average {
-  font-size: 64px;
-  text-align: center;
-  font-weight: bold;
+.current{
+margin-top:30px;
 }
+
+.comp-number{
+font-size:70px;
+font-weight:bold;
+margin-bottom:20px;
+}
+
+.judges{
+display:flex;
+justify-content:center;
+gap:40px;
+font-size:36px;
+margin-bottom:15px;
+}
+
+.scores{
+display:flex;
+justify-content:center;
+gap:40px;
+font-size:48px;
+}
+
+.waiting{
+color:#555;
+}
+
+.history{
+margin-top:40px;
+font-size:18px;
+color:#bbb;
+}
+
+.history-row{
+margin:6px 0;
+}
+
 </style>
 </head>
 
 <body>
 
-<h1>CP Freestyle – Live Scores</h1>
+<div id="app">
 
-<iframe
-  src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTDCQQr4ioQJWYlFOPmMEE03oy1lnrwx8eHrlP_-NvXMG7GFMkG-rx8Ad-9YP99-IcPgjZZFXFdqa4o/pubhtml?gid=1171869633&single=true"
-  style="width:100%; height:420px; border:none;">
-</iframe>
-
-<div class="average" id="avg">
-Average updates live
+<div class="event">
+<div id="eventName" class="event-name"></div>
+<div id="eventLocation" class="event-location"></div>
+<div id="eventRound" class="event-round"></div>
 </div>
+
+<div class="current">
+
+<div id="compNumber" class="comp-number">—</div>
+
+<div id="judgeHeaders" class="judges"></div>
+
+<div id="scoreRow" class="scores"></div>
+
+</div>
+
+<div class="history" id="history"></div>
+
+</div>
+
+<script>
+
+const SHEET_ID="1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+
+const EVENT_CONFIG_GID="686531230";
+const COMPETITOR_GID="51112637";
+const JUDGES_GID="1213944419";
+const RESPONSES_GID="152250623";
+
+const params=new URLSearchParams(location.search);
+const tokenParam=params.get("token");
+
+let state={
+round:1,
+eventName:"",
+location:"",
+liveToken:"",
+judges:[],
+competitors:[],
+responses:[],
+currentComp:null,
+history:[]
+};
+
+function parseGViz(t){
+return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
+}
+
+async function loadEventConfig(){
+
+const r=await fetch(
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`
+);
+
+const j=parseGViz(await r.text());
+
+const cfg={};
+
+j.table.rows.forEach(row=>{
+cfg[row.c[0]?.v]=row.c[1]?.v;
+});
+
+state.eventName=cfg.EventName||"";
+state.location=cfg.Location||"";
+state.round=parseInt(cfg.Round,10)||1;
+state.liveToken=cfg.LiveToken||"";
+
+if(tokenParam!==state.liveToken){
+
+document.body.innerHTML="<h1>Access denied</h1>";
+throw new Error("Bad token");
+
+}
+
+eventName.textContent=state.eventName;
+eventLocation.textContent=state.location;
+eventRound.textContent=`Round ${state.round}`;
+
+}
+
+async function loadJudges(){
+
+const r=await fetch(
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`
+);
+
+const j=parseGViz(await r.text());
+
+state.judges=[];
+
+j.table.rows.forEach(row=>{
+
+const name=row.c[0]?.v;
+const active=String(row.c[2]?.v).toUpperCase();
+
+if(active==="YES") state.judges.push(name);
+
+});
+
+renderJudgeHeaders();
+
+}
+
+async function loadCompetitors(){
+
+const r=await fetch(
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`
+);
+
+const j=parseGViz(await r.text());
+
+state.competitors=j.table.rows.map(row=>({
+
+order:Number(row.c[0]?.v||0),
+number:row.c[1]?.v
+
+})).sort((a,b)=>a.order-b.order);
+
+}
+
+function renderJudgeHeaders(){
+
+judgeHeaders.innerHTML="";
+
+state.judges.forEach(j=>{
+
+const div=document.createElement("div");
+div.textContent=j.split(" ")[0];
+judgeHeaders.appendChild(div);
+
+});
+
+}
+
+async function pollResponses(){
+
+const r=await fetch(
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${RESPONSES_GID}&tqx=out:json`
+);
+
+const j=parseGViz(await r.text());
+
+const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
+const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
+
+const scores={};
+
+j.table.rows.forEach(row=>{
+
+const round=row.c[h["round"]]?.v;
+const comp=row.c[h["competitornumber"]]?.v;
+const judge=row.c[h["judgeid"]]?.v;
+const score=row.c[h["score"]]?.v;
+
+if(String(round)!==String(state.round)) return;
+
+if(!scores[comp]) scores[comp]={};
+
+scores[comp][judge]=score;
+
+});
+
+updateScoreboard(scores);
+
+}
+
+function updateScoreboard(scores){
+
+const orderedComps=state.competitors.map(c=>c.number);
+
+let current=null;
+
+for(let c of orderedComps){
+
+if(!scores[c]){
+
+current=c;
+break;
+
+}
+
+}
+
+if(!current){
+
+current=orderedComps[orderedComps.length-1];
+
+}
+
+state.currentComp=current;
+
+renderCurrent(scores[current]||{});
+
+buildHistory(scores);
+
+}
+
+function renderCurrent(scoreObj){
+
+compNumber.textContent=`COMP ${state.currentComp}`;
+
+scoreRow.innerHTML="";
+
+state.judges.forEach(j=>{
+
+const div=document.createElement("div");
+
+if(scoreObj[j]!==undefined){
+
+div.textContent=parseFloat(scoreObj[j]).toFixed(1);
+
+}else{
+
+div.textContent="—";
+div.className="waiting";
+
+}
+
+scoreRow.appendChild(div);
+
+});
+
+}
+
+function buildHistory(scores){
+
+const ordered=state.competitors.map(c=>c.number);
+
+const completed=[];
+
+ordered.forEach(c=>{
+
+if(scores[c]) completed.push(c);
+
+});
+
+completed.reverse();
+
+history.innerHTML="";
+
+completed.slice(0,3).forEach(c=>{
+
+const row=document.createElement("div");
+row.className="history-row";
+
+let text=`R${state.round} | ${c} | `;
+
+state.judges.forEach(j=>{
+
+const s=scores[c][j];
+
+text+=s?parseFloat(s).toFixed(1)+" ":"— ";
+
+});
+
+row.textContent=text;
+
+history.appendChild(row);
+
+});
+
+}
+
+async function boot(){
+
+await loadEventConfig();
+await loadJudges();
+await loadCompetitors();
+
+setInterval(pollResponses,2000);
+
+}
+
+boot();
+
+</script>
 
 </body>
 </html>
