@@ -361,23 +361,29 @@ scoreRow.appendChild(div);
 
 function buildHistory(scores){
 
-const ordered=state.competitors.map(c=>c.number);
+const ordered = state.competitors.map(c=>String(c.number));
 
 history.innerHTML="";
 
-const finished=[];
+const completed = [];
 
-ordered.forEach((c,i)=>{
+ordered.forEach(c=>{
 
-const next=ordered[i+1];
+const judgeScores = scores[c];
+if(!judgeScores) return;
 
-if(scores[c] && scores[next]){
-finished.push(c);
+/* competitor complete when all judges scored */
+if(Object.keys(judgeScores).length === state.judges.length){
+completed.push(c);
 }
 
 });
 
-finished.reverse().slice(0,3).forEach(c=>{
+/* remove the current competitor */
+const filtered = completed.filter(c => c !== state.currentComp);
+
+/* show latest 3 */
+filtered.reverse().slice(0,3).forEach(c=>{
 
 const row=document.createElement("div");
 row.className="history-row";
@@ -386,13 +392,12 @@ let text=`R${state.round} | ${c} | `;
 
 state.judges.forEach(j=>{
 
-const s=scores[c]?.[j];
-text+=s?parseFloat(s).toFixed(1)+" ":"— ";
+const s = scores[c]?.[j];
+text += s ? parseFloat(s).toFixed(1)+" " : "— ";
 
 });
 
 row.textContent=text;
-
 history.appendChild(row);
 
 });
