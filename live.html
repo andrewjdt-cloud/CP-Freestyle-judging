@@ -46,18 +46,20 @@ margin-bottom:20px;
 }
 
 .judges{
-display:flex;
+display:grid;
+grid-template-columns:repeat(5,100px);
 justify-content:center;
-gap:40px;
-font-size:36px;
-margin-bottom:15px;
+font-size:32px;
+margin-bottom:10px;
 }
 
 .scores{
-display:flex;
+display:grid;
+grid-template-columns:repeat(5,100px);
 justify-content:center;
-gap:40px;
 font-size:48px;
+font-weight:bold;
+color:#ff7a00;
 }
 
 .waiting{
@@ -257,29 +259,46 @@ updateScoreboard(scores);
 
 function updateScoreboard(scores){
 
-const ordered = state.competitors.map(c=>c.number);
+const ordered = state.competitors.map(c=>String(c.number));
 
-let current = null;
+let activeComp = null;
 
-/* find latest competitor that has scores */
-ordered.forEach(c=>{
-if(scores[c]){
-current = c;
+/* determine active competitor */
+for(let i=0;i<ordered.length;i++){
+
+const c = ordered[i];
+const next = ordered[i+1];
+
+if(scores[c] && !scores[next]){
+activeComp = c;
+break;
 }
-});
 
-/* if nothing scored yet show first competitor */
-if(!current){
-current = ordered[0];
 }
 
-state.currentComp = current;
+/* fallback */
+if(!activeComp){
 
-renderCurrent(scores[current] || {});
+for(let i=ordered.length-1;i>=0;i--){
+if(scores[ordered[i]]){
+activeComp = ordered[i];
+break;
+}
+}
+
+}
+
+/* if still nothing show first competitor */
+if(!activeComp){
+activeComp = ordered[0];
+}
+
+state.currentComp = activeComp;
+
+renderCurrent(scores[activeComp] || {});
 buildHistory(scores);
 
 }
-
 
 function renderCurrent(scoreObj){
 
@@ -310,21 +329,23 @@ scoreRow.appendChild(div);
 
 function buildHistory(scores){
 
-const ordered=state.competitors.map(c=>c.number);
-
-const completed=[];
-
-ordered.forEach(c=>{
-
-if(scores[c]) completed.push(c);
-
-});
-
-completed.reverse();
+const ordered = state.competitors.map(c=>String(c.number));
 
 history.innerHTML="";
 
-completed.slice(0,3).forEach(c=>{
+const finished = [];
+
+ordered.forEach((c,i)=>{
+
+const next = ordered[i+1];
+
+if(scores[c] && scores[next]){
+finished.push(c);
+}
+
+});
+
+finished.reverse().slice(0,3).forEach(c=>{
 
 const row=document.createElement("div");
 row.className="history-row";
@@ -333,9 +354,9 @@ let text=`R${state.round} | ${c} | `;
 
 state.judges.forEach(j=>{
 
-const s=scores[c][j];
+const s=scores[c]?.[j];
 
-text+=s?parseFloat(s).toFixed(1)+" ":"— ";
+text+= s ? parseFloat(s).toFixed(1)+" " : "— ";
 
 });
 
@@ -345,6 +366,8 @@ history.appendChild(row);
 
 });
 
+}
+  
 }
 
 async function boot(){
