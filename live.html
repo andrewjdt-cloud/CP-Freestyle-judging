@@ -16,9 +16,9 @@ padding:20px;
 text-align:center;
 }
 
-.event{
-margin-bottom:20px;
-}
+/* EVENT HEADER */
+
+.event{margin-bottom:20px;}
 
 .event-name{
 font-size:28px;
@@ -35,23 +35,27 @@ font-size:18px;
 color:#aaa;
 }
 
-.current{
-margin-top:30px;
-}
+/* CURRENT COMPETITOR */
+
+.current{margin-top:30px;}
 
 .comp-number{
-font-size:70px;
+font-size:72px;
 font-weight:bold;
-margin-bottom:20px;
+margin-bottom:25px;
 }
+
+/* JUDGES */
 
 .judges{
 display:grid;
 grid-template-columns:repeat(5,100px);
 justify-content:center;
-font-size:32px;
+font-size:30px;
 margin-bottom:10px;
 }
+
+/* SCORES */
 
 .scores{
 display:grid;
@@ -62,9 +66,26 @@ font-weight:bold;
 color:#ff7a00;
 }
 
-.waiting{
-color:#555;
+/* score animation */
+
+.score{
+opacity:0;
+transform:translateY(10px);
+animation:scoreIn 0.35s ease forwards;
 }
+
+@keyframes scoreIn{
+to{
+opacity:1;
+transform:translateY(0);
+}
+}
+
+.waiting{
+color:#444;
+}
+
+/* HISTORY */
 
 .history{
 margin-top:40px;
@@ -99,7 +120,7 @@ margin:6px 0;
 
 </div>
 
-<div class="history" id="history"></div>
+<div id="history" class="history"></div>
 
 </div>
 
@@ -122,14 +143,16 @@ location:"",
 liveToken:"",
 judges:[],
 competitors:[],
-responses:[],
-currentComp:null,
-history:[]
+currentComp:null
 };
+
+/* -------- GVIZ PARSER -------- */
 
 function parseGViz(t){
 return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
 }
+
+/* -------- EVENT CONFIG -------- */
 
 async function loadEventConfig(){
 
@@ -163,6 +186,8 @@ eventRound.textContent=`Round ${state.round}`;
 
 }
 
+/* -------- JUDGES -------- */
+
 async function loadJudges(){
 
 const r=await fetch(
@@ -175,32 +200,16 @@ state.judges=[];
 
 j.table.rows.forEach(row=>{
 
-const active = String(row.c[2]?.v).toUpperCase();
-const scoreboardID = row.c[3]?.v;   // Column D
+const active=String(row.c[2]?.v).toUpperCase();
+const scoreboardID=row.c[3]?.v;
 
 if(active==="YES" && scoreboardID){
 state.judges.push(scoreboardID);
 }
+
 });
 
 renderJudgeHeaders();
-
-}
-
-async function loadCompetitors(){
-
-const r=await fetch(
-`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`
-);
-
-const j=parseGViz(await r.text());
-
-state.competitors=j.table.rows.map(row=>({
-
-order:Number(row.c[0]?.v||0),
-number:row.c[1]?.v
-
-})).sort((a,b)=>a.order-b.order);
 
 }
 
@@ -218,6 +227,27 @@ judgeHeaders.appendChild(div);
 
 }
 
+/* -------- COMPETITORS -------- */
+
+async function loadCompetitors(){
+
+const r=await fetch(
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${COMPETITOR_GID}&tqx=out:json`
+);
+
+const j=parseGViz(await r.text());
+
+state.competitors=j.table.rows.map(row=>({
+
+order:Number(row.c[0]?.v||0),
+number:String(row.c[1]?.v)
+
+})).sort((a,b)=>a.order-b.order);
+
+}
+
+/* -------- POLL RESPONSES -------- */
+
 async function pollResponses(){
 
 const r=await fetch(
@@ -228,8 +258,9 @@ const j=parseGViz(await r.text());
 
 const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
 const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
-const judgeCol = h["judgeid"] ?? h["judge"];
-const compCol = h["competitornumber"] ?? h["competitor"];
+
+const judgeCol = h["judgeid"];
+const compCol = h["competitornumber"];
 const scoreCol = h["score"];
 const roundCol = h["round"];
 
@@ -238,67 +269,65 @@ const scores={};
 j.table.rows.forEach(row=>{
 
 const round=row.c[roundCol]?.v;
-const comp=row.c[compCol]?.v;
+if(String(round)!==String(state.round)) return;
+
 let judge=row.c[judgeCol]?.v;
+const comp=row.c[compCol]?.v;
 const score=row.c[scoreCol]?.v;
 
-if(judge){
-judge = judge.split(" ")[0];
-}
-
-if(String(round)!==String(state.round)) return;
+if(judge) judge=judge.split(" ")[0];
 
 if(!scores[comp]) scores[comp]={};
 
 scores[comp][judge]=score;
+
 });
 
 updateScoreboard(scores);
 
 }
 
+/* -------- SCOREBOARD LOGIC -------- */
+
 function updateScoreboard(scores){
 
-const ordered = state.competitors.map(c=>String(c.number));
+const ordered=state.competitors.map(c=>c.number);
 
-let activeComp = null;
+let active=null;
 
-/* determine active competitor */
 for(let i=0;i<ordered.length;i++){
 
-const c = ordered[i];
-const next = ordered[i+1];
+const c=ordered[i];
+const next=ordered[i+1];
 
 if(scores[c] && !scores[next]){
-activeComp = c;
+active=c;
 break;
 }
 
 }
 
-/* fallback */
-if(!activeComp){
+if(!active){
 
 for(let i=ordered.length-1;i>=0;i--){
 if(scores[ordered[i]]){
-activeComp = ordered[i];
+active=ordered[i];
 break;
 }
 }
 
 }
 
-/* if still nothing show first competitor */
-if(!activeComp){
-activeComp = ordered[0];
-}
+if(!active) active=ordered[0];
 
-state.currentComp = activeComp;
+state.currentComp=active;
 
-renderCurrent(scores[activeComp] || {});
+renderCurrent(scores[active]||{});
 buildHistory(scores);
 
 }
+
+/* -------- RENDER CURRENT -------- */
 
 function renderCurrent(scoreObj){
 
@@ -313,6 +342,7 @@ const div=document.createElement("div");
 if(scoreObj[j]!==undefined){
 
 div.textContent=parseFloat(scoreObj[j]).toFixed(1);
+div.className="score";
 
 }else{
 
@@ -327,17 +357,19 @@ scoreRow.appendChild(div);
 
 }
 
+/* -------- HISTORY -------- */
+
 function buildHistory(scores){
 
-const ordered = state.competitors.map(c=>String(c.number));
+const ordered=state.competitors.map(c=>c.number);
 
 history.innerHTML="";
 
-const finished = [];
+const finished=[];
 
 ordered.forEach((c,i)=>{
 
-const next = ordered[i+1];
+const next=ordered[i+1];
 
 if(scores[c] && scores[next]){
 finished.push(c);
@@ -355,8 +387,7 @@ let text=`R${state.round} | ${c} | `;
 state.judges.forEach(j=>{
 
 const s=scores[c]?.[j];
-
-text+= s ? parseFloat(s).toFixed(1)+" " : "— ";
+text+=s?parseFloat(s).toFixed(1)+" ":"— ";
 
 });
 
@@ -367,8 +398,8 @@ history.appendChild(row);
 });
 
 }
-  
-}
+
+/* -------- BOOT -------- */
 
 async function boot(){
 
