@@ -265,42 +265,30 @@ updateScoreboard(scores);
 
 function updateScoreboard(scores){
 
-const ordered=state.competitors.map(c=>c.number);
+const ordered = state.competitors.map(c => c.number);
 
-let active=null;
+/* find most recent competitor that has any score */
+let active = null;
 
-for(let i=0;i<ordered.length;i++){
-
-const c=ordered[i];
-const next=ordered[i+1];
-
-if(scores[c] && !scores[next]){
-active=c;
-break;
-}
-
-}
-
-if(!active){
-
-for(let i=ordered.length-1;i>=0;i--){
+for(let i = ordered.length - 1; i >= 0; i--){
 if(scores[ordered[i]]){
-active=ordered[i];
+active = ordered[i];
 break;
 }
 }
 
+/* if nothing scored yet show first competitor */
+if(!active){
+active = ordered[0];
 }
 
-if(!active) active=ordered[0];
+state.currentComp = active;
 
-state.currentComp=active;
-
-renderCurrent(scores[active]||{});
+renderCurrent(scores[active] || {});
 buildHistory(scores);
 
 }
-
+  
 /* ---------- CURRENT ---------- */
 
 function renderCurrent(scoreObj){
