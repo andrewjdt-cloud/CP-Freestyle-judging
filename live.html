@@ -253,18 +253,27 @@ updateScoreboard(scores);
 
 function updateScoreboard(scores){
 
-const orderedComps=state.competitors.map(c=>c.number);
+const ordered = state.competitors.map(c=>c.number);
 
-let current=null;
+let current = null;
 
-for(let c of orderedComps){
-
-if(!scores[c]){
-
-current=c;
-break;
-
+/* find highest competitor with scores */
+ordered.forEach(c=>{
+if(scores[c]){
+current = c;
 }
+});
+
+/* if no scores yet show first competitor */
+if(!current){
+current = ordered[0];
+}
+
+state.currentComp = current;
+
+renderCurrent(scores[current] || {});
+
+buildHistory(scores);
 
 }
 
