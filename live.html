@@ -260,14 +260,14 @@ const ordered = state.competitors.map(c=>c.number);
 
 let current = null;
 
-/* find highest competitor with scores */
+/* find latest competitor that has scores */
 ordered.forEach(c=>{
 if(scores[c]){
 current = c;
 }
 });
 
-/* if no scores yet show first competitor */
+/* if nothing scored yet show first competitor */
 if(!current){
 current = ordered[0];
 }
@@ -275,7 +275,6 @@ current = ordered[0];
 state.currentComp = current;
 
 renderCurrent(scores[current] || {});
-
 buildHistory(scores);
 
 }
