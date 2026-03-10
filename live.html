@@ -328,42 +328,38 @@ scoreRow.appendChild(div);
 
 function buildHistory(scores){
 
-const ordered = state.competitors.map(c=>c.number);
-
 history.innerHTML="";
 
-const finished=[];
+/* find index of current competitor */
+const currentIndex = state.competitors.findIndex(
+c => c.number === state.currentComp
+);
 
-for(let i=0;i<ordered.length;i++){
+if(currentIndex === -1) return;
 
-const current = ordered[i];
-const next = ordered[i+1];
+/* previous 3 competitors in order */
+const historyCompetitors = state.competitors
+.slice(Math.max(0, currentIndex-3), currentIndex)
+.reverse();
 
-if(scores[current] && scores[next]){
-finished.push(current);
-}
-
-}
-
-/* remove active competitor */
-const filtered = finished.filter(c => c !== state.currentComp);
-
-filtered.reverse().slice(0,3).forEach(c=>{
+historyCompetitors.forEach(c=>{
 
 const row=document.createElement("div");
 row.className="history-row";
 
+/* competitor number */
 const comp=document.createElement("div");
-comp.textContent=c;
+comp.textContent=c.number;
 row.appendChild(comp);
 
+/* scores */
 state.judges.forEach(j=>{
 
 const cell=document.createElement("div");
 
-const s=scores[c]?.[j];
+const s=scores[c.number]?.[j];
 
-cell.textContent=s ? Number(s).toFixed(1) : "—";
+cell.textContent = s ? Number(s).toFixed(1) : "—";
 
 row.appendChild(cell);
 
