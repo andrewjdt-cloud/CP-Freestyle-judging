@@ -245,15 +245,20 @@ j.table.rows.forEach(row=>{
 const round=row.c[roundCol]?.v;
 if(String(round)!==String(state.round)) return;
 
-let judge=row.c[judgeCol]?.v;
+let judgeFull=row.c[judgeCol]?.v;
 let comp=String(row.c[compCol]?.v);
 const score=row.c[scoreCol]?.v;
 
-if(judge) judge=judge.split(" ")[0];
+if(!judgeFull) return;
+
+/* match judge to ScoreboardID from judges list */
+const judgeID = state.judges.find(j => judgeFull.startsWith(j));
+
+if(!judgeID) return;
 
 if(!scores[comp]) scores[comp]={};
 
-scores[comp][judge]=Number(score);
+scores[comp][judgeID]=parseFloat(score);
 
 });
 
