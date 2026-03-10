@@ -236,15 +236,18 @@ j.table.rows.forEach(row=>{
 
 const round=row.c[roundCol]?.v;
 const comp=row.c[compCol]?.v;
-const judge=row.c[judgeCol]?.v;
+let judge=row.c[judgeCol]?.v;
 const score=row.c[scoreCol]?.v;
+
+if(judge){
+judge = judge.split(" ")[0];
+}
 
 if(String(round)!==String(state.round)) return;
 
 if(!scores[comp]) scores[comp]={};
 
 scores[comp][judge]=score;
-
 });
 
 updateScoreboard(scores);
