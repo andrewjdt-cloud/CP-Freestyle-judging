@@ -280,19 +280,6 @@ buildHistory(scores);
 
 }
 
-if(!current){
-
-current=orderedComps[orderedComps.length-1];
-
-}
-
-state.currentComp=current;
-
-renderCurrent(scores[current]||{});
-
-buildHistory(scores);
-
-}
 
 function renderCurrent(scoreObj){
 
