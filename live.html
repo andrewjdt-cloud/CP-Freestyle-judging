@@ -225,15 +225,19 @@ const j=parseGViz(await r.text());
 
 const headers=j.table.cols.map(c=>c.label.trim().toLowerCase().replace(/\s+/g,""));
 const h=Object.fromEntries(headers.map((k,i)=>[k,i]));
+const judgeCol = h["judgeid"] ?? h["judge"];
+const compCol = h["competitornumber"] ?? h["competitor"];
+const scoreCol = h["score"];
+const roundCol = h["round"];
 
 const scores={};
 
 j.table.rows.forEach(row=>{
 
-const round=row.c[h["round"]]?.v;
-const comp=row.c[h["competitornumber"]]?.v;
-const judge=row.c[h["judgeid"]]?.v;
-const score=row.c[h["score"]]?.v;
+const round=row.c[roundCol]?.v;
+const comp=row.c[compCol]?.v;
+const judge=row.c[judgeCol]?.v;
+const score=row.c[scoreCol]?.v;
 
 if(String(round)!==String(state.round)) return;
 
