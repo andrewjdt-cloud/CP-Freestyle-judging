@@ -275,12 +275,13 @@ let judge=row.c[judgeCol]?.v;
 const comp=row.c[compCol]?.v;
 const score=row.c[scoreCol]?.v;
 
-if(judge) judge=judge.split(" ")[0];
+if(judge){
+judge = judge.split(" ")[0]; // convert "J1 Andrew D" → "J1"
+}
 
 if(!scores[comp]) scores[comp]={};
 
-scores[comp][judge]=score;
-
+scores[String(comp)][judge]=Number(score);
 });
 
 updateScoreboard(scores);
@@ -373,7 +374,7 @@ const judgeScores = scores[c];
 if(!judgeScores) return;
 
 /* competitor complete when all judges scored */
-if(Object.keys(judgeScores).length === state.judges.length){
+if(state.judges.every(j => judgeScores[j] !== undefined)){
 completed.push(c);
 }
 
