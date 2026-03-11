@@ -64,6 +64,28 @@ gap:40px;
 margin-top:10px;
 }
 
+.score-wrap{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.score-bar{
+height:6px;
+width:80%;
+background:#222;
+margin-top:8px;
+border-radius:3px;
+overflow:hidden;
+}
+
+.score-fill{
+height:100%;
+background:#ff7a00;
+width:0%;
+transition:width .4s ease;
+}
+  
 /* score animation */
 
 .score{
@@ -441,38 +463,53 @@ buildHistory(scores);
 
 function renderCurrent(scoreObj){
 
-const compObj=state.competitors.find(
-c=>c.number===state.currentComp
+const compObj = state.competitors.find(
+c => c.number === state.currentComp
 );
 
-compNumberEl.style.opacity=0;
-compNumberEl.style.transform="translateY(-8px)";
-
-setTimeout(()=>{
-compNumberEl.textContent=`${compObj.number}  ${compObj.name}`;
-compNumberEl.style.opacity=1;
-compNumberEl.style.transform="translateY(0)";
-},120);
+compNumberEl.textContent=`${compObj.number} ${compObj.name}`;
 
 scoreRowEl.innerHTML="";
 
 state.judges.forEach(j=>{
 
-const div=document.createElement("div");
+const wrap=document.createElement("div");
+wrap.className="score-wrap";
+
+const score=document.createElement("div");
 
 if(scoreObj[j]!==undefined){
 
-div.textContent=scoreObj[j].toFixed(1);
-div.className="score";
+const value=scoreObj[j];
+
+score.textContent=value.toFixed(1);
+score.className="score";
+
+const bar=document.createElement("div");
+bar.className="score-bar";
+
+const fill=document.createElement("div");
+fill.className="score-fill";
+
+/* assuming score range 0–10 */
+
+fill.style.width=(value*10)+"%";
+
+bar.appendChild(fill);
+
+wrap.appendChild(score);
+wrap.appendChild(bar);
 
 }else{
 
-div.textContent="—";
-div.className="waiting";
+score.textContent="—";
+score.className="waiting";
+
+wrap.appendChild(score);
 
 }
 
-scoreRowEl.appendChild(div);
+scoreRowEl.appendChild(wrap);
 
 });
 
@@ -504,7 +541,7 @@ const s = scores[c.number]?.[j];
 return s ? Number(s).toFixed(1) : "—";
 }).join(", ");
 
-row.textContent = `${c.number}   ${scoreText}`;
+row.textContent = `#${c.number}  -  ${scoreText}`;
 
 historyContainer.appendChild(row);
 
