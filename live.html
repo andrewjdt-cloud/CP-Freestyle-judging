@@ -101,6 +101,83 @@ margin:2px 0;
 font-family:monospace;
 }
 
+/* ------------------------------
+LARGE SCREENS (TV / PROJECTOR)
+------------------------------ */
+
+@media (min-width:1400px){
+
+.comp-number{
+font-size:72px;
+}
+
+.scores{
+font-size:96px;
+gap:60px;
+}
+
+.judges{
+font-size:32px;
+grid-template-columns:repeat(auto-fit,160px);
+}
+
+.scores{
+grid-template-columns:repeat(auto-fit,160px);
+}
+
+.history{
+font-size:18px;
+}
+
+}
+
+
+/* ------------------------------
+TABLET / SMALL LAPTOP
+------------------------------ */
+
+@media (max-width:1000px){
+
+.comp-number{
+font-size:46px;
+}
+
+.scores{
+font-size:60px;
+gap:25px;
+}
+
+}
+
+
+/* ------------------------------
+MOBILE PORTRAIT
+------------------------------ */
+
+@media (max-width:600px) and (orientation:portrait){
+
+.comp-number{
+font-size:34px;
+margin-bottom:15px;
+}
+
+.judges{
+grid-template-columns:repeat(3,1fr);
+font-size:22px;
+}
+
+.scores{
+grid-template-columns:repeat(3,1fr);
+font-size:48px;
+gap:10px;
+}
+
+.history{
+font-size:14px;
+}
+
+}
+  
 </style>
 </head>
 
