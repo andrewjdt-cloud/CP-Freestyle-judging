@@ -16,7 +16,7 @@ padding:20px;
 text-align:center;
 }
 
-/* HEADER */
+/* EVENT HEADER */
 
 .event{margin-bottom:20px;}
 
@@ -24,33 +24,36 @@ text-align:center;
 .event-location{font-size:16px;color:#bbb;}
 .event-round{font-size:18px;color:#aaa;}
 
-/* CURRENT COMP */
+/* CURRENT COMPETITOR */
 
 .current{margin-top:30px;}
 
 .comp-number{
-font-size:72px;
-font-weight:bold;
-margin-bottom:25px;
+font-size:56px;
+font-weight:600;
+margin-bottom:20px;
 }
 
-/* JUDGE GRID */
+/* JUDGE HEADER ROW */
 
 .judges{
 display:grid;
-grid-template-columns:repeat(auto-fit,100px);
+grid-template-columns:repeat(auto-fit,85px);
 justify-content:center;
-font-size:30px;
-margin-bottom:10px;
+font-size:26px;
+margin-bottom:8px;
 }
+
+/* CURRENT SCORES */
 
 .scores{
 display:grid;
-grid-template-columns:repeat(auto-fit,100px);
+grid-template-columns:repeat(auto-fit,85px);
 justify-content:center;
-font-size:48px;
+font-size:64px;
 font-weight:bold;
 color:#ff7a00;
+gap:8px;
 }
 
 /* score animation */
@@ -70,16 +73,16 @@ to{opacity:1;transform:translateY(0);}
 /* HISTORY */
 
 .history{
-margin-top:40px;
-font-size:20px;
-color:#bbb;
+margin-top:35px;
+font-size:16px;
+color:#3cff6a;
 }
 
 .history-row{
 display:grid;
-grid-template-columns:80px repeat(auto-fit,100px);
+grid-template-columns:70px repeat(auto-fit,85px);
 justify-content:center;
-margin:6px 0;
+margin:3px 0;
 }
 
 </style>
@@ -106,19 +109,19 @@ margin:6px 0;
 
 <script>
 
-/* ---------- DOM ELEMENTS ---------- */
+/* DOM ELEMENTS */
 
-const eventNameEl = document.getElementById("eventName");
-const eventLocationEl = document.getElementById("eventLocation");
-const eventRoundEl = document.getElementById("eventRound");
+const eventNameEl=document.getElementById("eventName");
+const eventLocationEl=document.getElementById("eventLocation");
+const eventRoundEl=document.getElementById("eventRound");
 
-const compNumberEl = document.getElementById("compNumber");
-const judgeHeadersEl = document.getElementById("judgeHeaders");
-const scoreRowEl = document.getElementById("scoreRow");
+const compNumberEl=document.getElementById("compNumber");
+const judgeHeadersEl=document.getElementById("judgeHeaders");
+const scoreRowEl=document.getElementById("scoreRow");
 
-const historyContainer = document.getElementById("historyContainer");
+const historyContainer=document.getElementById("historyContainer");
 
-/* ---------- CONFIG ---------- */
+/* CONFIG */
 
 const SHEET_ID="1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 
@@ -130,7 +133,7 @@ const RESPONSES_GID="152250623";
 const params=new URLSearchParams(location.search);
 const tokenParam=params.get("token");
 
-/* ---------- STATE ---------- */
+/* STATE */
 
 let state={
 round:1,
@@ -142,13 +145,13 @@ competitors:[],
 currentComp:null
 };
 
-/* ---------- GVIZ PARSER ---------- */
+/* PARSE GOOGLE GVIZ */
 
 function parseGViz(t){
 return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
 }
 
-/* ---------- EVENT CONFIG ---------- */
+/* LOAD EVENT CONFIG */
 
 async function loadEventConfig(){
 
@@ -180,7 +183,7 @@ eventRoundEl.textContent=`Round ${state.round}`;
 
 }
 
-/* ---------- JUDGES ---------- */
+/* LOAD JUDGES */
 
 async function loadJudges(){
 
@@ -221,7 +224,7 @@ judgeHeadersEl.appendChild(div);
 
 }
 
-/* ---------- COMPETITORS ---------- */
+/* LOAD COMPETITORS */
 
 async function loadCompetitors(){
 
@@ -232,13 +235,16 @@ const r=await fetch(
 const j=parseGViz(await r.text());
 
 state.competitors=j.table.rows.map(row=>({
+
 order:Number(row.c[0]?.v||0),
-number:String(row.c[1]?.v)
+number:String(row.c[1]?.v),
+name:row.c[2]?.v||""
+
 })).sort((a,b)=>a.order-b.order);
 
 }
 
-/* ---------- POLL RESPONSES ---------- */
+/* POLL RESPONSES */
 
 async function pollResponses(){
 
@@ -269,8 +275,9 @@ const score=row.c[scoreCol]?.v;
 
 if(!judgeFull) return;
 
-/* match judge using ScoreboardID (J1,J2...) */
-const judgeID = state.judges.find(j => judgeFull.startsWith(j));
+/* match judge using ScoreboardID */
+
+const judgeID=state.judges.find(j=>judgeFull.startsWith(j));
 
 if(!judgeID) return;
 
@@ -284,13 +291,12 @@ updateScoreboard(scores);
 
 }
 
-/* ---------- SCOREBOARD LOGIC ---------- */
+/* SCOREBOARD LOGIC */
 
 function updateScoreboard(scores){
 
-const ordered = state.competitors.map(c => c.number);
+const ordered=state.competitors.map(c=>c.number);
 
-/* find latest competitor with scores */
 let active=null;
 
 for(let i=ordered.length-1;i>=0;i--){
@@ -309,11 +315,15 @@ buildHistory(scores);
 
 }
 
-/* ---------- CURRENT DISPLAY ---------- */
+/* CURRENT COMPETITOR */
 
 function renderCurrent(scoreObj){
 
-compNumberEl.textContent=`COMP ${state.currentComp}`;
+const compObj=state.competitors.find(
+c=>c.number===state.currentComp
+);
+
+compNumberEl.textContent=`${compObj.number}  ${compObj.name}`;
 
 scoreRowEl.innerHTML="";
 
@@ -339,19 +349,19 @@ scoreRowEl.appendChild(div);
 
 }
 
-/* ---------- HISTORY ---------- */
+/* HISTORY */
 
 function buildHistory(scores){
 
 historyContainer.innerHTML="";
 
-const currentIndex = state.competitors.findIndex(
-c => c.number === state.currentComp
+const currentIndex=state.competitors.findIndex(
+c=>c.number===state.currentComp
 );
 
-if(currentIndex === -1) return;
+if(currentIndex===-1) return;
 
-const previous = state.competitors
+const previous=state.competitors
 .slice(Math.max(0,currentIndex-3),currentIndex)
 .reverse();
 
@@ -370,7 +380,7 @@ const cell=document.createElement("div");
 
 const s=scores[c.number]?.[j];
 
-cell.textContent = s ? Number(s).toFixed(1) : "—";
+cell.textContent=s?Number(s).toFixed(1):"—";
 
 row.appendChild(cell);
 
@@ -382,7 +392,7 @@ historyContainer.appendChild(row);
 
 }
 
-/* ---------- BOOT ---------- */
+/* BOOT */
 
 async function boot(){
 
