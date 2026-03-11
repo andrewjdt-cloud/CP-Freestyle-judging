@@ -38,22 +38,22 @@ margin-bottom:20px;
 
 .judges{
 display:grid;
-grid-template-columns:repeat(auto-fit,85px);
+grid-template-columns:repeat(auto-fit,140px);
 justify-content:center;
-font-size:26px;
-margin-bottom:8px;
+font-size:30px;
+margin-bottom:10px;
 }
 
 /* CURRENT SCORES */
 
 .scores{
 display:grid;
-grid-template-columns:repeat(auto-fit,85px);
+grid-template-columns:repeat(auto-fit,140px);
 justify-content:center;
-font-size:64px;
+font-size:78px;
 font-weight:bold;
 color:#ff7a00;
-gap:8px;
+gap:25px;
 }
 
 /* score animation */
@@ -73,16 +73,15 @@ to{opacity:1;transform:translateY(0);}
 /* HISTORY */
 
 .history{
-margin-top:35px;
+margin-top:40px;
 font-size:16px;
 color:#3cff6a;
+line-height:1.4;
 }
 
 .history-row{
-display:grid;
-grid-template-columns:70px repeat(auto-fit,85px);
-justify-content:center;
-margin:3px 0;
+margin:2px 0;
+font-family:monospace;
 }
 
 </style>
@@ -355,13 +354,13 @@ function buildHistory(scores){
 
 historyContainer.innerHTML="";
 
-const currentIndex=state.competitors.findIndex(
-c=>c.number===state.currentComp
+const currentIndex = state.competitors.findIndex(
+c => c.number === state.currentComp
 );
 
-if(currentIndex===-1) return;
+if(currentIndex === -1) return;
 
-const previous=state.competitors
+const previous = state.competitors
 .slice(Math.max(0,currentIndex-3),currentIndex)
 .reverse();
 
@@ -370,21 +369,12 @@ previous.forEach(c=>{
 const row=document.createElement("div");
 row.className="history-row";
 
-const comp=document.createElement("div");
-comp.textContent=c.number;
-row.appendChild(comp);
+let scoreText = state.judges.map(j=>{
+const s = scores[c.number]?.[j];
+return s ? Number(s).toFixed(1) : "—";
+}).join(", ");
 
-state.judges.forEach(j=>{
-
-const cell=document.createElement("div");
-
-const s=scores[c.number]?.[j];
-
-cell.textContent=s?Number(s).toFixed(1):"—";
-
-row.appendChild(cell);
-
-});
+row.textContent = `${c.number}   ${scoreText}`;
 
 historyContainer.appendChild(row);
 
