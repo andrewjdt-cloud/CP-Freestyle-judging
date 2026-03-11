@@ -490,36 +490,28 @@ wrap.className="score-wrap";
 
 const score=document.createElement("div");
 
-if(scoreObj[j]!==undefined){
+if(scoreObj[j]){
 
 const value=scoreObj[j].score;
 
 score.textContent=value.toFixed(1);
 score.className="score";
 
+wrap.appendChild(score);
+
+/* score bar */
+
 const bar=document.createElement("div");
 bar.className="score-bar";
 
 const fill=document.createElement("div");
 fill.className="score-fill";
-
-/* assuming score range 0–10 */
-
 fill.style.width=(value*10)+"%";
 
 bar.appendChild(fill);
-
-wrap.appendChild(score);
 wrap.appendChild(bar);
 
-}else{
-
-score.textContent="—";
-score.className="waiting";
-
-wrap.appendChild(score);
-
-/* show penalties */
+/* penalties */
 
 const penaltyText=scoreObj[j].penalties;
 
@@ -528,15 +520,18 @@ if(penaltyText){
 const pen=document.createElement("div");
 pen.className="penalty";
 
-/* limit to max two penalties */
-
 const parts=penaltyText.split(",").slice(0,2);
-
 pen.textContent=parts.join(" ");
 
 wrap.appendChild(pen);
 
 }
+
+}else{
+
+score.textContent="—";
+score.className="waiting";
+wrap.appendChild(score);
 
 }
 
@@ -569,7 +564,7 @@ row.className="history-row";
 
 let scoreText = state.judges.map(j=>{
 const s = scores[c.number]?.[j];
-return s ? Number(s).toFixed(1) : "—";
+return s ? Number(s.score).toFixed(1) : "—";
 }).join(", ");
 
 row.textContent = `#${c.number}  -  ${scoreText}`;
