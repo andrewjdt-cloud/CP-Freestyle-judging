@@ -85,6 +85,14 @@ background:#ff7a00;
 width:0%;
 transition:width .4s ease;
 }
+
+.penalty{
+font-size:14px;
+color:#ff3b3b;
+margin-top:4px;
+font-weight:600;
+letter-spacing:1px;
+}
   
 /* score animation */
 
@@ -377,7 +385,8 @@ const judgeCol=h["judgeid"];
 const compCol=h["competitornumber"];
 const scoreCol=h["score"];
 const roundCol=h["round"];
-
+const penaltyCol=h["penalties"];
+  
 const scores={};
 
 j.table.rows.forEach(row=>{
@@ -399,7 +408,10 @@ if(!judgeID) return;
 
 if(!scores[comp]) scores[comp]={};
 
-scores[comp][judgeID]=parseFloat(score);
+scores[comp][judgeID]={
+score:parseFloat(score),
+penalties:row.c[penaltyCol]?.v || ""
+};
 
 });
 
@@ -480,7 +492,7 @@ const score=document.createElement("div");
 
 if(scoreObj[j]!==undefined){
 
-const value=scoreObj[j];
+const value=scoreObj[j].score;
 
 score.textContent=value.toFixed(1);
 score.className="score";
@@ -506,6 +518,25 @@ score.textContent="—";
 score.className="waiting";
 
 wrap.appendChild(score);
+
+/* show penalties */
+
+const penaltyText=scoreObj[j].penalties;
+
+if(penaltyText){
+
+const pen=document.createElement("div");
+pen.className="penalty";
+
+/* limit to max two penalties */
+
+const parts=penaltyText.split(",").slice(0,2);
+
+pen.textContent=parts.join(" ");
+
+wrap.appendChild(pen);
+
+}
 
 }
 
