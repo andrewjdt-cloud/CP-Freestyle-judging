@@ -235,7 +235,8 @@ location:"",
 liveToken:"",
 judges:[],
 competitors:[],
-currentComp:null
+currentComp:null,
+lastLockedIndex:-1
 };
 
 /* PARSE GOOGLE GVIZ */
@@ -388,22 +389,50 @@ updateScoreboard(scores);
 
 function updateScoreboard(scores){
 
-const ordered=state.competitors.map(c=>c.number);
+const ordered = state.competitors.map(c => c.number);
 
-let active=null;
+let highestSeenIndex = -1;
 
-for(let i=ordered.length-1;i>=0;i--){
-if(scores[ordered[i]]){
-active=ordered[i];
-break;
+/* find highest competitor that has ANY score */
+
+ordered.forEach((comp,index)=>{
+if(scores[comp]){
+if(index > highestSeenIndex){
+highestSeenIndex = index;
 }
 }
+});
 
-if(!active) active=ordered[0];
+/* if nothing scored yet */
 
-state.currentComp=active;
+if(highestSeenIndex === -1){
+state.currentComp = ordered[0];
+renderCurrent({});
+buildHistory(scores);
+return;
+}
 
-renderCurrent(scores[active]||{});
+/* lock previous competitor */
+
+if(highestSeenIndex > state.lastLockedIndex){
+
+state.lastLockedIndex = highestSeenIndex - 1;
+
+if(state.lastLockedIndex < 0){
+state.lastLockedIndex = 0;
+}
+
+}
+
+/* determine current competitor */
+
+const activeIndex = Math.max(highestSeenIndex, state.lastLockedIndex);
+
+state.currentComp = ordered[activeIndex];
+
+/* render */
+
+renderCurrent(scores[state.currentComp] || {});
 buildHistory(scores);
 
 }
