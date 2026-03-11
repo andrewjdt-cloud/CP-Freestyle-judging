@@ -102,9 +102,23 @@ margin:6px 0;
 
 </div>
 
-<div id="history" class="history"></div>
+<div id="historyContainer" class="history"></div>
 
 <script>
+
+/* ---------- DOM ELEMENTS ---------- */
+
+const eventNameEl = document.getElementById("eventName");
+const eventLocationEl = document.getElementById("eventLocation");
+const eventRoundEl = document.getElementById("eventRound");
+
+const compNumberEl = document.getElementById("compNumber");
+const judgeHeadersEl = document.getElementById("judgeHeaders");
+const scoreRowEl = document.getElementById("scoreRow");
+
+const historyContainer = document.getElementById("historyContainer");
+
+/* ---------- CONFIG ---------- */
 
 const SHEET_ID="1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 
@@ -116,6 +130,8 @@ const RESPONSES_GID="152250623";
 const params=new URLSearchParams(location.search);
 const tokenParam=params.get("token");
 
+/* ---------- STATE ---------- */
+
 let state={
 round:1,
 eventName:"",
@@ -126,7 +142,7 @@ competitors:[],
 currentComp:null
 };
 
-/* ---------- PARSE GOOGLE GVIZ ---------- */
+/* ---------- GVIZ PARSER ---------- */
 
 function parseGViz(t){
 return JSON.parse(t.substring(t.indexOf("{"),t.lastIndexOf("}")+1));
@@ -158,9 +174,9 @@ document.body.innerHTML="<h1>Access denied</h1>";
 throw new Error("Bad token");
 }
 
-eventName.textContent=state.eventName;
-eventLocation.textContent=state.location;
-eventRound.textContent=`Round ${state.round}`;
+eventNameEl.textContent=state.eventName;
+eventLocationEl.textContent=state.location;
+eventRoundEl.textContent=`Round ${state.round}`;
 
 }
 
@@ -193,12 +209,14 @@ renderJudgeHeaders();
 
 function renderJudgeHeaders(){
 
-judgeHeaders.innerHTML="";
+judgeHeadersEl.innerHTML="";
 
 state.judges.forEach(j=>{
+
 const div=document.createElement("div");
 div.textContent=j;
-judgeHeaders.appendChild(div);
+judgeHeadersEl.appendChild(div);
+
 });
 
 }
@@ -251,7 +269,7 @@ const score=row.c[scoreCol]?.v;
 
 if(!judgeFull) return;
 
-/* match judge to ScoreboardID from judges list */
+/* match judge using ScoreboardID (J1,J2...) */
 const judgeID = state.judges.find(j => judgeFull.startsWith(j));
 
 if(!judgeID) return;
@@ -272,35 +290,32 @@ function updateScoreboard(scores){
 
 const ordered = state.competitors.map(c => c.number);
 
-/* find most recent competitor that has any score */
-let active = null;
+/* find latest competitor with scores */
+let active=null;
 
-for(let i = ordered.length - 1; i >= 0; i--){
+for(let i=ordered.length-1;i>=0;i--){
 if(scores[ordered[i]]){
-active = ordered[i];
+active=ordered[i];
 break;
 }
 }
 
-/* if nothing scored yet show first competitor */
-if(!active){
-active = ordered[0];
-}
+if(!active) active=ordered[0];
 
-state.currentComp = active;
+state.currentComp=active;
 
-renderCurrent(scores[active] || {});
+renderCurrent(scores[active]||{});
 buildHistory(scores);
 
 }
-  
-/* ---------- CURRENT ---------- */
+
+/* ---------- CURRENT DISPLAY ---------- */
 
 function renderCurrent(scoreObj){
 
-compNumber.textContent=`COMP ${state.currentComp}`;
+compNumberEl.textContent=`COMP ${state.currentComp}`;
 
-scoreRow.innerHTML="";
+scoreRowEl.innerHTML="";
 
 state.judges.forEach(j=>{
 
@@ -318,7 +333,7 @@ div.className="waiting";
 
 }
 
-scoreRow.appendChild(div);
+scoreRowEl.appendChild(div);
 
 });
 
@@ -326,30 +341,47 @@ scoreRow.appendChild(div);
 
 /* ---------- HISTORY ---------- */
 
-console.log("buildHistory called");
-  
 function buildHistory(scores){
 
-history.innerHTML="";
+historyContainer.innerHTML="";
 
-/* TEMP TEST CONTENT */
+const currentIndex = state.competitors.findIndex(
+c => c.number === state.currentComp
+);
+
+if(currentIndex === -1) return;
+
+const previous = state.competitors
+.slice(Math.max(0,currentIndex-3),currentIndex)
+.reverse();
+
+previous.forEach(c=>{
 
 const row=document.createElement("div");
 row.className="history-row";
 
-row.innerHTML=`
-<div>TEST</div>
-<div>1.1</div>
-<div>2.2</div>
-<div>3.3</div>
-<div>4.4</div>
-<div>5.5</div>
-`;
+const comp=document.createElement("div");
+comp.textContent=c.number;
+row.appendChild(comp);
 
-history.appendChild(row);
+state.judges.forEach(j=>{
+
+const cell=document.createElement("div");
+
+const s=scores[c.number]?.[j];
+
+cell.textContent = s ? Number(s).toFixed(1) : "—";
+
+row.appendChild(cell);
+
+});
+
+historyContainer.appendChild(row);
+
+});
 
 }
-  
+
 /* ---------- BOOT ---------- */
 
 async function boot(){
@@ -365,5 +397,6 @@ setInterval(pollResponses,2000);
 boot();
 
 </script>
+
 </body>
 </html>
