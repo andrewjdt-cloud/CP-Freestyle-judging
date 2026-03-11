@@ -18,7 +18,13 @@ text-align:center;
 
 /* EVENT HEADER */
 
-.event{margin-bottom:20px;}
+.event{
+margin-bottom:25px;
+padding-bottom:15px;
+border-bottom:3px solid #ff7a00;
+display:inline-block;
+min-width:600px;
+}
 
 .event-name{font-size:28px;font-weight:bold;}
 .event-location{font-size:16px;color:#bbb;}
@@ -32,6 +38,7 @@ text-align:center;
 font-size:56px;
 font-weight:600;
 margin-bottom:20px;
+transition:opacity .3s ease, transform .3s ease;
 }
 
 /* JUDGE HEADER ROW */
@@ -53,19 +60,29 @@ justify-content:center;
 font-size:78px;
 font-weight:bold;
 color:#ff7a00;
-gap:25px;
+gap:40px;
+margin-top:10px;
 }
 
 /* score animation */
 
 .score{
 opacity:0;
-transform:translateY(10px);
-animation:scoreIn .35s ease forwards;
+transform:translateY(8px) scale(0.95);
+animation:scoreIn .35s ease forwards, scoreGlow 1s ease;
 }
 
 @keyframes scoreIn{
-to{opacity:1;transform:translateY(0);}
+to{
+opacity:1;
+transform:translateY(0) scale(1);
+}
+}
+
+@keyframes scoreGlow{
+0%{text-shadow:0 0 0px #ff7a00;}
+50%{text-shadow:0 0 18px #ff7a00;}
+100%{text-shadow:0 0 0px #ff7a00;}
 }
 
 .waiting{color:#444}
@@ -322,7 +339,14 @@ const compObj=state.competitors.find(
 c=>c.number===state.currentComp
 );
 
+compNumberEl.style.opacity=0;
+compNumberEl.style.transform="translateY(-8px)";
+
+setTimeout(()=>{
 compNumberEl.textContent=`${compObj.number}  ${compObj.name}`;
+compNumberEl.style.opacity=1;
+compNumberEl.style.transform="translateY(0)";
+},120);
 
 scoreRowEl.innerHTML="";
 
