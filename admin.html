@@ -1,13 +1,12 @@
 <!--
 CP Freestyle Judging System
 File: admin.html
-Version: v1.0
-Date: 2026-02-15
+Version: v1.1 READ-ONLY TEST
 Notes:
-- Production admin panel
-- Round open / close control
-- Judge enable / disable
-- Token-secured
+- Read-only competition setup dashboard
+- Does NOT write to Google Sheets
+- Uses existing AdminToken authentication
+- Safe testing version before editing features are added
 -->
 
 <!DOCTYPE html>
@@ -15,163 +14,681 @@ Notes:
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>CP Freestyle – Admin Panel</title>
 
 <style>
-body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0b0b0b;
-  color: #fff;
-  padding: 20px;
+
+*{
+  box-sizing:border-box;
 }
 
-.section {
-  background: #111;
-  border-radius: 14px;
-  padding: 16px;
-  margin-bottom: 20px;
+body{
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#0b0b0b;
+  color:#fff;
+  margin:0;
+  padding:20px;
 }
 
-h2 {
-  margin-bottom: 12px;
+.page{
+  max-width:1200px;
+  margin:auto;
 }
 
-button {
-  padding: 10px 14px;
-  font-size: 14px;
-  border-radius: 10px;
-  border: none;
-  background: #00c853;
-  color: #fff;
-  cursor: pointer;
+h1{
+  margin:0 0 6px;
+  font-size:28px;
 }
 
-button.danger {
-  background: #ff5252;
+.subtitle{
+  color:#aaa;
+  margin-bottom:24px;
 }
 
-button.small {
-  font-size: 13px;
-  padding: 6px 10px;
+.section{
+  background:#111;
+  border:1px solid #252525;
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:20px;
 }
 
-.judge {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 8px 0;
+.section h2{
+  margin:0 0 16px;
+  font-size:21px;
 }
 
-.error {
-  color: #ff5252;
-  margin-bottom: 12px;
+.section-note{
+  color:#888;
+  font-size:14px;
+  margin-top:-8px;
+  margin-bottom:16px;
 }
+
+.status{
+  display:inline-block;
+  padding:4px 9px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:600;
+}
+
+.yes{
+  background:#123d22;
+  color:#4ee881;
+}
+
+.no{
+  background:#421919;
+  color:#ff7070;
+}
+
+.info-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:12px;
+}
+
+.info-card{
+  background:#171717;
+  border-radius:10px;
+  padding:12px;
+}
+
+.info-label{
+  color:#888;
+  font-size:12px;
+  text-transform:uppercase;
+  margin-bottom:5px;
+  letter-spacing:.5px;
+}
+
+.info-value{
+  font-size:17px;
+  word-break:break-word;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:750px;
+}
+
+th{
+  text-align:left;
+  color:#999;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+  padding:10px;
+  border-bottom:1px solid #333;
+}
+
+td{
+  padding:11px 10px;
+  border-bottom:1px solid #222;
+  vertical-align:top;
+}
+
+tr:last-child td{
+  border-bottom:none;
+}
+
+.completed-row td{
+  color:#aaa;
+  background:#161616;
+}
+
+.token{
+  font-family:monospace;
+  font-size:13px;
+  color:#ccc;
+  word-break:break-all;
+}
+
+.copy-box{
+  display:flex;
+  gap:6px;
+  align-items:center;
+}
+
+.copy-text{
+  font-family:monospace;
+  font-size:12px;
+  color:#bbb;
+  word-break:break-all;
+  flex:1;
+}
+
+button{
+  padding:7px 10px;
+  border:none;
+  border-radius:7px;
+  background:#333;
+  color:#fff;
+  cursor:pointer;
+  white-space:nowrap;
+}
+
+button:hover{
+  background:#444;
+}
+
+.error{
+  background:#351717;
+  border:1px solid #702525;
+  color:#ff8b8b;
+  border-radius:10px;
+  padding:14px;
+  margin-bottom:20px;
+  display:none;
+}
+
+.loading{
+  color:#aaa;
+  padding:30px;
+  text-align:center;
+}
+
+.read-only-banner{
+  background:#172b3a;
+  border:1px solid #254a63;
+  color:#8fd3ff;
+  padding:12px 14px;
+  border-radius:10px;
+  margin-bottom:20px;
+  font-size:14px;
+}
+
+@media(max-width:600px){
+
+  body{
+    padding:12px;
+  }
+
+  h1{
+    font-size:24px;
+  }
+
+  .section{
+    padding:14px;
+  }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<h2>CP Freestyle – Admin Panel</h2>
-<div id="error" class="error"></div>
+<div class="page">
 
-<div id="adminContent" style="display:none;">
+  <h1>CP Freestyle – Admin Panel</h1>
+  <div class="subtitle">Competition setup and administration</div>
 
-  <div class="section">
-    <h3>Round Control</h3>
-    <button onclick="setRound('YES')">OPEN ROUND</button>
-    <button class="danger" onclick="setRound('NO')">CLOSE ROUND</button>
-    <div id="roundStatus" style="margin-top:8px;"></div>
+  <div class="read-only-banner">
+    🛟 <strong>Read-only test mode.</strong>
+    This page can view the competition setup but cannot change anything.
   </div>
 
-  <div class="section">
-    <h3>Judges</h3>
-    <div id="judges"></div>
+  <div id="error" class="error"></div>
+
+  <div id="loading" class="loading">
+    Loading competition information…
+  </div>
+
+  <div id="adminContent" style="display:none;">
+
+    <!-- COMPETITION SETUP -->
+
+    <div class="section">
+      <h2>🏁 Competition Setup</h2>
+      <div class="section-note">
+        Current values from the Event Config sheet.
+      </div>
+
+      <div id="eventConfigGrid" class="info-grid"></div>
+    </div>
+
+
+    <!-- JUDGES -->
+
+    <div class="section">
+      <h2>👨‍⚖️ Judges</h2>
+      <div class="section-note">
+        Current judge setup. This page is read-only for now.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Judge</th>
+              <th>Judge Token</th>
+              <th>Active</th>
+              <th>Scoreboard ID</th>
+              <th>Judge Link</th>
+            </tr>
+          </thead>
+
+          <tbody id="judgesBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- COMPETITORS -->
+
+    <div class="section">
+      <h2>🪂 Competitors & Moves</h2>
+      <div class="section-note">
+        This displays the existing competitor list exactly as read from the Competitors sheet.
+        A moves are the live moves currently used by the judging system. B moves are alternatives only.
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order</th>
+              <th>Number</th>
+              <th>Competitor</th>
+              <th>R1 A Move</th>
+              <th>R2 A Move</th>
+              <th>R3 A Move</th>
+              <th>R1 B Move</th>
+              <th>R2 B Move</th>
+              <th>R3 B Move</th>
+            </tr>
+          </thead>
+
+          <tbody id="competitorsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
 </div>
 
+
 <script>
+
+/* =========================================================
+   CP FREESTYLE ADMIN PANEL – READ ONLY VERSION
+   IMPORTANT: This file contains NO POST requests and makes
+   NO changes to the Google Sheet.
+========================================================= */
+
+
 /* ---------- CONFIG ---------- */
+
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+
 const EVENT_CONFIG_GID = "686531230";
 const JUDGES_GID = "1213944419";
 
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
+/*
+  IMPORTANT:
+  Replace this with the actual GID of your Competitors tab
+  if it is different.
+*/
+const COMPETITORS_GID = "51112637";
+
 
 /* ---------- AUTH ---------- */
+
 const params = new URLSearchParams(window.location.search);
 const adminToken = params.get("token");
 
-/* ---------- API ---------- */
-function api(payload) {
-  payload.adminToken = adminToken;
 
-  fetch(SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify(payload)
-  });
+/* ---------- DOM ---------- */
+
+const errorEl = document.getElementById("error");
+const loadingEl = document.getElementById("loading");
+const adminContentEl = document.getElementById("adminContent");
+
+const eventConfigGridEl = document.getElementById("eventConfigGrid");
+const judgesBodyEl = document.getElementById("judgesBody");
+const competitorsBodyEl = document.getElementById("competitorsBody");
+
+
+/* ---------- HELPERS ---------- */
+
+function showError(message){
+  errorEl.textContent = message;
+  errorEl.style.display = "block";
+  loadingEl.style.display = "none";
 }
 
-/* ---------- Event Config ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${EVENT_CONFIG_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
-    const cfg = {};
-    j.table.rows.forEach(r => cfg[String(r.c[0].v).trim()] = String(r.c[1].v).trim());
+function parseGViz(text){
+  return JSON.parse(
+    text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1)
+  );
+}
 
-    if (!adminToken || cfg.AdminToken !== adminToken) {
-      document.getElementById("error").textContent = "Access denied";
+async function fetchSheet(gid){
+
+  const url =
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json`;
+
+  const response = await fetch(url);
+
+  if(!response.ok){
+    throw new Error(`Could not load sheet data (${response.status})`);
+  }
+
+  const text = await response.text();
+  return parseGViz(text);
+
+}
+
+function cellValue(row, index){
+
+  if(!row || !row.c || !row.c[index]){
+    return "";
+  }
+
+  const value = row.c[index].v;
+
+  return value === null || value === undefined
+    ? ""
+    : String(value);
+
+}
+
+function yesNoBadge(value){
+
+  const span = document.createElement("span");
+  span.className =
+    "status " + (String(value).toUpperCase() === "YES" ? "yes" : "no");
+
+  span.textContent = value || "—";
+
+  return span;
+
+}
+
+
+/* ---------- LOAD EVENT CONFIG ---------- */
+
+async function loadEventConfig(){
+
+  const data = await fetchSheet(EVENT_CONFIG_GID);
+
+  const cfg = {};
+
+  data.table.rows.forEach(row => {
+
+    const key = cellValue(row, 0).trim();
+    const value = cellValue(row, 1).trim();
+
+    if(key){
+      cfg[key] = value;
+    }
+
+  });
+
+
+  /* AUTHENTICATION — SAME IDEA AS EXISTING ADMIN PAGE */
+
+  if(!adminToken || cfg.AdminToken !== adminToken){
+
+    throw new Error("Access denied — invalid or missing Admin token.");
+
+  }
+
+
+  /* Display the important setup fields */
+
+  const fields = [
+    ["Event Name", cfg.EventName],
+    ["Event Location", cfg.Location],
+    ["Round / Round Name", cfg.Round],
+    ["Round Open", cfg.RoundOpen],
+    ["Active Event", cfg.ActiveEvent],
+    ["Live Scoreboard Token", cfg.LiveToken]
+  ];
+
+  eventConfigGridEl.innerHTML = "";
+
+  fields.forEach(([label, value]) => {
+
+    const card = document.createElement("div");
+    card.className = "info-card";
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "info-label";
+    labelEl.textContent = label;
+
+    const valueEl = document.createElement("div");
+    valueEl.className = "info-value";
+
+    if(label === "Round Open" || label === "Active Event"){
+      valueEl.appendChild(yesNoBadge(value));
+    }else{
+      valueEl.textContent = value || "—";
+    }
+
+    card.appendChild(labelEl);
+    card.appendChild(valueEl);
+
+    eventConfigGridEl.appendChild(card);
+
+  });
+
+}
+
+
+/* ---------- LOAD JUDGES ---------- */
+
+async function loadJudges(){
+
+  const data = await fetchSheet(JUDGES_GID);
+
+  judgesBodyEl.innerHTML = "";
+
+  data.table.rows.forEach((row, index) => {
+
+    /*
+      Judges columns:
+      A = Judge Name
+      B = Judge Token
+      C = Active YES/NO
+      D = Scoreboard ID
+      E = Judge Link
+    */
+
+    const name = cellValue(row, 0);
+    const token = cellValue(row, 1);
+    const active = cellValue(row, 2);
+    const scoreboardID = cellValue(row, 3);
+    const judgeLink = cellValue(row, 4);
+
+    /*
+      Show all rows that contain something.
+      This lets us see unused judge slots as well if desired.
+    */
+
+    if(!name && !token && !active && !scoreboardID && !judgeLink){
       return;
     }
 
-    adminContent.style.display = "block";
-    roundStatus.textContent = "Current RoundOpen: " + (cfg.RoundOpen || "UNKNOWN");
-  });
+    const tr = document.createElement("tr");
 
-/* ---------- Round Control ---------- */
-function setRound(value) {
-  api({ action: "setRoundOpen", value });
-  roundStatus.textContent = "Current RoundOpen: " + value;
-}
+    tr.innerHTML = `
+      <td>${escapeHtml(name)}</td>
+      <td class="token">${escapeHtml(token)}</td>
+      <td></td>
+      <td>${escapeHtml(scoreboardID)}</td>
+      <td></td>
+    `;
 
-/* ---------- Judges ---------- */
-fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${JUDGES_GID}&tqx=out:json`)
-  .then(r => r.text())
-  .then(t => {
-    const j = JSON.parse(t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1));
+    tr.children[2].appendChild(yesNoBadge(active));
 
-    j.table.rows.forEach(r => {
-      let name = String(r.c[0].v).trim();
-      let active = String(r.c[2].v).trim();
+    const linkCell = tr.children[4];
 
-      const row = document.createElement("div");
-      row.className = "judge";
+    if(judgeLink){
 
-      const label = document.createElement("span");
-      label.textContent = `${name} (${active})`;
+      const copyBox = document.createElement("div");
+      copyBox.className = "copy-box";
 
-      const btn = document.createElement("button");
-      btn.className = "small " + (active === "YES" ? "danger" : "");
-      btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
+      const linkText = document.createElement("div");
+      linkText.className = "copy-text";
+      linkText.textContent = judgeLink;
 
-      btn.onclick = () => {
-        const newValue = active === "YES" ? "NO" : "YES";
-        api({ action: "setJudgeActive", judge: name, value: newValue });
-        active = newValue;
-        label.textContent = `${name} (${active})`;
-        btn.textContent = active === "YES" ? "DISABLE" : "ENABLE";
-        btn.className = "small " + (active === "YES" ? "danger" : "");
+      const copyButton = document.createElement("button");
+      copyButton.textContent = "COPY";
+
+      copyButton.onclick = async () => {
+
+        try{
+
+          await navigator.clipboard.writeText(judgeLink);
+
+          const oldText = copyButton.textContent;
+          copyButton.textContent = "COPIED ✓";
+
+          setTimeout(() => {
+            copyButton.textContent = oldText;
+          }, 1500);
+
+        }catch(err){
+
+          alert("Could not copy automatically. Please select and copy the link.");
+
+        }
+
       };
 
-      row.appendChild(label);
-      row.appendChild(btn);
-      judges.appendChild(row);
-    });
+      copyBox.appendChild(linkText);
+      copyBox.appendChild(copyButton);
+
+      linkCell.appendChild(copyBox);
+
+    }else{
+
+      linkCell.textContent = "—";
+
+    }
+
+    judgesBodyEl.appendChild(tr);
+
   });
+
+}
+
+
+/* ---------- LOAD COMPETITORS ---------- */
+
+async function loadCompetitors(){
+
+  const data = await fetchSheet(COMPETITORS_GID);
+
+  competitorsBodyEl.innerHTML = "";
+
+  data.table.rows.forEach(row => {
+
+    /*
+      Competitors columns:
+      A = Order
+      B = Competitor Number
+      C = Competitor Name
+      D = R1 A Move (LIVE)
+      E = R2 A Move (LIVE)
+      F = R3 A Move (LIVE)
+      G = R1 B Move (ALTERNATIVE)
+      H = R2 B Move (ALTERNATIVE)
+      I = R3 B Move (ALTERNATIVE)
+    */
+
+    const values = [];
+
+    for(let i = 0; i < 9; i++){
+      values.push(cellValue(row, i));
+    }
+
+    /* Ignore completely blank rows */
+
+    if(values.every(v => !v)){
+      return;
+    }
+
+    const tr = document.createElement("tr");
+
+    /* Special COMPLETED row */
+
+    if(values[1] === "0"){
+      tr.className = "completed-row";
+    }
+
+    values.forEach(value => {
+
+      const td = document.createElement("td");
+      td.textContent = value || "—";
+      tr.appendChild(td);
+
+    });
+
+    competitorsBodyEl.appendChild(tr);
+
+  });
+
+}
+
+
+/* ---------- SAFE HTML HELPER ---------- */
+
+function escapeHtml(value){
+
+  const div = document.createElement("div");
+  div.textContent = value || "";
+  return div.innerHTML;
+
+}
+
+
+/* ---------- BOOT ---------- */
+
+async function boot(){
+
+  try{
+
+    /*
+      Event Config loads first because it authenticates the Admin page.
+    */
+
+    await loadEventConfig();
+
+    /*
+      Only after authentication succeeds do we load everything else.
+    */
+
+    await Promise.all([
+      loadJudges(),
+      loadCompetitors()
+    ]);
+
+    loadingEl.style.display = "none";
+    adminContentEl.style.display = "block";
+
+  }catch(err){
+
+    console.error(err);
+
+    showError(err.message || "Something went wrong loading the Admin page.");
+
+  }
+
+}
+
+boot();
+
 </script>
 
 </body>
