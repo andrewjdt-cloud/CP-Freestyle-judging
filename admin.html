@@ -1,13 +1,13 @@
 <!--
 CP Freestyle Judging System
 File: admin.html
-Version: v1.2 READ ONLY
+Version: v1.3 READ ONLY
 Notes:
 - Read-only competition administration overview
 - No changes are made to the Google Sheet
-- Uses existing Google Sheet structure
+- Uses the existing Google Sheet structure and IDs
 - Protected by the existing AdminToken
-- Judge sheet header row is ignored
+- Judges sheet column heading row is explicitly ignored
 -->
 
 <!DOCTYPE html>
@@ -48,6 +48,8 @@ h2 {
   margin-top: 0;
 }
 
+/* ---------- Competition information ---------- */
+
 .info-row {
   display: flex;
   justify-content: space-between;
@@ -81,11 +83,13 @@ h2 {
   color: #ff5252;
 }
 
+/* ---------- Judges ---------- */
+
 .judge-header,
 .judge {
   display: grid;
-  grid-template-columns: 120px 1fr 100px;
-  gap: 16px;
+  grid-template-columns: 160px 1fr 100px;
+  gap: 20px;
   align-items: center;
 }
 
@@ -117,7 +121,10 @@ h2 {
 
 .judge-status {
   text-align: right;
+  font-weight: 500;
 }
+
+/* ---------- Messages ---------- */
 
 .error {
   color: #ff5252;
@@ -128,6 +135,8 @@ h2 {
 .loading {
   color: #aaa;
 }
+
+/* ---------- Mobile ---------- */
 
 @media (max-width: 600px) {
   body {
@@ -146,7 +155,7 @@ h2 {
 
   .judge-header,
   .judge {
-    grid-template-columns: 75px 1fr 80px;
+    grid-template-columns: 105px 1fr 75px;
     gap: 8px;
   }
 
@@ -166,7 +175,7 @@ h2 {
 
 <div id="adminContent" style="display:none;">
 
-  <!-- Competition Overview -->
+  <!-- Competition -->
   <div class="section">
     <h3>Competition</h3>
 
@@ -194,13 +203,13 @@ h2 {
       <span class="label">Panel Insights</span>
       <span class="value" id="panelInsights">—</span>
     </div>
-
   </div>
 
-  <!-- Judges Overview -->
+  <!-- Judges -->
   <div class="section">
     <h3>Judges</h3>
 
+    <!-- These are the ADMIN PAGE headings only -->
     <div class="judge-header">
       <div>Scoreboard ID</div>
       <div>Judge Name</div>
@@ -254,7 +263,10 @@ getSheetData(EVENT_CONFIG_GID)
       }
     });
 
-    /* Keep the same token protection as the existing admin page */
+    /*
+      Keep exactly the same AdminToken protection used by
+      the existing admin page.
+    */
     if (!adminToken || cfg.AdminToken !== adminToken) {
       document.getElementById("error").textContent = "Access denied";
       return;
@@ -308,14 +320,7 @@ getSheetData(JUDGES_GID)
     const judgesDiv = document.getElementById("judges");
     judgesDiv.innerHTML = "";
 
-    /*
-      IMPORTANT:
-      The first row of the Judges sheet contains the column headings:
-      JudgeName | JudgeToken | JudgeActive | ScoreboardID | Judge URL
-
-      We deliberately skip that row so it is never treated as a judge.
-    */
-    j.table.rows.slice(1).forEach(r => {
+    j.table.rows.forEach(r => {
 
       if (!r.c) return;
 
@@ -327,6 +332,20 @@ getSheetData(JUDGES_GID)
 
       const judgeNumber =
         r.c[3] ? String(r.c[3].v || "").trim() : "";
+
+      /*
+        The Google Sheet's first row contains column headings:
+        JudgeName | JudgeToken | JudgeActive | ScoreboardID | Judge URL
+
+        Explicitly ignore that row. This is deliberately based on
+        its actual heading text, so it cannot appear as an INACTIVE judge.
+      */
+      if (
+        name.toUpperCase() === "JUDGENAME" ||
+        judgeNumber.toUpperCase() === "SCOREBOARDID"
+      ) {
+        return;
+      }
 
       /* Skip completely empty rows */
       if (!name && !judgeNumber) return;
@@ -345,6 +364,7 @@ getSheetData(JUDGES_GID)
       const status = document.createElement("div");
       status.className = "judge-status";
 
+      /* Only actual judges reach this point */
       if (active === "YES") {
         status.textContent = "ACTIVE";
         status.classList.add("status-yes");
@@ -369,7 +389,6 @@ getSheetData(JUDGES_GID)
     document.getElementById("judges").textContent =
       "Could not load judges.";
   });
-
 </script>
 
 </body>
