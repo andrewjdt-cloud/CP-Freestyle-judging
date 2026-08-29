@@ -33,6 +33,10 @@
       font-size: 17px;
     }
 
+    /* =========================================================
+       SECTIONS
+       ========================================================= */
+
     .section {
       background: #151515;
       border-radius: 16px;
@@ -44,6 +48,10 @@
       margin: 0 0 20px 0;
       font-size: 22px;
     }
+
+    /* =========================================================
+       COMPETITION INFORMATION
+       ========================================================= */
 
     .info-row {
       display: flex;
@@ -67,7 +75,13 @@
       word-break: break-word;
     }
 
-    .edit-input {
+    /* =========================================================
+       INPUTS
+       ========================================================= */
+
+    .edit-input,
+    .judge-input,
+    .judge-select {
       background: #202020;
       border: 1px solid #444;
       border-radius: 8px;
@@ -75,14 +89,23 @@
       font-family: inherit;
       font-size: 16px;
       padding: 11px 12px;
+    }
+
+    .edit-input {
       width: 60%;
       text-align: right;
     }
 
-    .edit-input:focus {
+    .edit-input:focus,
+    .judge-input:focus,
+    .judge-select:focus {
       outline: none;
       border-color: #00c96b;
     }
+
+    /* =========================================================
+       STATUS COLOURS
+       ========================================================= */
 
     .status-open,
     .status-yes {
@@ -94,10 +117,14 @@
       color: #ff6b6b;
     }
 
+    /* =========================================================
+       JUDGES LIST
+       ========================================================= */
+
     .judge-header,
     .judge {
       display: grid;
-      grid-template-columns: 180px 1fr 120px;
+      grid-template-columns: 140px 1fr 120px 90px;
       gap: 18px;
       align-items: center;
     }
@@ -118,6 +145,10 @@
       border-bottom: 1px solid #303030;
     }
 
+    .judge:last-child {
+      border-bottom: none;
+    }
+
     .judge-number {
       font-weight: 700;
       color: #e0e0e0;
@@ -127,6 +158,58 @@
       text-align: right;
       font-weight: 700;
     }
+
+    .judge-edit-button {
+      padding: 9px 14px;
+      font-size: 14px;
+      background: #2b2b2b;
+      color: #fff;
+      justify-self: end;
+    }
+
+    /* =========================================================
+       JUDGE EDITOR
+       ========================================================= */
+
+    .judge-editor {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #303030;
+    }
+
+    .judge-editor h4 {
+      margin: 0 0 18px 0;
+      font-size: 18px;
+    }
+
+    .judge-edit-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 11px 0;
+      border-bottom: 1px solid #282828;
+    }
+
+    .judge-edit-row label {
+      color: #b5b5b5;
+      flex: 0 0 160px;
+    }
+
+    .judge-input,
+    .judge-select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .judge-message {
+      min-height: 24px;
+      margin-top: 16px;
+      font-weight: 650;
+    }
+
+    /* =========================================================
+       BUTTONS
+       ========================================================= */
 
     .actions {
       display: flex;
@@ -161,6 +244,10 @@
       color: #fff;
     }
 
+    /* =========================================================
+       MESSAGES
+       ========================================================= */
+
     .error {
       color: #ff6b6b;
       margin-bottom: 16px;
@@ -189,6 +276,10 @@
       display: none !important;
     }
 
+    /* =========================================================
+       MOBILE
+       ========================================================= */
+
     @media (max-width: 600px) {
 
       body {
@@ -203,26 +294,38 @@
         padding: 18px;
       }
 
-      .info-row {
+      .info-row,
+      .judge-edit-row {
         align-items: flex-start;
         flex-direction: column;
         gap: 8px;
       }
 
       .value,
-      .edit-input {
+      .edit-input,
+      .judge-input,
+      .judge-select {
         text-align: left;
         width: 100%;
       }
 
+      .judge-edit-row label {
+        flex: none;
+      }
+
       .judge-header,
       .judge {
-        grid-template-columns: 85px 1fr 85px;
+        grid-template-columns: 75px 1fr 75px;
         gap: 8px;
       }
 
+      .judge-header div:last-child,
+      .judge-edit-button {
+        display: none;
+      }
+
       .judge-header {
-        font-size: 13px;
+        font-size: 12px;
       }
 
       .judge-status {
@@ -251,7 +354,9 @@
 
   <div id="adminContent" style="display:none;">
 
-    <!-- COMPETITION -->
+    <!-- =====================================================
+         COMPETITION
+         ===================================================== -->
 
     <div class="section">
 
@@ -305,6 +410,7 @@
       <div id="competitionEditMode" class="hidden">
 
         <div class="info-row">
+
           <label class="label" for="eventNameInput">
             Event Name
           </label>
@@ -312,11 +418,12 @@
           <input
             class="edit-input"
             id="eventNameInput"
-            type="text"
-            autocomplete="off">
+            type="text">
+
         </div>
 
         <div class="info-row">
+
           <label class="label" for="eventLocationInput">
             Location
           </label>
@@ -324,8 +431,8 @@
           <input
             class="edit-input"
             id="eventLocationInput"
-            type="text"
-            autocomplete="off">
+            type="text">
+
         </div>
 
         <div class="actions">
@@ -353,7 +460,9 @@
     </div>
 
 
-    <!-- JUDGES -->
+    <!-- =====================================================
+         JUDGES
+         ===================================================== -->
 
     <div class="section">
 
@@ -363,10 +472,96 @@
         <div>Scoreboard ID</div>
         <div>Judge Name</div>
         <div class="judge-header-status">Status</div>
+        <div></div>
       </div>
 
       <div id="judges" class="loading">
         Loading judges...
+      </div>
+
+
+      <!-- JUDGE EDITOR -->
+
+      <div id="judgeEditor" class="judge-editor hidden">
+
+        <h4>Edit Judge</h4>
+
+        <div class="judge-edit-row">
+
+          <label for="judgeNameInput">
+            Judge Name
+          </label>
+
+          <input
+            class="judge-input"
+            id="judgeNameInput"
+            type="text">
+
+        </div>
+
+        <div class="judge-edit-row">
+
+          <label for="judgeTokenInput">
+            Judge Token
+          </label>
+
+          <input
+            class="judge-input"
+            id="judgeTokenInput"
+            type="text">
+
+        </div>
+
+        <div class="judge-edit-row">
+
+          <label for="judgeActiveInput">
+            Judge Status
+          </label>
+
+          <select
+            class="judge-select"
+            id="judgeActiveInput">
+
+            <option value="YES">ACTIVE</option>
+            <option value="NO">INACTIVE</option>
+
+          </select>
+
+        </div>
+
+        <div class="judge-edit-row">
+
+          <label for="scoreboardIDInput">
+            Scoreboard ID
+          </label>
+
+          <input
+            class="judge-input"
+            id="scoreboardIDInput"
+            type="text">
+
+        </div>
+
+        <div class="actions">
+
+          <button
+            type="button"
+            class="cancel-button"
+            id="cancelJudgeButton">
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            class="save-button"
+            id="saveJudgeButton">
+            Save Judge
+          </button>
+
+        </div>
+
+        <div id="judgeSaveMessage" class="judge-message"></div>
+
       </div>
 
     </div>
@@ -380,18 +575,14 @@
        CONFIGURATION
        ========================================================= */
 
-    const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+    const SHEET_ID =
+      "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 
-    const EVENT_CONFIG_GID = "686531230";
+    const EVENT_CONFIG_GID =
+      "686531230";
 
-    const JUDGES_GID = "1213944419";
-
-
-    /*
-       Apps Script Web App deployment URL.
-
-       This is the EXACT deployment URL supplied by Andrew.
-    */
+    const JUDGES_GID =
+      "1213944419";
 
     const APPS_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
@@ -401,8 +592,11 @@
        AUTHENTICATION
        ========================================================= */
 
-    const params = new URLSearchParams(window.location.search);
-    const adminToken = params.get("token");
+    const params =
+      new URLSearchParams(window.location.search);
+
+    const adminToken =
+      params.get("token");
 
 
     /* =========================================================
@@ -412,23 +606,26 @@
     let currentEventName = "";
     let currentLocation = "";
 
+    let currentJudges = [];
+
+    let editingJudgeRow = null;
+
 
     /* =========================================================
        DELAY HELPER
        ========================================================= */
 
     function sleep(milliseconds) {
+
       return new Promise(resolve => {
         setTimeout(resolve, milliseconds);
       });
+
     }
 
 
     /* =========================================================
        READ GOOGLE SHEET
-
-       The timestamp prevents an old cached response from being
-       used when we are checking whether a save succeeded.
        ========================================================= */
 
     function getSheetData(gid) {
@@ -456,10 +653,14 @@
           const end = text.lastIndexOf("}") + 1;
 
           if (start === -1 || end === 0) {
-            throw new Error("Invalid response from Google Sheets.");
+            throw new Error(
+              "Invalid response from Google Sheets."
+            );
           }
 
-          return JSON.parse(text.substring(start, end));
+          return JSON.parse(
+            text.substring(start, end)
+          );
 
         });
 
@@ -468,39 +669,40 @@
 
     /* =========================================================
        SEND ADMIN ACTION
-
-       Apps Script does not provide normal CORS headers to this
-       separately hosted GitHub Pages site, so this request is
-       deliberately fire-and-forget.
-
-       The sheet is subsequently re-read and verified.
        ========================================================= */
 
     function sendAdminAction(data) {
 
-      const body = JSON.stringify(data);
+      const body =
+        JSON.stringify(data);
+
 
       /*
-         sendBeacon sends a text/plain POST, which is exactly what
-         our Apps Script doPost(JSON.parse(e.postData.contents))
-         expects.
+         sendBeacon sends the request without requiring CORS
+         permission from Apps Script.
       */
 
       if (navigator.sendBeacon) {
 
         const blob = new Blob(
           [body],
-          { type: "text/plain;charset=UTF-8" }
+          {
+            type: "text/plain;charset=UTF-8"
+          }
         );
 
         const sent =
-          navigator.sendBeacon(APPS_SCRIPT_URL, blob);
+          navigator.sendBeacon(
+            APPS_SCRIPT_URL,
+            blob
+          );
 
         if (sent) {
           return Promise.resolve();
         }
 
       }
+
 
       /*
          Fallback for browsers where sendBeacon is unavailable.
@@ -510,7 +712,8 @@
         method: "POST",
         mode: "no-cors",
         headers: {
-          "Content-Type": "text/plain;charset=utf-8"
+          "Content-Type":
+            "text/plain;charset=utf-8"
         },
         body: body
       });
@@ -554,33 +757,45 @@
 
           /* Check Admin Token */
 
-          if (!adminToken || cfg.AdminToken !== adminToken) {
+          if (
+            !adminToken ||
+            cfg.AdminToken !== adminToken
+          ) {
             throw new Error("Access denied.");
           }
 
 
           /* Store current values */
 
-          currentEventName = cfg.EventName || "";
-          currentLocation = cfg.Location || "";
+          currentEventName =
+            cfg.EventName || "";
+
+          currentLocation =
+            cfg.Location || "";
 
 
           /* Display Event Name */
 
-          document.getElementById("eventName").textContent =
-            currentEventName || "—";
+          document
+            .getElementById("eventName")
+            .textContent =
+              currentEventName || "—";
 
 
           /* Display Location */
 
-          document.getElementById("eventLocation").textContent =
-            currentLocation || "—";
+          document
+            .getElementById("eventLocation")
+            .textContent =
+              currentLocation || "—";
 
 
           /* Display Current Round */
 
-          document.getElementById("eventRound").textContent =
-            cfg.Round || "—";
+          document
+            .getElementById("eventRound")
+            .textContent =
+              cfg.Round || "—";
 
 
           /* Display Round Status */
@@ -593,13 +808,19 @@
 
           if (roundOpen === "YES") {
 
-            roundStatus.textContent = "● OPEN";
-            roundStatus.className = "value status-open";
+            roundStatus.textContent =
+              "● OPEN";
+
+            roundStatus.className =
+              "value status-open";
 
           } else {
 
-            roundStatus.textContent = "● CLOSED";
-            roundStatus.className = "value status-closed";
+            roundStatus.textContent =
+              "● CLOSED";
+
+            roundStatus.className =
+              "value status-closed";
 
           }
 
@@ -614,21 +835,29 @@
 
           if (insights === "YES") {
 
-            insightsStatus.textContent = "ON";
-            insightsStatus.className = "value status-yes";
+            insightsStatus.textContent =
+              "ON";
+
+            insightsStatus.className =
+              "value status-yes";
 
           } else {
 
-            insightsStatus.textContent = "OFF";
-            insightsStatus.className = "value status-no";
+            insightsStatus.textContent =
+              "OFF";
+
+            insightsStatus.className =
+              "value status-no";
 
           }
 
 
-          /* Show page after successful authentication */
+          /* Show page after authentication */
 
-          document.getElementById("adminContent").style.display =
-            "block";
+          document
+            .getElementById("adminContent")
+            .style.display =
+              "block";
 
         });
 
@@ -649,114 +878,201 @@
 
           judgesDiv.innerHTML = "";
 
-          sheetData.table.rows.forEach(row => {
+          currentJudges = [];
 
-            if (!row.c) {
-              return;
+
+          sheetData.table.rows.forEach(
+            (row, index) => {
+
+              if (!row.c) {
+                return;
+              }
+
+
+              /*
+                 Google Visualization rows begin with the first
+                 spreadsheet row, so index + 1 is the actual
+                 sheet row number.
+              */
+
+              const sheetRow =
+                index + 1;
+
+
+              /*
+                 Judges sheet:
+
+                 A = JudgeName
+                 B = JudgeToken
+                 C = JudgeActive
+                 D = ScoreboardID
+
+                 E is deliberately ignored.
+              */
+
+              const name =
+                row.c[0] &&
+                row.c[0].v !== null
+                  ? String(row.c[0].v).trim()
+                  : "";
+
+              const token =
+                row.c[1] &&
+                row.c[1].v !== null
+                  ? String(row.c[1].v).trim()
+                  : "";
+
+              const active =
+                row.c[2] &&
+                row.c[2].v !== null
+                  ? String(row.c[2].v)
+                      .trim()
+                      .toUpperCase()
+                  : "";
+
+              const scoreboardID =
+                row.c[3] &&
+                row.c[3].v !== null
+                  ? String(row.c[3].v).trim()
+                  : "";
+
+
+              /* Ignore header row */
+
+              const nameUpper =
+                name.toUpperCase();
+
+              const idUpper =
+                scoreboardID.toUpperCase();
+
+              if (
+                nameUpper === "JUDGENAME" ||
+                nameUpper === "JUDGE NAME" ||
+                idUpper === "SCOREBOARDID" ||
+                idUpper === "SCOREBOARD ID"
+              ) {
+                return;
+              }
+
+
+              /* Ignore completely empty rows */
+
+              if (
+                !name &&
+                !token &&
+                !scoreboardID
+              ) {
+                return;
+              }
+
+
+              const judge = {
+                sheetRow: sheetRow,
+                name: name,
+                token: token,
+                active: active,
+                scoreboardID: scoreboardID
+              };
+
+              currentJudges.push(judge);
+
+
+              /* Create visible judge row */
+
+              const judgeRow =
+                document.createElement("div");
+
+              judgeRow.className =
+                "judge";
+
+
+              const idElement =
+                document.createElement("div");
+
+              idElement.className =
+                "judge-number";
+
+              idElement.textContent =
+                scoreboardID || "—";
+
+
+              const nameElement =
+                document.createElement("div");
+
+              nameElement.textContent =
+                name || "Unnamed Judge";
+
+
+              const statusElement =
+                document.createElement("div");
+
+              statusElement.className =
+                "judge-status";
+
+              if (active === "YES") {
+
+                statusElement.textContent =
+                  "ACTIVE";
+
+                statusElement.classList.add(
+                  "status-yes"
+                );
+
+              } else {
+
+                statusElement.textContent =
+                  "INACTIVE";
+
+                statusElement.classList.add(
+                  "status-no"
+                );
+
+              }
+
+
+              const editButton =
+                document.createElement("button");
+
+              editButton.type =
+                "button";
+
+              editButton.className =
+                "judge-edit-button";
+
+              editButton.textContent =
+                "Edit";
+
+              editButton.addEventListener(
+                "click",
+                () => openJudgeEditor(judge)
+              );
+
+
+              judgeRow.appendChild(idElement);
+              judgeRow.appendChild(nameElement);
+              judgeRow.appendChild(statusElement);
+              judgeRow.appendChild(editButton);
+
+              judgesDiv.appendChild(judgeRow);
+
             }
-
-            /*
-               Judges sheet:
-               Column A = Judge Name
-               Column B = Judge Token
-               Column C = Judge Active
-               Column D = Scoreboard ID
-            */
-
-            const name =
-              row.c[0] && row.c[0].v !== null
-                ? String(row.c[0].v).trim()
-                : "";
-
-            const active =
-              row.c[2] && row.c[2].v !== null
-                ? String(row.c[2].v).trim().toUpperCase()
-                : "";
-
-            const scoreboardID =
-              row.c[3] && row.c[3].v !== null
-                ? String(row.c[3].v).trim()
-                : "";
+          );
 
 
-            /* Ignore a header row if present */
+          if (!currentJudges.length) {
 
-            const nameUpper = name.toUpperCase();
-            const idUpper = scoreboardID.toUpperCase();
+            judgesDiv.textContent =
+              "No judges configured.";
 
-            if (
-              nameUpper === "JUDGENAME" ||
-              nameUpper === "JUDGE NAME" ||
-              idUpper === "SCOREBOARDID" ||
-              idUpper === "SCOREBOARD ID"
-            ) {
-              return;
-            }
-
-
-            /* Ignore completely empty rows */
-
-            if (!name && !scoreboardID) {
-              return;
-            }
-
-
-            const judgeRow =
-              document.createElement("div");
-
-            judgeRow.className = "judge";
-
-
-            const idElement =
-              document.createElement("div");
-
-            idElement.className = "judge-number";
-            idElement.textContent = scoreboardID || "—";
-
-
-            const nameElement =
-              document.createElement("div");
-
-            nameElement.textContent =
-              name || "Unnamed Judge";
-
-
-            const statusElement =
-              document.createElement("div");
-
-            statusElement.className = "judge-status";
-
-            if (active === "YES") {
-
-              statusElement.textContent = "ACTIVE";
-              statusElement.classList.add("status-yes");
-
-            } else {
-
-              statusElement.textContent = "INACTIVE";
-              statusElement.classList.add("status-no");
-
-            }
-
-
-            judgeRow.appendChild(idElement);
-            judgeRow.appendChild(nameElement);
-            judgeRow.appendChild(statusElement);
-
-            judgesDiv.appendChild(judgeRow);
-
-          });
-
-
-          if (!judgesDiv.children.length) {
-            judgesDiv.textContent = "No judges configured.";
           }
 
         })
         .catch(() => {
 
-          document.getElementById("judges").textContent =
-            "Could not load judges.";
+          document
+            .getElementById("judges")
+            .textContent =
+              "Could not load judges.";
 
         });
 
@@ -764,21 +1080,313 @@
 
 
     /* =========================================================
-       OPEN EDIT MODE
+       OPEN JUDGE EDITOR
+       ========================================================= */
+
+    function openJudgeEditor(judge) {
+
+      editingJudgeRow =
+        judge.sheetRow;
+
+      document
+        .getElementById("judgeNameInput")
+        .value =
+          judge.name;
+
+      document
+        .getElementById("judgeTokenInput")
+        .value =
+          judge.token;
+
+      document
+        .getElementById("judgeActiveInput")
+        .value =
+          judge.active === "NO"
+            ? "NO"
+            : "YES";
+
+      document
+        .getElementById("scoreboardIDInput")
+        .value =
+          judge.scoreboardID;
+
+      document
+        .getElementById("judgeSaveMessage")
+        .textContent =
+          "";
+
+      document
+        .getElementById("judgeEditor")
+        .classList.remove("hidden");
+
+      document
+        .getElementById("judgeNameInput")
+        .focus();
+
+      document
+        .getElementById("judgeEditor")
+        .scrollIntoView({
+          behavior: "smooth",
+          block: "nearest"
+        });
+
+    }
+
+
+    /* =========================================================
+       CANCEL JUDGE EDIT
+       ========================================================= */
+
+    document
+      .getElementById("cancelJudgeButton")
+      .addEventListener("click", () => {
+
+        editingJudgeRow = null;
+
+        document
+          .getElementById("judgeEditor")
+          .classList.add("hidden");
+
+        document
+          .getElementById("judgeSaveMessage")
+          .textContent =
+            "";
+
+      });
+
+
+    /* =========================================================
+       SAVE JUDGE
+       ========================================================= */
+
+    document
+      .getElementById("saveJudgeButton")
+      .addEventListener("click", async () => {
+
+        const message =
+          document.getElementById(
+            "judgeSaveMessage"
+          );
+
+        const saveButton =
+          document.getElementById(
+            "saveJudgeButton"
+          );
+
+        const judgeName =
+          document
+            .getElementById("judgeNameInput")
+            .value
+            .trim();
+
+        const judgeToken =
+          document
+            .getElementById("judgeTokenInput")
+            .value
+            .trim();
+
+        const judgeActive =
+          document
+            .getElementById("judgeActiveInput")
+            .value
+            .trim()
+            .toUpperCase();
+
+        const scoreboardID =
+          document
+            .getElementById("scoreboardIDInput")
+            .value
+            .trim();
+
+
+        message.textContent =
+          "";
+
+        message.className =
+          "judge-message";
+
+
+        if (!editingJudgeRow) {
+
+          message.textContent =
+            "No judge is selected.";
+
+          message.classList.add("save-error");
+
+          return;
+        }
+
+        if (!judgeName) {
+
+          message.textContent =
+            "Judge Name cannot be empty.";
+
+          message.classList.add("save-error");
+
+          return;
+        }
+
+        if (!judgeToken) {
+
+          message.textContent =
+            "Judge Token cannot be empty.";
+
+          message.classList.add("save-error");
+
+          return;
+        }
+
+        if (!scoreboardID) {
+
+          message.textContent =
+            "Scoreboard ID cannot be empty.";
+
+          message.classList.add("save-error");
+
+          return;
+        }
+
+
+        saveButton.disabled = true;
+
+        saveButton.textContent =
+          "Saving...";
+
+
+        try {
+
+          /*
+             Send update to Apps Script.
+
+             Apps Script writes only columns A-D.
+             Column E is never included.
+          */
+
+          await sendAdminAction({
+            action: "updateJudgeDetails",
+            adminToken: adminToken,
+            sheetRow: editingJudgeRow,
+            judgeName: judgeName,
+            judgeToken: judgeToken,
+            judgeActive: judgeActive,
+            scoreboardID: scoreboardID
+          });
+
+
+          /*
+             Allow Apps Script and Sheets time to complete
+             the write, then re-read and verify.
+          */
+
+          let saved =
+            false;
+
+          for (
+            let attempt = 0;
+            attempt < 5;
+            attempt++
+          ) {
+
+            await sleep(1000);
+
+            await loadJudges();
+
+            const confirmed =
+              currentJudges.find(
+                judge =>
+                  judge.sheetRow === editingJudgeRow
+              );
+
+            if (
+              confirmed &&
+              confirmed.name === judgeName &&
+              confirmed.token === judgeToken &&
+              confirmed.active === judgeActive &&
+              confirmed.scoreboardID === scoreboardID
+            ) {
+              saved = true;
+              break;
+            }
+
+          }
+
+
+          if (!saved) {
+            throw new Error(
+              "The sheet did not confirm the judge changes."
+            );
+          }
+
+
+          message.textContent =
+            "Judge details saved successfully.";
+
+          message.className =
+            "judge-message success-message";
+
+          editingJudgeRow = null;
+
+          setTimeout(() => {
+
+            document
+              .getElementById("judgeEditor")
+              .classList.add("hidden");
+
+          }, 700);
+
+
+        } catch (err) {
+
+          message.textContent =
+            "Could not save judge: " +
+            (
+              err.message ||
+              String(err)
+            );
+
+          message.className =
+            "judge-message save-error";
+
+        } finally {
+
+          saveButton.disabled =
+            false;
+
+          saveButton.textContent =
+            "Save Judge";
+
+        }
+
+      });
+
+
+    /* =========================================================
+       OPEN COMPETITION EDIT MODE
        ========================================================= */
 
     document
       .getElementById("editCompetitionButton")
       .addEventListener("click", () => {
 
-        document.getElementById("eventNameInput").value =
-          currentEventName;
+        document
+          .getElementById("eventNameInput")
+          .value =
+            currentEventName;
 
-        document.getElementById("eventLocationInput").value =
-          currentLocation;
+        document
+          .getElementById("eventLocationInput")
+          .value =
+            currentLocation;
 
-        document.getElementById("saveError").textContent = "";
-        document.getElementById("successMessage").textContent = "";
+        document
+          .getElementById("saveError")
+          .textContent =
+            "";
+
+        document
+          .getElementById("successMessage")
+          .textContent =
+            "";
 
         document
           .getElementById("competitionReadMode")
@@ -788,13 +1396,15 @@
           .getElementById("competitionEditMode")
           .classList.remove("hidden");
 
-        document.getElementById("eventNameInput").focus();
+        document
+          .getElementById("eventNameInput")
+          .focus();
 
       });
 
 
     /* =========================================================
-       CANCEL EDIT MODE
+       CANCEL COMPETITION EDIT MODE
        ========================================================= */
 
     document
@@ -809,7 +1419,10 @@
           .getElementById("competitionReadMode")
           .classList.remove("hidden");
 
-        document.getElementById("saveError").textContent = "";
+        document
+          .getElementById("saveError")
+          .textContent =
+            "";
 
       });
 
@@ -835,41 +1448,53 @@
             .trim();
 
         const saveButton =
-          document.getElementById("saveCompetitionButton");
+          document.getElementById(
+            "saveCompetitionButton"
+          );
 
         const saveError =
-          document.getElementById("saveError");
+          document.getElementById(
+            "saveError"
+          );
 
         const successMessage =
-          document.getElementById("successMessage");
+          document.getElementById(
+            "successMessage"
+          );
 
 
-        saveError.textContent = "";
-        successMessage.textContent = "";
+        saveError.textContent =
+          "";
+
+        successMessage.textContent =
+          "";
 
 
         if (!newEventName) {
+
           saveError.textContent =
             "Event Name cannot be empty.";
+
           return;
         }
 
         if (!newLocation) {
+
           saveError.textContent =
             "Location cannot be empty.";
+
           return;
         }
 
 
-        saveButton.disabled = true;
-        saveButton.textContent = "Saving...";
+        saveButton.disabled =
+          true;
+
+        saveButton.textContent =
+          "Saving...";
 
 
         try {
-
-          /*
-             Send the update.
-          */
 
           await sendAdminAction({
             action: "updateCompetitionDetails",
@@ -879,16 +1504,14 @@
           });
 
 
-          /*
-             Apps Script and Google Sheets can take a moment to
-             make a write visible to a subsequent read.
+          let saved =
+            false;
 
-             Check several times rather than failing immediately.
-          */
-
-          let saved = false;
-
-          for (let attempt = 0; attempt < 5; attempt++) {
+          for (
+            let attempt = 0;
+            attempt < 5;
+            attempt++
+          ) {
 
             await sleep(1000);
 
@@ -906,9 +1529,11 @@
 
 
           if (!saved) {
+
             throw new Error(
               "The update was sent, but the sheet did not confirm the changes."
             );
+
           }
 
 
@@ -929,12 +1554,18 @@
 
           saveError.textContent =
             "Could not save changes: " +
-            (err.message || String(err));
+            (
+              err.message ||
+              String(err)
+            );
 
         } finally {
 
-          saveButton.disabled = false;
-          saveButton.textContent = "Save Changes";
+          saveButton.disabled =
+            false;
+
+          saveButton.textContent =
+            "Save Changes";
 
         }
 
@@ -949,8 +1580,11 @@
       .then(() => loadJudges())
       .catch(err => {
 
-        document.getElementById("error").textContent =
-          err.message || "Could not load the Admin Panel.";
+        document
+          .getElementById("error")
+          .textContent =
+            err.message ||
+            "Could not load the Admin Panel.";
 
       });
 
