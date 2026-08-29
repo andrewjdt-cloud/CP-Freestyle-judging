@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +8,7 @@
   <title>CP Freestyle – Admin Panel</title>
 
   <style>
+
     * {
       box-sizing: border-box;
     }
@@ -21,7 +23,7 @@
     }
 
     h2 {
-      margin: 0 0 6px;
+      margin: 0 0 6px 0;
       font-size: 28px;
     }
 
@@ -43,7 +45,7 @@
     }
 
     .section h3 {
-      margin: 0 0 20px;
+      margin: 0 0 20px 0;
       font-size: 22px;
     }
 
@@ -122,7 +124,7 @@
     .judge-header,
     .judge {
       display: grid;
-      grid-template-columns: 110px 1fr 110px 240px;
+      grid-template-columns: 100px 1fr 110px 240px;
       gap: 18px;
       align-items: center;
     }
@@ -130,7 +132,7 @@
     .judge-header {
       color: #aaa;
       font-weight: 600;
-      padding: 10px 0 12px;
+      padding: 10px 0 12px 0;
       border-bottom: 1px solid #303030;
     }
 
@@ -202,14 +204,8 @@
     }
 
     .judge-editor h4 {
-      margin: 0 0 8px;
+      margin: 0 0 18px 0;
       font-size: 18px;
-    }
-
-    .editor-note {
-      color: #aaa;
-      margin: 0 0 18px;
-      font-size: 14px;
     }
 
     .judge-edit-row {
@@ -222,13 +218,20 @@
 
     .judge-edit-row label {
       color: #b5b5b5;
-      flex: 0 0 160px;
+      flex: 0 0 180px;
     }
 
     .judge-input,
     .judge-select {
       flex: 1;
       min-width: 0;
+    }
+
+    .judge-help {
+      color: #888;
+      font-size: 13px;
+      margin-top: 6px;
+      line-height: 1.4;
     }
 
     .judge-message {
@@ -259,7 +262,7 @@
     }
 
     button:disabled {
-      opacity: 0.45;
+      opacity: 0.5;
       cursor: not-allowed;
     }
 
@@ -331,13 +334,13 @@
     }
 
     .qr-card h3 {
-      margin: 0 0 8px;
+      margin: 0 0 8px 0;
       font-size: 22px;
     }
 
     .qr-card p {
       color: #aaa;
-      margin: 0 0 20px;
+      margin: 0 0 20px 0;
     }
 
     .qr-image-wrap {
@@ -345,7 +348,7 @@
       border-radius: 12px;
       padding: 14px;
       display: inline-block;
-      margin: 8px 0 20px;
+      margin: 8px 0 20px 0;
     }
 
     #qrImage {
@@ -370,6 +373,7 @@
        ========================================================= */
 
     @media (max-width: 700px) {
+
       body {
         padding: 12px;
       }
@@ -401,7 +405,8 @@
       }
 
       .judge {
-        grid-template-columns: 80px 1fr;
+        display: grid;
+        grid-template-columns: 75px 1fr;
         gap: 10px;
       }
 
@@ -440,7 +445,9 @@
         width: 220px;
         height: 220px;
       }
+
     }
+
   </style>
 </head>
 
@@ -455,13 +462,11 @@
 
     <!-- =====================================================
          COMPETITION
-         ===================================================== -->
+         ====================================================== -->
 
     <div class="section">
 
       <h3>Competition</h3>
-
-      <!-- READ MODE -->
 
       <div id="competitionReadMode">
 
@@ -503,11 +508,10 @@
 
       </div>
 
-      <!-- EDIT MODE -->
-
       <div id="competitionEditMode" class="hidden">
 
         <div class="info-row">
+
           <label class="label" for="eventNameInput">
             Event Name
           </label>
@@ -517,9 +521,11 @@
             id="eventNameInput"
             type="text"
             autocomplete="off">
+
         </div>
 
         <div class="info-row">
+
           <label class="label" for="eventLocationInput">
             Location
           </label>
@@ -529,9 +535,11 @@
             id="eventLocationInput"
             type="text"
             autocomplete="off">
+
         </div>
 
         <div class="actions">
+
           <button
             type="button"
             class="cancel-button"
@@ -545,6 +553,7 @@
             id="saveCompetitionButton">
             Save Changes
           </button>
+
         </div>
 
         <div id="saveError" class="save-error"></div>
@@ -556,7 +565,7 @@
 
     <!-- =====================================================
          JUDGES
-         ===================================================== -->
+         ====================================================== -->
 
     <div class="section">
 
@@ -578,35 +587,41 @@
 
       <div id="judgeEditor" class="judge-editor hidden">
 
-        <h4>Edit Judge</h4>
-
-        <p class="editor-note">
-          This edits one of the five fixed judge records only.
-          The spreadsheet row itself is never moved or reordered.
-        </p>
+        <h4 id="judgeEditorTitle">Edit Judge</h4>
 
         <div class="judge-edit-row">
-          <label for="judgeNameInput">Judge Name</label>
+
+          <label for="judgeNameInput">
+            Judge Name
+          </label>
 
           <input
             class="judge-input"
             id="judgeNameInput"
             type="text"
             autocomplete="off">
+
         </div>
 
         <div class="judge-edit-row">
-          <label for="judgeTokenInput">Judge Token</label>
+
+          <label for="judgeTokenInput">
+            Judge Token
+          </label>
 
           <input
             class="judge-input"
             id="judgeTokenInput"
             type="text"
             autocomplete="off">
+
         </div>
 
         <div class="judge-edit-row">
-          <label for="judgeActiveInput">Judge Status</label>
+
+          <label for="judgeActiveInput">
+            Judge Status
+          </label>
 
           <select
             class="judge-select"
@@ -616,20 +631,38 @@
             <option value="NO">INACTIVE</option>
 
           </select>
+
         </div>
 
         <div class="judge-edit-row">
-          <label for="scoreboardIDInput">Judge Slot / Scoreboard ID</label>
 
-          <input
-            class="judge-input"
-            id="scoreboardIDInput"
-            type="text"
-            autocomplete="off"
-            placeholder="e.g. J1">
+          <label for="scoreboardIDInput">
+            Judge Slot / Scoreboard ID
+          </label>
+
+          <div style="flex:1; min-width:0;">
+            <select
+              class="judge-select"
+              id="scoreboardIDInput">
+
+              <option value="J1">J1</option>
+              <option value="J2">J2</option>
+              <option value="J3">J3</option>
+              <option value="J4">J4</option>
+              <option value="J5">J5</option>
+
+            </select>
+
+            <div class="judge-help">
+              Active judges must have unique slots. This allows a
+              smaller judging panel to use J1, J2, J3 etc.
+            </div>
+          </div>
+
         </div>
 
         <div class="actions">
+
           <button
             type="button"
             class="cancel-button"
@@ -643,6 +676,7 @@
             id="saveJudgeButton">
             Save Judge
           </button>
+
         </div>
 
         <div id="judgeSaveMessage" class="judge-message"></div>
@@ -656,7 +690,7 @@
 
   <!-- =======================================================
        QR CODE MODAL
-       ======================================================= -->
+       ======================================================== -->
 
   <div id="qrModal" class="qr-modal hidden">
 
@@ -664,7 +698,9 @@
 
       <h3 id="qrJudgeName">Judge QR Code</h3>
 
-      <p>Scan this code to open the judge's scoring page.</p>
+      <p>
+        Scan this code to open the judge's scoring page.
+      </p>
 
       <div class="qr-image-wrap">
         <img
@@ -716,20 +752,6 @@
 
 
     /* =========================================================
-       FIXED JUDGE RECORDS
-
-       These MUST match Code.gs.
-
-       Spreadsheet:
-       Row 1 = Header
-       Rows 2–6 = The only five judge records
-       ========================================================= */
-
-    const FIRST_JUDGE_ROW = 2;
-    const LAST_JUDGE_ROW = 6;
-
-
-    /* =========================================================
        AUTHENTICATION
        ========================================================= */
 
@@ -749,7 +771,13 @@
 
     let currentJudges = [];
 
-    let editingJudgeRow = null;
+    /*
+       IMPORTANT:
+       This stores the actual spreadsheet row number of the judge
+       currently being edited. It is never calculated from the
+       Judge Slot / Scoreboard ID.
+    */
+    let editingJudge = null;
 
     let currentQRUrl = "";
 
@@ -769,12 +797,26 @@
        READ GOOGLE SHEET
        ========================================================= */
 
-    function getSheetData(gid) {
+    function getSheetData(gid, range = "") {
 
       const cacheBuster = Date.now();
 
-      const url =
+      let url =
         `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${cacheBuster}`;
+
+      /*
+         For the Judges sheet we deliberately request A1:E6.
+
+         Row 1 = headings
+         Rows 2-6 = the five fixed judge records
+
+         This prevents extra blank/formula rows elsewhere in the
+         sheet from confusing the Admin Panel.
+      */
+
+      if (range) {
+        url += `&range=${encodeURIComponent(range)}`;
+      }
 
       return fetch(url, {
         cache: "no-store"
@@ -812,13 +854,17 @@
 
     function sendAdminAction(data) {
 
+      const body =
+        JSON.stringify(data);
+
       return fetch(APPS_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
         headers: {
-          "Content-Type": "text/plain;charset=utf-8"
+          "Content-Type":
+            "text/plain;charset=utf-8"
         },
-        body: JSON.stringify(data)
+        body: body
       });
 
     }
@@ -894,13 +940,17 @@
 
           if (cfg.RoundOpen === "YES") {
 
-            roundStatus.textContent = "● OPEN";
+            roundStatus.textContent =
+              "● OPEN";
+
             roundStatus.className =
               "value status-open";
 
           } else {
 
-            roundStatus.textContent = "● CLOSED";
+            roundStatus.textContent =
+              "● CLOSED";
+
             roundStatus.className =
               "value status-closed";
 
@@ -912,13 +962,17 @@
 
           if (cfg.PanelInsights === "YES") {
 
-            panelInsights.textContent = "ON";
+            panelInsights.textContent =
+              "ON";
+
             panelInsights.className =
               "value status-yes";
 
           } else {
 
-            panelInsights.textContent = "OFF";
+            panelInsights.textContent =
+              "OFF";
+
             panelInsights.className =
               "value status-no";
 
@@ -927,7 +981,8 @@
 
           document
             .getElementById("adminContent")
-            .style.display = "block";
+            .style.display =
+              "block";
 
         });
 
@@ -937,13 +992,22 @@
     /* =========================================================
        LOAD JUDGES
 
-       SAFETY RULE:
-       We read and display ONLY spreadsheet rows 2–6.
+       Fixed Judges sheet layout:
 
-       Even if something exists further down the Judges sheet,
-       it cannot appear here or be edited here.
+       Row 1 = headings
+       Row 2 = Judge record 1
+       Row 3 = Judge record 2
+       Row 4 = Judge record 3
+       Row 5 = Judge record 4
+       Row 6 = Judge record 5
 
-       Column E is READ ONLY and contains the URL formula.
+       A = JudgeName
+       B = JudgeToken
+       C = JudgeActive
+       D = ScoreboardID
+       E = Judge URL formula
+
+       Column E is NEVER edited by this page.
        ========================================================= */
 
     function loadJudges() {
@@ -960,78 +1024,116 @@
       currentJudges = [];
 
 
-      return getSheetData(JUDGES_GID)
+      return getSheetData(JUDGES_GID, "A1:E6")
         .then(sheetData => {
 
           judgesDiv.innerHTML = "";
           judgesDiv.className = "";
 
 
+          const rows =
+            sheetData.table.rows || [];
+
+
           /*
-             GViz rows start after the spreadsheet header.
+             Google GViz can return the first sheet row as data,
+             which is exactly what caused the fake "INACTIVE"
+             judge.
 
-             index 0 = spreadsheet row 2
-             index 1 = spreadsheet row 3
-             ...
-             index 4 = spreadsheet row 6
-
-             We deliberately process exactly five records.
+             We detect that explicitly rather than guessing.
           */
 
-          for (
-            let index = 0;
-            index <= LAST_JUDGE_ROW - FIRST_JUDGE_ROW;
-            index++
-          ) {
+          const firstRowLooksLikeHeader =
+            rows.length > 0 &&
+            rows[0].c &&
+            String(
+              rows[0].c[0] && rows[0].c[0].v !== null
+                ? rows[0].c[0].v
+                : ""
+            ).trim().toLowerCase() === "judgename";
+
+
+          rows.forEach((row, index) => {
+
+            if (!row.c) {
+              return;
+            }
+
+
+            /*
+               Work out the REAL spreadsheet row.
+
+               If GViz included the headings:
+                 index 0 = sheet row 1
+                 index 1 = sheet row 2
+
+               If GViz omitted the headings:
+                 index 0 = sheet row 2
+            */
 
             const sheetRow =
-              FIRST_JUDGE_ROW + index;
+              firstRowLooksLikeHeader
+                ? index + 1
+                : index + 2;
 
-            const row =
-              sheetData.table.rows[index] || null;
 
-            const cells =
-              row && row.c ? row.c : [];
+            /*
+               Always ignore the heading row. We also explicitly
+               skip anything outside the five fixed judge rows.
+            */
+
+            if (
+              sheetRow < 2 ||
+              sheetRow > 6
+            ) {
+              return;
+            }
 
 
             const name =
-              cells[0] &&
-              cells[0].v !== null
-                ? String(cells[0].v).trim()
+              row.c[0] &&
+              row.c[0].v !== null
+                ? String(row.c[0].v).trim()
                 : "";
 
             const token =
-              cells[1] &&
-              cells[1].v !== null
-                ? String(cells[1].v).trim()
+              row.c[1] &&
+              row.c[1].v !== null
+                ? String(row.c[1].v).trim()
                 : "";
 
             const active =
-              cells[2] &&
-              cells[2].v !== null
-                ? String(cells[2].v)
+              row.c[2] &&
+              row.c[2].v !== null
+                ? String(row.c[2].v)
                     .trim()
                     .toUpperCase()
                 : "NO";
 
             const scoreboardID =
-              cells[3] &&
-              cells[3].v !== null
-                ? String(cells[3].v).trim()
+              row.c[3] &&
+              row.c[3].v !== null
+                ? String(row.c[3].v).trim()
                 : "";
 
             const judgeURL =
-              cells[4] &&
-              cells[4].v !== null
-                ? String(cells[4].v).trim()
+              row.c[4] &&
+              row.c[4].v !== null
+                ? String(row.c[4].v).trim()
                 : "";
 
+
+            /*
+               The five physical rows are the fixed judge records.
+               We display a row even if someone is temporarily
+               configuring it.
+            */
 
             const judge = {
               sheetRow: sheetRow,
               name: name,
               token: token,
-              active: active,
+              active: active === "YES" ? "YES" : "NO",
               scoreboardID: scoreboardID,
               url: judgeURL
             };
@@ -1071,7 +1173,7 @@
             statusElement.className =
               "judge-status";
 
-            if (active === "YES") {
+            if (judge.active === "YES") {
 
               statusElement.textContent =
                 "ACTIVE";
@@ -1104,11 +1206,15 @@
             const copyButton =
               document.createElement("button");
 
-            copyButton.type = "button";
+            copyButton.type =
+              "button";
+
             copyButton.className =
               "judge-copy-button";
+
             copyButton.textContent =
               "Copy URL";
+
             copyButton.disabled =
               !judgeURL;
 
@@ -1149,10 +1255,15 @@
             const qrButton =
               document.createElement("button");
 
-            qrButton.type = "button";
+            qrButton.type =
+              "button";
+
             qrButton.className =
               "judge-qr-button";
-            qrButton.textContent = "QR";
+
+            qrButton.textContent =
+              "QR";
+
             qrButton.disabled =
               !judgeURL;
 
@@ -1165,10 +1276,14 @@
             const editButton =
               document.createElement("button");
 
-            editButton.type = "button";
+            editButton.type =
+              "button";
+
             editButton.className =
               "judge-edit-button";
-            editButton.textContent = "Edit";
+
+            editButton.textContent =
+              "Edit";
 
             editButton.addEventListener(
               "click",
@@ -1176,38 +1291,43 @@
             );
 
 
-            actionsElement.appendChild(
-              copyButton
-            );
-
-            actionsElement.appendChild(
-              qrButton
-            );
-
-            actionsElement.appendChild(
-              editButton
-            );
+            actionsElement.appendChild(copyButton);
+            actionsElement.appendChild(qrButton);
+            actionsElement.appendChild(editButton);
 
 
-            judgeRow.appendChild(
-              idElement
-            );
+            judgeRow.appendChild(idElement);
+            judgeRow.appendChild(nameElement);
+            judgeRow.appendChild(statusElement);
+            judgeRow.appendChild(actionsElement);
 
-            judgeRow.appendChild(
-              nameElement
-            );
+            judgesDiv.appendChild(judgeRow);
 
-            judgeRow.appendChild(
-              statusElement
-            );
+          });
 
-            judgeRow.appendChild(
-              actionsElement
-            );
 
-            judgesDiv.appendChild(
-              judgeRow
-            );
+          /*
+             Final safety check.
+
+             We expect five fixed judge records: rows 2 to 6.
+             If Google returned an unexpected response, don't
+             silently pretend everything is fine.
+          */
+
+          if (currentJudges.length !== 5) {
+
+            judgesDiv.innerHTML = "";
+
+            const warning =
+              document.createElement("div");
+
+            warning.className =
+              "save-error";
+
+            warning.textContent =
+              `Could not load all five judge records. Loaded ${currentJudges.length} of 5. No changes have been made.`;
+
+            judgesDiv.appendChild(warning);
 
           }
 
@@ -1215,12 +1335,14 @@
         .catch(err => {
 
           judgesDiv.textContent =
-            "Could not load judges.";
+            "Could not load judges: " +
+            (
+              err.message ||
+              String(err)
+            );
 
           judgesDiv.className =
             "save-error";
-
-          console.error(err);
 
         });
 
@@ -1233,8 +1355,22 @@
 
     function openJudgeEditor(judge) {
 
-      editingJudgeRow =
-        judge.sheetRow;
+      /*
+         Store the complete record, including the physical
+         spreadsheet row. This is what protects against one judge
+         being saved into another judge's row.
+      */
+
+      editingJudge = {
+        ...judge
+      };
+
+
+      document
+        .getElementById("judgeEditorTitle")
+        .textContent =
+          `Edit Judge – Sheet Row ${judge.sheetRow}`;
+
 
       document
         .getElementById("judgeNameInput")
@@ -1256,11 +1392,15 @@
       document
         .getElementById("scoreboardIDInput")
         .value =
-          judge.scoreboardID;
+          ["J1", "J2", "J3", "J4", "J5"]
+            .includes(judge.scoreboardID)
+            ? judge.scoreboardID
+            : "J1";
 
       document
         .getElementById("judgeSaveMessage")
-        .textContent = "";
+        .textContent =
+          "";
 
       document
         .getElementById("judgeEditor")
@@ -1288,7 +1428,7 @@
       .getElementById("cancelJudgeButton")
       .addEventListener("click", () => {
 
-        editingJudgeRow = null;
+        editingJudge = null;
 
         document
           .getElementById("judgeEditor")
@@ -1296,7 +1436,8 @@
 
         document
           .getElementById("judgeSaveMessage")
-          .textContent = "";
+          .textContent =
+            "";
 
       });
 
@@ -1309,13 +1450,18 @@
       .getElementById("saveJudgeButton")
       .addEventListener("click", async () => {
 
-        if (
-          !Number.isInteger(editingJudgeRow) ||
-          editingJudgeRow < FIRST_JUDGE_ROW ||
-          editingJudgeRow > LAST_JUDGE_ROW
-        ) {
+        if (!editingJudge) {
           return;
         }
+
+
+        /*
+           Keep a local copy of the row being edited before any
+           asynchronous work starts.
+        */
+
+        const targetSheetRow =
+          editingJudge.sheetRow;
 
 
         const judgeName =
@@ -1341,7 +1487,8 @@
           document
             .getElementById("scoreboardIDInput")
             .value
-            .trim();
+            .trim()
+            .toUpperCase();
 
         const saveButton =
           document.getElementById(
@@ -1355,6 +1502,7 @@
 
 
         message.textContent = "";
+        message.className = "judge-message";
 
 
         if (!judgeName) {
@@ -1383,15 +1531,50 @@
         }
 
 
-        if (!scoreboardID) {
+        if (
+          !["J1", "J2", "J3", "J4", "J5"]
+            .includes(scoreboardID)
+        ) {
 
           message.textContent =
-            "Judge Slot / Scoreboard ID cannot be empty.";
+            "Judge Slot must be J1, J2, J3, J4 or J5.";
 
           message.className =
             "judge-message save-error";
 
           return;
+
+        }
+
+
+        /*
+           SAFETY CHECK:
+
+           Two active judges must never occupy the same scoreboard
+           slot. Inactive judges are allowed to retain any slot
+           while the panel is being rearranged.
+        */
+
+        if (judgeActive === "YES") {
+
+          const duplicateActiveJudge =
+            currentJudges.find(judge =>
+              judge.sheetRow !== targetSheetRow &&
+              judge.active === "YES" &&
+              judge.scoreboardID === scoreboardID
+            );
+
+          if (duplicateActiveJudge) {
+
+            message.textContent =
+              `${scoreboardID} is already assigned to active judge ${duplicateActiveJudge.name || "on another row"}. Make that judge inactive or change its slot first.`;
+
+            message.className =
+              "judge-message save-error";
+
+            return;
+
+          }
 
         }
 
@@ -1402,19 +1585,21 @@
 
         try {
 
-          const rowBeingSaved =
-            editingJudgeRow;
-
-
           /*
-             Column E is deliberately NOT sent.
-             The Apps Script writes only A–D.
+             IMPORTANT:
+
+             sheetRow is the actual fixed spreadsheet row:
+             2, 3, 4, 5 or 6.
+
+             It is NOT calculated from J1/J2/J3/J4/J5.
+             Changing a Judge Slot therefore cannot make the save
+             jump to another judge's physical row.
           */
 
           await sendAdminAction({
             action: "updateJudgeDetails",
             adminToken: adminToken,
-            sheetRow: rowBeingSaved,
+            sheetRow: targetSheetRow,
             judgeName: judgeName,
             judgeToken: judgeToken,
             judgeActive: judgeActive,
@@ -1435,12 +1620,13 @@
 
             await loadJudges();
 
+
             const confirmed =
               currentJudges.find(
                 judge =>
-                  judge.sheetRow ===
-                  rowBeingSaved
+                  judge.sheetRow === targetSheetRow
               );
+
 
             if (
               confirmed &&
@@ -1461,7 +1647,7 @@
           if (!saved) {
 
             throw new Error(
-              "The sheet did not confirm the judge changes."
+              "The sheet did not confirm the judge changes. No further changes were made by the Admin Panel."
             );
 
           }
@@ -1473,7 +1659,8 @@
           message.className =
             "judge-message success-message";
 
-          editingJudgeRow = null;
+
+          editingJudge = null;
 
 
           setTimeout(() => {
@@ -1508,7 +1695,7 @@
 
 
     /* =========================================================
-       COMPETITION EDIT MODE
+       OPEN COMPETITION EDIT MODE
        ========================================================= */
 
     document
@@ -1527,11 +1714,13 @@
 
         document
           .getElementById("saveError")
-          .textContent = "";
+          .textContent =
+            "";
 
         document
           .getElementById("successMessage")
-          .textContent = "";
+          .textContent =
+            "";
 
         document
           .getElementById("competitionReadMode")
@@ -1548,6 +1737,10 @@
       });
 
 
+    /* =========================================================
+       CANCEL COMPETITION EDIT MODE
+       ========================================================= */
+
     document
       .getElementById("cancelCompetitionButton")
       .addEventListener("click", () => {
@@ -1562,7 +1755,8 @@
 
         document
           .getElementById("saveError")
-          .textContent = "";
+          .textContent =
+            "";
 
       });
 
@@ -1684,6 +1878,7 @@
             .getElementById("competitionReadMode")
             .classList.remove("hidden");
 
+
           successMessage.textContent =
             "Competition details saved successfully.";
 
@@ -1700,8 +1895,7 @@
         } finally {
 
           saveButton.disabled = false;
-          saveButton.textContent =
-            "Save Changes";
+          saveButton.textContent = "Save Changes";
 
         }
 
@@ -1735,6 +1929,7 @@
           document.createElement("textarea");
 
         textarea.value = text;
+
         textarea.style.position = "fixed";
         textarea.style.opacity = "0";
 
@@ -1761,9 +1956,6 @@
 
     /* =========================================================
        SHOW QR CODE
-
-       Uses the URL generated by the spreadsheet formula in
-       Column E. Nothing is ever written back to Column E.
        ========================================================= */
 
     function showQRCode(judge) {
@@ -1774,6 +1966,7 @@
 
       currentQRUrl =
         judge.url;
+
 
       document
         .getElementById("qrJudgeName")
@@ -1800,7 +1993,7 @@
 
 
     /* =========================================================
-       QR MODAL
+       QR MODAL BUTTONS
        ========================================================= */
 
     document
@@ -1837,15 +2030,11 @@
             "Copied!";
 
           setTimeout(() => {
+
             button.textContent =
               originalText;
+
           }, 1500);
-
-        } else {
-
-          alert(
-            "Could not copy the URL. Please try again."
-          );
 
         }
 
