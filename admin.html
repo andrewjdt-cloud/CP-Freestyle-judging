@@ -461,8 +461,6 @@
 
       <h3>Competition</h3>
 
-      <!-- READ MODE -->
-
       <div id="competitionReadMode">
 
         <div class="info-row">
@@ -491,10 +489,7 @@
         </div>
 
         <div class="actions">
-          <button
-            type="button"
-            class="edit-button"
-            id="editCompetitionButton">
+          <button type="button" class="edit-button" id="editCompetitionButton">
             Edit Competition Details
           </button>
         </div>
@@ -503,55 +498,26 @@
 
       </div>
 
-
-      <!-- EDIT MODE -->
-
       <div id="competitionEditMode" class="hidden">
 
         <div class="info-row">
-
-          <label class="label" for="eventNameInput">
-            Event Name
-          </label>
-
-          <input
-            class="edit-input"
-            id="eventNameInput"
-            type="text"
-            autocomplete="off">
-
+          <label class="label" for="eventNameInput">Event Name</label>
+          <input class="edit-input" id="eventNameInput" type="text" autocomplete="off">
         </div>
 
         <div class="info-row">
-
-          <label class="label" for="eventLocationInput">
-            Location
-          </label>
-
-          <input
-            class="edit-input"
-            id="eventLocationInput"
-            type="text"
-            autocomplete="off">
-
+          <label class="label" for="eventLocationInput">Location</label>
+          <input class="edit-input" id="eventLocationInput" type="text" autocomplete="off">
         </div>
 
         <div class="actions">
-
-          <button
-            type="button"
-            class="cancel-button"
-            id="cancelCompetitionButton">
+          <button type="button" class="cancel-button" id="cancelCompetitionButton">
             Cancel
           </button>
 
-          <button
-            type="button"
-            class="save-button"
-            id="saveCompetitionButton">
+          <button type="button" class="save-button" id="saveCompetitionButton">
             Save Changes
           </button>
-
         </div>
 
         <div id="saveError" class="save-error"></div>
@@ -588,84 +554,36 @@
         <h4>Edit Judge</h4>
 
         <div class="judge-edit-row">
-
-          <label for="judgeNameInput">
-            Judge Name
-          </label>
-
-          <input
-            class="judge-input"
-            id="judgeNameInput"
-            type="text"
-            autocomplete="off">
-
+          <label for="judgeNameInput">Judge Name</label>
+          <input class="judge-input" id="judgeNameInput" type="text" autocomplete="off">
         </div>
 
         <div class="judge-edit-row">
-
-          <label for="judgeTokenInput">
-            Judge Token
-          </label>
-
-          <input
-            class="judge-input"
-            id="judgeTokenInput"
-            type="text"
-            autocomplete="off">
-
+          <label for="judgeTokenInput">Judge Token</label>
+          <input class="judge-input" id="judgeTokenInput" type="text" autocomplete="off">
         </div>
 
         <div class="judge-edit-row">
+          <label for="judgeActiveInput">Judge Status</label>
 
-          <label for="judgeActiveInput">
-            Judge Status
-          </label>
-
-          <select
-            class="judge-select"
-            id="judgeActiveInput">
-
+          <select class="judge-select" id="judgeActiveInput">
             <option value="YES">ACTIVE</option>
             <option value="NO">INACTIVE</option>
-
           </select>
-
         </div>
 
         <div class="judge-edit-row">
-
-          <label for="scoreboardIDInput">
-            Scoreboard ID
-          </label>
-
-          <input
-            class="judge-input"
-            id="scoreboardIDInput"
-            type="text"
-            autocomplete="off">
-
+          <label for="scoreboardIDInput">Scoreboard ID</label>
+          <input class="judge-input" id="scoreboardIDInput" type="text" autocomplete="off">
         </div>
-
-        <!--
-          IMPORTANT:
-          Judge URL is deliberately NOT shown or edited here.
-          Column E remains entirely controlled by the spreadsheet
-          formula.
-        -->
 
         <div class="actions">
 
-          <button
-            type="button"
-            class="cancel-button"
-            id="cancelJudgeButton">
+          <button type="button" class="cancel-button" id="cancelJudgeButton">
             Cancel
           </button>
 
-          <button
-            type="button"
-            class="save-button"
-            id="saveJudgeButton">
+          <button type="button" class="save-button" id="saveJudgeButton">
             Save Judge
           </button>
 
@@ -690,30 +608,19 @@
 
       <h3 id="qrJudgeName">Judge QR Code</h3>
 
-      <p>
-        Scan this code to open the judge's scoring page.
-      </p>
+      <p>Scan this code to open the judge's scoring page.</p>
 
       <div class="qr-image-wrap">
-        <img
-          id="qrImage"
-          src=""
-          alt="Judge QR Code">
+        <img id="qrImage" src="" alt="Judge QR Code">
       </div>
 
       <div class="qr-actions">
 
-        <button
-          type="button"
-          class="judge-copy-button"
-          id="copyQRUrlButton">
+        <button type="button" class="judge-copy-button" id="copyQRUrlButton">
           Copy URL
         </button>
 
-        <button
-          type="button"
-          class="cancel-button"
-          id="closeQRButton">
+        <button type="button" class="cancel-button" id="closeQRButton">
           Close
         </button>
 
@@ -773,11 +680,9 @@
        ========================================================= */
 
     function sleep(milliseconds) {
-
       return new Promise(resolve => {
         setTimeout(resolve, milliseconds);
       });
-
     }
 
 
@@ -900,8 +805,6 @@
           });
 
 
-          /* Check Admin Token */
-
           if (
             !adminToken ||
             cfg.AdminToken !== adminToken
@@ -934,9 +837,7 @@
 
 
           const roundStatus =
-            document.getElementById(
-              "roundStatus"
-            );
+            document.getElementById("roundStatus");
 
           if (cfg.RoundOpen === "YES") {
 
@@ -958,9 +859,7 @@
 
 
           const panelInsights =
-            document.getElementById(
-              "panelInsights"
-            );
+            document.getElementById("panelInsights");
 
           if (cfg.PanelInsights === "YES") {
 
@@ -992,16 +891,54 @@
 
 
     /* =========================================================
+       CHECK FOR ACCIDENTAL HEADER ROW
+
+       The Admin Panel must display ALL judge slots, including
+       inactive judges.
+
+       This only filters a row that literally contains spreadsheet
+       column headings, such as JudgeName / ScoreboardID.
+       ========================================================= */
+
+    function isJudgeHeaderRow(name, token, active, scoreboardID) {
+
+      const values = [
+        name,
+        token,
+        active,
+        scoreboardID
+      ].map(value =>
+        String(value || "")
+          .trim()
+          .toLowerCase()
+      );
+
+      return (
+        values.includes("judgename") ||
+        values.includes("judge token") ||
+        values.includes("judgetoken") ||
+        values.includes("judgeactive") ||
+        values.includes("scoreboardid") ||
+        values.includes("scoreboard id")
+      );
+
+    }
+
+
+    /* =========================================================
        LOAD JUDGES
 
-       Judges sheet:
+       IMPORTANT:
+       ALL judge rows are displayed in Admin.
+
+       JudgeActive controls whether the judge participates in the
+       competition, NOT whether their row appears here.
+
        A = JudgeName
        B = JudgeToken
        C = JudgeActive
        D = ScoreboardID
        E = Judge URL formula
-
-       Column E is READ ONLY here.
        ========================================================= */
 
     function loadJudges() {
@@ -1021,20 +958,16 @@
       return getSheetData(JUDGES_GID)
         .then(sheetData => {
 
-          judgesDiv.innerHTML =
-            "";
-
-          judgesDiv.className =
-            "";
+          judgesDiv.innerHTML = "";
+          judgesDiv.className = "";
 
 
           sheetData.table.rows.forEach(
             (row, index) => {
 
               /*
-                 Row 1 in the spreadsheet is the header.
-                 GViz row index 0 therefore corresponds to
-                 spreadsheet row 2.
+                 GViz row index 0 normally corresponds to the first
+                 spreadsheet data row.
               */
 
               const sheetRow =
@@ -1072,11 +1005,6 @@
                   ? String(row.c[3].v).trim()
                   : "";
 
-              /*
-                 Column E contains the URL generated by the
-                 spreadsheet formula. We only READ it.
-              */
-
               const judgeURL =
                 row.c[4] &&
                 row.c[4].v !== null
@@ -1091,6 +1019,25 @@
                 !token &&
                 !scoreboardID &&
                 !judgeURL
+              ) {
+                return;
+              }
+
+
+              /*
+                 Ignore ONLY an accidental row containing the
+                 spreadsheet column headings.
+
+                 DO NOT filter inactive judges here.
+              */
+
+              if (
+                isJudgeHeaderRow(
+                  name,
+                  token,
+                  active,
+                  scoreboardID
+                )
               ) {
                 return;
               }
@@ -1437,8 +1384,7 @@
           );
 
 
-        message.textContent =
-          "";
+        message.textContent = "";
 
 
         if (!judgeName) {
@@ -1480,24 +1426,20 @@
         }
 
 
-        saveButton.disabled =
-          true;
+        const rowBeingEdited =
+          editingJudgeRow;
 
-        saveButton.textContent =
-          "Saving...";
+
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
 
 
         try {
 
-          /*
-             Column E / Judge URL is deliberately NOT sent.
-             It remains controlled by the spreadsheet formula.
-          */
-
           await sendAdminAction({
             action: "updateJudgeDetails",
             adminToken: adminToken,
-            sheetRow: editingJudgeRow,
+            sheetRow: rowBeingEdited,
             judgeName: judgeName,
             judgeToken: judgeToken,
             judgeActive: judgeActive,
@@ -1505,8 +1447,7 @@
           });
 
 
-          let saved =
-            false;
+          let saved = false;
 
 
           for (
@@ -1522,8 +1463,7 @@
             const confirmed =
               currentJudges.find(
                 judge =>
-                  judge.sheetRow ===
-                    editingJudgeRow
+                  judge.sheetRow === rowBeingEdited
               );
 
             if (
@@ -1557,8 +1497,7 @@
           message.className =
             "judge-message success-message";
 
-          editingJudgeRow =
-            null;
+          editingJudgeRow = null;
 
 
           setTimeout(() => {
@@ -1584,11 +1523,8 @@
 
         } finally {
 
-          saveButton.disabled =
-            false;
-
-          saveButton.textContent =
-            "Save Judge";
+          saveButton.disabled = false;
+          saveButton.textContent = "Save Judge";
 
         }
 
@@ -1698,11 +1634,8 @@
           );
 
 
-        saveError.textContent =
-          "";
-
-        successMessage.textContent =
-          "";
+        saveError.textContent = "";
+        successMessage.textContent = "";
 
 
         if (!newEventName) {
@@ -1725,11 +1658,8 @@
         }
 
 
-        saveButton.disabled =
-          true;
-
-        saveButton.textContent =
-          "Saving...";
+        saveButton.disabled = true;
+        saveButton.textContent = "Saving...";
 
 
         try {
@@ -1742,8 +1672,7 @@
           });
 
 
-          let saved =
-            false;
+          let saved = false;
 
 
           for (
@@ -1802,11 +1731,8 @@
 
         } finally {
 
-          saveButton.disabled =
-            false;
-
-          saveButton.textContent =
-            "Save Changes";
+          saveButton.disabled = false;
+          saveButton.textContent = "Save Changes";
 
         }
 
@@ -1839,22 +1765,12 @@
         }
 
 
-        /*
-           Fallback for browsers where the Clipboard API
-           is unavailable.
-        */
-
         const textarea =
           document.createElement("textarea");
 
-        textarea.value =
-          text;
-
-        textarea.style.position =
-          "fixed";
-
-        textarea.style.opacity =
-          "0";
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
 
         document.body.appendChild(
           textarea
@@ -1883,9 +1799,6 @@
 
     /* =========================================================
        SHOW QR CODE
-
-       The QR image is generated from the existing URL in
-       Column E. Nothing is written back to the spreadsheet.
        ========================================================= */
 
     function showQRCode(judge) {
@@ -1909,10 +1822,6 @@
       const qrImage =
         document.getElementById("qrImage");
 
-
-      /*
-         QRServer generates the image from the URL.
-      */
 
       qrImage.src =
         "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
@@ -1976,10 +1885,6 @@
 
       });
 
-
-    /*
-       Close QR modal if the dark background itself is clicked.
-    */
 
     document
       .getElementById("qrModal")
