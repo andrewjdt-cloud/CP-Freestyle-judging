@@ -8,9 +8,6 @@
   <title>CP Freestyle – Admin Panel</title>
 
   <style>
-    /* =========================================================
-       PAGE
-       ========================================================= */
 
     * {
       box-sizing: border-box;
@@ -36,11 +33,6 @@
       font-size: 17px;
     }
 
-
-    /* =========================================================
-       SECTIONS
-       ========================================================= */
-
     .section {
       background: #151515;
       border-radius: 16px;
@@ -52,11 +44,6 @@
       margin: 0 0 20px 0;
       font-size: 22px;
     }
-
-
-    /* =========================================================
-       COMPETITION INFORMATION
-       ========================================================= */
 
     .info-row {
       display: flex;
@@ -80,11 +67,6 @@
       word-break: break-word;
     }
 
-
-    /* =========================================================
-       EDIT INPUTS
-       ========================================================= */
-
     .edit-input {
       background: #202020;
       border: 1px solid #444;
@@ -102,11 +84,6 @@
       border-color: #00c96b;
     }
 
-
-    /* =========================================================
-       STATUS COLOURS
-       ========================================================= */
-
     .status-open,
     .status-yes {
       color: #42d88b;
@@ -116,11 +93,6 @@
     .status-no {
       color: #ff6b6b;
     }
-
-
-    /* =========================================================
-       JUDGES
-       ========================================================= */
 
     .judge-header,
     .judge {
@@ -146,10 +118,6 @@
       border-bottom: 1px solid #303030;
     }
 
-    .judge:last-child {
-      border-bottom: none;
-    }
-
     .judge-number {
       font-weight: 700;
       color: #e0e0e0;
@@ -159,11 +127,6 @@
       text-align: right;
       font-weight: 700;
     }
-
-
-    /* =========================================================
-       BUTTONS
-       ========================================================= */
 
     .actions {
       display: flex;
@@ -198,11 +161,6 @@
       color: #fff;
     }
 
-
-    /* =========================================================
-       MESSAGES
-       ========================================================= */
-
     .error {
       color: #ff6b6b;
       margin-bottom: 16px;
@@ -230,11 +188,6 @@
     .hidden {
       display: none !important;
     }
-
-
-    /* =========================================================
-       MOBILE
-       ========================================================= */
 
     @media (max-width: 600px) {
 
@@ -283,11 +236,11 @@
       button {
         flex: 1;
       }
+
     }
 
   </style>
 </head>
-
 
 <body>
 
@@ -296,17 +249,13 @@
 
   <div id="error" class="error"></div>
 
-
   <div id="adminContent" style="display:none;">
 
-    <!-- =====================================================
-         COMPETITION SECTION
-         ===================================================== -->
+    <!-- COMPETITION -->
 
     <div class="section">
 
       <h3>Competition</h3>
-
 
       <!-- READ MODE -->
 
@@ -404,9 +353,7 @@
     </div>
 
 
-    <!-- =====================================================
-         JUDGES SECTION
-         ===================================================== -->
+    <!-- JUDGES -->
 
     <div class="section">
 
@@ -439,13 +386,6 @@
 
     const JUDGES_GID = "1213944419";
 
-
-    /*
-       Apps Script Web App deployment URL.
-
-       This is the deployment you just updated.
-    */
-
     const APPS_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbx9xfXW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
 
@@ -455,7 +395,6 @@
        ========================================================= */
 
     const params = new URLSearchParams(window.location.search);
-
     const adminToken = params.get("token");
 
 
@@ -468,15 +407,33 @@
 
 
     /* =========================================================
+       DELAY HELPER
+       ========================================================= */
+
+    function sleep(milliseconds) {
+      return new Promise(resolve => {
+        setTimeout(resolve, milliseconds);
+      });
+    }
+
+
+    /* =========================================================
        READ GOOGLE SHEET
+
+       The timestamp prevents an old cached response from being
+       used when we are checking whether a save succeeded.
        ========================================================= */
 
     function getSheetData(gid) {
 
-      const url =
-        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json`;
+      const cacheBuster = Date.now();
 
-      return fetch(url)
+      const url =
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${cacheBuster}`;
+
+      return fetch(url, {
+        cache: "no-store"
+      })
         .then(response => {
 
           if (!response.ok) {
@@ -503,14 +460,44 @@
 
 
     /* =========================================================
-       SEND SAVE REQUEST TO APPS SCRIPT
+       SEND ADMIN ACTION
 
-       The Admin page is hosted separately from Apps Script.
-       no-cors allows the POST request to be sent successfully.
-       We then reload the sheet to verify the saved values.
+       Apps Script does not provide normal CORS headers to this
+       separately hosted GitHub Pages site, so this request is
+       deliberately fire-and-forget.
+
+       The sheet is subsequently re-read and verified.
        ========================================================= */
 
     function sendAdminAction(data) {
+
+      const body = JSON.stringify(data);
+
+      /*
+         sendBeacon sends a text/plain POST, which is exactly what
+         our Apps Script doPost(JSON.parse(e.postData.contents))
+         expects.
+      */
+
+      if (navigator.sendBeacon) {
+
+        const blob = new Blob(
+          [body],
+          { type: "text/plain;charset=UTF-8" }
+        );
+
+        const sent =
+          navigator.sendBeacon(APPS_SCRIPT_URL, blob);
+
+        if (sent) {
+          return Promise.resolve();
+        }
+
+      }
+
+      /*
+         Fallback for browsers where sendBeacon is unavailable.
+      */
 
       return fetch(APPS_SCRIPT_URL, {
         method: "POST",
@@ -518,7 +505,7 @@
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
-        body: JSON.stringify(data)
+        body: body
       });
 
     }
@@ -526,14 +513,6 @@
 
     /* =========================================================
        LOAD EVENT CONFIGURATION
-
-       IMPORTANT:
-       Google Visualization API puts column headings in
-       table.cols, NOT table.rows.
-
-       Therefore we do NOT skip row zero here.
-       That was the reason EventName could disappear when it
-       was the first configuration entry.
        ========================================================= */
 
     function loadEventConfig() {
@@ -566,38 +545,24 @@
           });
 
 
-          /* Check Admin Token */
-
           if (!adminToken || cfg.AdminToken !== adminToken) {
             throw new Error("Access denied.");
           }
 
 
-          /* Store current values */
-
           currentEventName = cfg.EventName || "";
           currentLocation = cfg.Location || "";
 
 
-          /* Display Event Name */
-
           document.getElementById("eventName").textContent =
             currentEventName || "—";
-
-
-          /* Display Location */
 
           document.getElementById("eventLocation").textContent =
             currentLocation || "—";
 
-
-          /* Display Current Round */
-
           document.getElementById("eventRound").textContent =
             cfg.Round || "—";
 
-
-          /* Display Round Status */
 
           const roundOpen =
             (cfg.RoundOpen || "").toUpperCase();
@@ -618,8 +583,6 @@
           }
 
 
-          /* Display Panel Insights */
-
           const insights =
             (cfg.PanelInsights || "").toUpperCase();
 
@@ -639,8 +602,6 @@
           }
 
 
-          /* Show page after successful authentication */
-
           document.getElementById("adminContent").style.display =
             "block";
 
@@ -651,11 +612,6 @@
 
     /* =========================================================
        LOAD JUDGES
-
-       We DO NOT skip the first data row.
-
-       Instead, we explicitly detect and ignore a possible
-       header row if the sheet happens to return one as data.
        ========================================================= */
 
     function loadJudges() {
@@ -674,7 +630,6 @@
               return;
             }
 
-
             const name =
               row.c[0] && row.c[0].v !== null
                 ? String(row.c[0].v).trim()
@@ -691,10 +646,7 @@
                 : "";
 
 
-            /*
-               Safety check:
-               Ignore a header row if it appears in the data.
-            */
+            /* Ignore a header row if present */
 
             const nameUpper = name.toUpperCase();
             const idUpper = scoreboardID.toUpperCase();
@@ -709,22 +661,16 @@
             }
 
 
-            /* Skip completely empty rows */
-
             if (!name && !scoreboardID) {
               return;
             }
 
-
-            /* Create row */
 
             const judgeRow =
               document.createElement("div");
 
             judgeRow.className = "judge";
 
-
-            /* Scoreboard ID */
 
             const idElement =
               document.createElement("div");
@@ -733,16 +679,12 @@
             idElement.textContent = scoreboardID || "—";
 
 
-            /* Judge Name */
-
             const nameElement =
               document.createElement("div");
 
             nameElement.textContent =
               name || "Unnamed Judge";
 
-
-            /* Status */
 
             const statusElement =
               document.createElement("div");
@@ -843,7 +785,7 @@
 
     document
       .getElementById("saveCompetitionButton")
-      .addEventListener("click", () => {
+      .addEventListener("click", async () => {
 
         const newEventName =
           document
@@ -888,45 +830,49 @@
         saveButton.textContent = "Saving...";
 
 
-        /*
-           Send the request.
-
-           Because no-cors gives us an opaque response, we do not
-           try to read the response. Instead, after allowing Apps
-           Script a moment to write to the sheet, we reload the
-           Event Config and confirm the values.
-        */
-
-        sendAdminAction({
-          action: "updateCompetitionDetails",
-          adminToken: adminToken,
-          eventName: newEventName,
-          location: newLocation
-        })
-        .then(() => {
+        try {
 
           /*
-             Give Apps Script a short moment to complete the write.
+             Send the update.
           */
 
-          return new Promise(resolve => {
-            setTimeout(resolve, 1500);
+          await sendAdminAction({
+            action: "updateCompetitionDetails",
+            adminToken: adminToken,
+            eventName: newEventName,
+            location: newLocation
           });
 
-        })
-        .then(() => loadEventConfig())
-        .then(() => {
 
           /*
-             Check that the sheet now contains the values we sent.
+             Apps Script and Google Sheets can take a moment to
+             make a write visible to a subsequent read.
+
+             Check several times rather than failing immediately.
           */
 
-          if (
-            currentEventName !== newEventName ||
-            currentLocation !== newLocation
-          ) {
+          let saved = false;
+
+          for (let attempt = 0; attempt < 5; attempt++) {
+
+            await sleep(1000);
+
+            await loadEventConfig();
+
+            if (
+              currentEventName === newEventName &&
+              currentLocation === newLocation
+            ) {
+              saved = true;
+              break;
+            }
+
+          }
+
+
+          if (!saved) {
             throw new Error(
-              "The sheet did not confirm the changes."
+              "The update was sent, but the sheet did not confirm the changes."
             );
           }
 
@@ -939,31 +885,29 @@
             .getElementById("competitionReadMode")
             .classList.remove("hidden");
 
+
           successMessage.textContent =
             "Competition details saved successfully.";
 
-        })
-        .catch(err => {
+
+        } catch (err) {
 
           saveError.textContent =
-            "Could not save changes: " + err.message;
+            "Could not save changes: " +
+            (err.message || String(err));
 
-        })
-        .finally(() => {
+        } finally {
 
           saveButton.disabled = false;
           saveButton.textContent = "Save Changes";
 
-        });
+        }
 
       });
 
 
     /* =========================================================
        INITIAL PAGE LOAD
-
-       Load Event Config first because it checks the Admin Token.
-       Only after that succeeds do we load the Judges.
        ========================================================= */
 
     loadEventConfig()
