@@ -386,8 +386,15 @@
 
     const JUDGES_GID = "1213944419";
 
+
+    /*
+       Apps Script Web App deployment URL.
+
+       This is the EXACT deployment URL supplied by Andrew.
+    */
+
     const APPS_SCRIPT_URL =
-      "https://script.google.com/macros/s/AKfycbx9xfXW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
+      "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
 
 
     /* =========================================================
@@ -545,24 +552,38 @@
           });
 
 
+          /* Check Admin Token */
+
           if (!adminToken || cfg.AdminToken !== adminToken) {
             throw new Error("Access denied.");
           }
 
 
+          /* Store current values */
+
           currentEventName = cfg.EventName || "";
           currentLocation = cfg.Location || "";
 
 
+          /* Display Event Name */
+
           document.getElementById("eventName").textContent =
             currentEventName || "—";
+
+
+          /* Display Location */
 
           document.getElementById("eventLocation").textContent =
             currentLocation || "—";
 
+
+          /* Display Current Round */
+
           document.getElementById("eventRound").textContent =
             cfg.Round || "—";
 
+
+          /* Display Round Status */
 
           const roundOpen =
             (cfg.RoundOpen || "").toUpperCase();
@@ -583,6 +604,8 @@
           }
 
 
+          /* Display Panel Insights */
+
           const insights =
             (cfg.PanelInsights || "").toUpperCase();
 
@@ -601,6 +624,8 @@
 
           }
 
+
+          /* Show page after successful authentication */
 
           document.getElementById("adminContent").style.display =
             "block";
@@ -629,6 +654,14 @@
             if (!row.c) {
               return;
             }
+
+            /*
+               Judges sheet:
+               Column A = Judge Name
+               Column B = Judge Token
+               Column C = Judge Active
+               Column D = Scoreboard ID
+            */
 
             const name =
               row.c[0] && row.c[0].v !== null
@@ -660,6 +693,8 @@
               return;
             }
 
+
+            /* Ignore completely empty rows */
 
             if (!name && !scoreboardID) {
               return;
