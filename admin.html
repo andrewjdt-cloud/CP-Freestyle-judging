@@ -1,12 +1,11 @@
 <!--
 CP Freestyle Judging System
 File: admin.html
-Version: v1.1 READ-ONLY TEST
+Version: v1.1 READ ONLY
 Notes:
-- Read-only competition setup dashboard
-- Does NOT write to Google Sheets
-- Uses existing AdminToken authentication
-- Safe testing version before editing features are added
+- Read-only competition administration overview
+- No changes are made to the Google Sheet
+- Uses existing Google Sheet and existing Apps Script authentication
 -->
 
 <!DOCTYPE html>
@@ -18,676 +17,312 @@ Notes:
 <title>CP Freestyle – Admin Panel</title>
 
 <style>
-
-*{
-  box-sizing:border-box;
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0b0b0b;
+  color: #fff;
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
 }
 
-body{
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#0b0b0b;
-  color:#fff;
-  margin:0;
-  padding:20px;
+h2 {
+  margin-bottom: 6px;
 }
 
-.page{
-  max-width:1200px;
-  margin:auto;
+.subtitle {
+  color: #aaa;
+  margin-bottom: 20px;
 }
 
-h1{
-  margin:0 0 6px;
-  font-size:28px;
+.section {
+  background: #111;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 20px;
 }
 
-.subtitle{
-  color:#aaa;
-  margin-bottom:24px;
+.section h3 {
+  margin-top: 0;
 }
 
-.section{
-  background:#111;
-  border:1px solid #252525;
-  border-radius:14px;
-  padding:18px;
-  margin-bottom:20px;
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 11px 0;
+  border-bottom: 1px solid #2a2a2a;
+  gap: 20px;
 }
 
-.section h2{
-  margin:0 0 16px;
-  font-size:21px;
+.info-row:last-child {
+  border-bottom: none;
 }
 
-.section-note{
-  color:#888;
-  font-size:14px;
-  margin-top:-8px;
-  margin-bottom:16px;
+.label {
+  color: #aaa;
+  font-size: 14px;
 }
 
-.status{
-  display:inline-block;
-  padding:4px 9px;
-  border-radius:20px;
-  font-size:13px;
-  font-weight:600;
+.value {
+  text-align: right;
+  font-weight: 600;
 }
 
-.yes{
-  background:#123d22;
-  color:#4ee881;
+.status-open,
+.status-yes {
+  color: #00d26a;
 }
 
-.no{
-  background:#421919;
-  color:#ff7070;
+.status-closed,
+.status-no {
+  color: #ff5252;
 }
 
-.info-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:12px;
+.judge {
+  display: grid;
+  grid-template-columns: 70px 1fr 100px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #2a2a2a;
 }
 
-.info-card{
-  background:#171717;
-  border-radius:10px;
-  padding:12px;
+.judge:last-child {
+  border-bottom: none;
 }
 
-.info-label{
-  color:#888;
-  font-size:12px;
-  text-transform:uppercase;
-  margin-bottom:5px;
-  letter-spacing:.5px;
+.judge-number {
+  font-weight: bold;
+  color: #aaa;
 }
 
-.info-value{
-  font-size:17px;
-  word-break:break-word;
+.error {
+  color: #ff5252;
+  margin-bottom: 12px;
+  font-weight: bold;
 }
 
-.table-wrap{
-  overflow-x:auto;
+.loading {
+  color: #aaa;
 }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  min-width:750px;
-}
-
-th{
-  text-align:left;
-  color:#999;
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:.4px;
-  padding:10px;
-  border-bottom:1px solid #333;
-}
-
-td{
-  padding:11px 10px;
-  border-bottom:1px solid #222;
-  vertical-align:top;
-}
-
-tr:last-child td{
-  border-bottom:none;
-}
-
-.completed-row td{
-  color:#aaa;
-  background:#161616;
-}
-
-.token{
-  font-family:monospace;
-  font-size:13px;
-  color:#ccc;
-  word-break:break-all;
-}
-
-.copy-box{
-  display:flex;
-  gap:6px;
-  align-items:center;
-}
-
-.copy-text{
-  font-family:monospace;
-  font-size:12px;
-  color:#bbb;
-  word-break:break-all;
-  flex:1;
-}
-
-button{
-  padding:7px 10px;
-  border:none;
-  border-radius:7px;
-  background:#333;
-  color:#fff;
-  cursor:pointer;
-  white-space:nowrap;
-}
-
-button:hover{
-  background:#444;
-}
-
-.error{
-  background:#351717;
-  border:1px solid #702525;
-  color:#ff8b8b;
-  border-radius:10px;
-  padding:14px;
-  margin-bottom:20px;
-  display:none;
-}
-
-.loading{
-  color:#aaa;
-  padding:30px;
-  text-align:center;
-}
-
-.read-only-banner{
-  background:#172b3a;
-  border:1px solid #254a63;
-  color:#8fd3ff;
-  padding:12px 14px;
-  border-radius:10px;
-  margin-bottom:20px;
-  font-size:14px;
-}
-
-@media(max-width:600px){
-
-  body{
-    padding:12px;
+@media (max-width: 600px) {
+  body {
+    padding: 12px;
   }
 
-  h1{
-    font-size:24px;
+  .info-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
   }
 
-  .section{
-    padding:14px;
+  .value {
+    text-align: left;
   }
 
+  .judge {
+    grid-template-columns: 55px 1fr 75px;
+  }
 }
-
 </style>
 </head>
 
 <body>
 
-<div class="page">
+<h2>CP Freestyle – Admin Panel</h2>
+<div class="subtitle">Competition setup overview</div>
 
-  <h1>CP Freestyle – Admin Panel</h1>
-  <div class="subtitle">Competition setup and administration</div>
+<div id="error" class="error"></div>
 
-  <div class="read-only-banner">
-    🛟 <strong>Read-only test mode.</strong>
-    This page can view the competition setup but cannot change anything.
+<div id="adminContent" style="display:none;">
+
+  <div class="section">
+    <h3>Competition</h3>
+
+    <div class="info-row">
+      <span class="label">Event Name</span>
+      <span class="value" id="eventName">—</span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Location</span>
+      <span class="value" id="eventLocation">—</span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Current Round</span>
+      <span class="value" id="eventRound">—</span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Round Status</span>
+      <span class="value" id="roundStatus">—</span>
+    </div>
+
+    <div class="info-row">
+      <span class="label">Panel Insights</span>
+      <span class="value" id="panelInsights">—</span>
+    </div>
+
   </div>
 
-  <div id="error" class="error"></div>
-
-  <div id="loading" class="loading">
-    Loading competition information…
-  </div>
-
-  <div id="adminContent" style="display:none;">
-
-    <!-- COMPETITION SETUP -->
-
-    <div class="section">
-      <h2>🏁 Competition Setup</h2>
-      <div class="section-note">
-        Current values from the Event Config sheet.
-      </div>
-
-      <div id="eventConfigGrid" class="info-grid"></div>
-    </div>
-
-
-    <!-- JUDGES -->
-
-    <div class="section">
-      <h2>👨‍⚖️ Judges</h2>
-      <div class="section-note">
-        Current judge setup. This page is read-only for now.
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Judge</th>
-              <th>Judge Token</th>
-              <th>Active</th>
-              <th>Scoreboard ID</th>
-              <th>Judge Link</th>
-            </tr>
-          </thead>
-
-          <tbody id="judgesBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-
-    <!-- COMPETITORS -->
-
-    <div class="section">
-      <h2>🪂 Competitors & Moves</h2>
-      <div class="section-note">
-        This displays the existing competitor list exactly as read from the Competitors sheet.
-        A moves are the live moves currently used by the judging system. B moves are alternatives only.
-      </div>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>Number</th>
-              <th>Competitor</th>
-              <th>R1 A Move</th>
-              <th>R2 A Move</th>
-              <th>R3 A Move</th>
-              <th>R1 B Move</th>
-              <th>R2 B Move</th>
-              <th>R3 B Move</th>
-            </tr>
-          </thead>
-
-          <tbody id="competitorsBody"></tbody>
-        </table>
-      </div>
-    </div>
-
+  <div class="section">
+    <h3>Judges</h3>
+    <div id="judges" class="loading">Loading judges...</div>
   </div>
 
 </div>
 
-
 <script>
-
-/* =========================================================
-   CP FREESTYLE ADMIN PANEL – READ ONLY VERSION
-   IMPORTANT: This file contains NO POST requests and makes
-   NO changes to the Google Sheet.
-========================================================= */
-
-
 /* ---------- CONFIG ---------- */
 
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-
 const EVENT_CONFIG_GID = "686531230";
 const JUDGES_GID = "1213944419";
-
-/*
-  IMPORTANT:
-  Replace this with the actual GID of your Competitors tab
-  if it is different.
-*/
-const COMPETITORS_GID = "51112637";
-
 
 /* ---------- AUTH ---------- */
 
 const params = new URLSearchParams(window.location.search);
 const adminToken = params.get("token");
 
+/* ---------- HELPER: READ GOOGLE SHEET ---------- */
 
-/* ---------- DOM ---------- */
-
-const errorEl = document.getElementById("error");
-const loadingEl = document.getElementById("loading");
-const adminContentEl = document.getElementById("adminContent");
-
-const eventConfigGridEl = document.getElementById("eventConfigGrid");
-const judgesBodyEl = document.getElementById("judgesBody");
-const competitorsBodyEl = document.getElementById("competitorsBody");
-
-
-/* ---------- HELPERS ---------- */
-
-function showError(message){
-  errorEl.textContent = message;
-  errorEl.style.display = "block";
-  loadingEl.style.display = "none";
-}
-
-function parseGViz(text){
-  return JSON.parse(
-    text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1)
-  );
-}
-
-async function fetchSheet(gid){
-
+function getSheetData(gid) {
   const url =
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json`;
 
-  const response = await fetch(url);
-
-  if(!response.ok){
-    throw new Error(`Could not load sheet data (${response.status})`);
-  }
-
-  const text = await response.text();
-  return parseGViz(text);
-
+  return fetch(url)
+    .then(r => r.text())
+    .then(t => {
+      return JSON.parse(
+        t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1)
+      );
+    });
 }
-
-function cellValue(row, index){
-
-  if(!row || !row.c || !row.c[index]){
-    return "";
-  }
-
-  const value = row.c[index].v;
-
-  return value === null || value === undefined
-    ? ""
-    : String(value);
-
-}
-
-function yesNoBadge(value){
-
-  const span = document.createElement("span");
-  span.className =
-    "status " + (String(value).toUpperCase() === "YES" ? "yes" : "no");
-
-  span.textContent = value || "—";
-
-  return span;
-
-}
-
 
 /* ---------- LOAD EVENT CONFIG ---------- */
 
-async function loadEventConfig(){
+getSheetData(EVENT_CONFIG_GID)
+  .then(j => {
 
-  const data = await fetchSheet(EVENT_CONFIG_GID);
+    const cfg = {};
 
-  const cfg = {};
+    j.table.rows.forEach(r => {
+      if (r.c && r.c[0] && r.c[1]) {
+        const key = String(r.c[0].v).trim();
+        const value = String(r.c[1].v).trim();
+        cfg[key] = value;
+      }
+    });
 
-  data.table.rows.forEach(row => {
-
-    const key = cellValue(row, 0).trim();
-    const value = cellValue(row, 1).trim();
-
-    if(key){
-      cfg[key] = value;
+    /* Keep the same token protection as the existing admin page */
+    if (!adminToken || cfg.AdminToken !== adminToken) {
+      document.getElementById("error").textContent = "Access denied";
+      return;
     }
 
-  });
+    document.getElementById("adminContent").style.display = "block";
 
+    document.getElementById("eventName").textContent =
+      cfg.EventName || "—";
 
-  /* AUTHENTICATION — SAME IDEA AS EXISTING ADMIN PAGE */
+    document.getElementById("eventLocation").textContent =
+      cfg.Location || "—";
 
-  if(!adminToken || cfg.AdminToken !== adminToken){
+    document.getElementById("eventRound").textContent =
+      cfg.Round || "—";
 
-    throw new Error("Access denied — invalid or missing Admin token.");
+    const roundOpen = (cfg.RoundOpen || "").toUpperCase();
+    const roundStatus = document.getElementById("roundStatus");
 
-  }
-
-
-  /* Display the important setup fields */
-
-  const fields = [
-    ["Event Name", cfg.EventName],
-    ["Event Location", cfg.Location],
-    ["Round / Round Name", cfg.Round],
-    ["Round Open", cfg.RoundOpen],
-    ["Active Event", cfg.ActiveEvent],
-    ["Live Scoreboard Token", cfg.LiveToken]
-  ];
-
-  eventConfigGridEl.innerHTML = "";
-
-  fields.forEach(([label, value]) => {
-
-    const card = document.createElement("div");
-    card.className = "info-card";
-
-    const labelEl = document.createElement("div");
-    labelEl.className = "info-label";
-    labelEl.textContent = label;
-
-    const valueEl = document.createElement("div");
-    valueEl.className = "info-value";
-
-    if(label === "Round Open" || label === "Active Event"){
-      valueEl.appendChild(yesNoBadge(value));
-    }else{
-      valueEl.textContent = value || "—";
+    if (roundOpen === "YES") {
+      roundStatus.textContent = "● OPEN";
+      roundStatus.className = "value status-open";
+    } else {
+      roundStatus.textContent = "● CLOSED";
+      roundStatus.className = "value status-closed";
     }
 
-    card.appendChild(labelEl);
-    card.appendChild(valueEl);
+    const insights = (cfg.PanelInsights || "").toUpperCase();
+    const insightsStatus = document.getElementById("panelInsights");
 
-    eventConfigGridEl.appendChild(card);
+    if (insights === "YES") {
+      insightsStatus.textContent = "ON";
+      insightsStatus.className = "value status-yes";
+    } else {
+      insightsStatus.textContent = "OFF";
+      insightsStatus.className = "value status-no";
+    }
 
+  })
+  .catch(err => {
+    document.getElementById("error").textContent =
+      "Could not load Event Config: " + err;
   });
-
-}
 
 
 /* ---------- LOAD JUDGES ---------- */
 
-async function loadJudges(){
+getSheetData(JUDGES_GID)
+  .then(j => {
 
-  const data = await fetchSheet(JUDGES_GID);
+    const judgesDiv = document.getElementById("judges");
+    judgesDiv.innerHTML = "";
 
-  judgesBodyEl.innerHTML = "";
+    j.table.rows.forEach(r => {
 
-  data.table.rows.forEach((row, index) => {
+      if (!r.c || !r.c[0]) return;
 
-    /*
-      Judges columns:
-      A = Judge Name
-      B = Judge Token
-      C = Active YES/NO
-      D = Scoreboard ID
-      E = Judge Link
-    */
+      const name =
+        r.c[0] ? String(r.c[0].v || "").trim() : "";
 
-    const name = cellValue(row, 0);
-    const token = cellValue(row, 1);
-    const active = cellValue(row, 2);
-    const scoreboardID = cellValue(row, 3);
-    const judgeLink = cellValue(row, 4);
+      const active =
+        r.c[2] ? String(r.c[2].v || "").trim().toUpperCase() : "";
 
-    /*
-      Show all rows that contain something.
-      This lets us see unused judge slots as well if desired.
-    */
+      const judgeNumber =
+        r.c[3] ? String(r.c[3].v || "").trim() : "";
 
-    if(!name && !token && !active && !scoreboardID && !judgeLink){
-      return;
-    }
+      /* Skip completely empty rows */
+      if (!name && !judgeNumber) return;
 
-    const tr = document.createElement("tr");
+      const row = document.createElement("div");
+      row.className = "judge";
 
-    tr.innerHTML = `
-      <td>${escapeHtml(name)}</td>
-      <td class="token">${escapeHtml(token)}</td>
-      <td></td>
-      <td>${escapeHtml(scoreboardID)}</td>
-      <td></td>
-    `;
+      const number = document.createElement("div");
+      number.className = "judge-number";
+      number.textContent = judgeNumber || "—";
 
-    tr.children[2].appendChild(yesNoBadge(active));
+      const judgeName = document.createElement("div");
+      judgeName.textContent = name || "Unnamed Judge";
 
-    const linkCell = tr.children[4];
+      const status = document.createElement("div");
 
-    if(judgeLink){
+      if (active === "YES") {
+        status.textContent = "ACTIVE";
+        status.className = "status-yes";
+      } else {
+        status.textContent = "INACTIVE";
+        status.className = "status-no";
+      }
 
-      const copyBox = document.createElement("div");
-      copyBox.className = "copy-box";
+      row.appendChild(number);
+      row.appendChild(judgeName);
+      row.appendChild(status);
 
-      const linkText = document.createElement("div");
-      linkText.className = "copy-text";
-      linkText.textContent = judgeLink;
-
-      const copyButton = document.createElement("button");
-      copyButton.textContent = "COPY";
-
-      copyButton.onclick = async () => {
-
-        try{
-
-          await navigator.clipboard.writeText(judgeLink);
-
-          const oldText = copyButton.textContent;
-          copyButton.textContent = "COPIED ✓";
-
-          setTimeout(() => {
-            copyButton.textContent = oldText;
-          }, 1500);
-
-        }catch(err){
-
-          alert("Could not copy automatically. Please select and copy the link.");
-
-        }
-
-      };
-
-      copyBox.appendChild(linkText);
-      copyBox.appendChild(copyButton);
-
-      linkCell.appendChild(copyBox);
-
-    }else{
-
-      linkCell.textContent = "—";
-
-    }
-
-    judgesBodyEl.appendChild(tr);
-
-  });
-
-}
-
-
-/* ---------- LOAD COMPETITORS ---------- */
-
-async function loadCompetitors(){
-
-  const data = await fetchSheet(COMPETITORS_GID);
-
-  competitorsBodyEl.innerHTML = "";
-
-  data.table.rows.forEach(row => {
-
-    /*
-      Competitors columns:
-      A = Order
-      B = Competitor Number
-      C = Competitor Name
-      D = R1 A Move (LIVE)
-      E = R2 A Move (LIVE)
-      F = R3 A Move (LIVE)
-      G = R1 B Move (ALTERNATIVE)
-      H = R2 B Move (ALTERNATIVE)
-      I = R3 B Move (ALTERNATIVE)
-    */
-
-    const values = [];
-
-    for(let i = 0; i < 9; i++){
-      values.push(cellValue(row, i));
-    }
-
-    /* Ignore completely blank rows */
-
-    if(values.every(v => !v)){
-      return;
-    }
-
-    const tr = document.createElement("tr");
-
-    /* Special COMPLETED row */
-
-    if(values[1] === "0"){
-      tr.className = "completed-row";
-    }
-
-    values.forEach(value => {
-
-      const td = document.createElement("td");
-      td.textContent = value || "—";
-      tr.appendChild(td);
-
+      judgesDiv.appendChild(row);
     });
 
-    competitorsBodyEl.appendChild(tr);
+    if (!judgesDiv.innerHTML) {
+      judgesDiv.textContent = "No judges configured.";
+    }
 
+  })
+  .catch(err => {
+    document.getElementById("judges").textContent =
+      "Could not load judges.";
   });
-
-}
-
-
-/* ---------- SAFE HTML HELPER ---------- */
-
-function escapeHtml(value){
-
-  const div = document.createElement("div");
-  div.textContent = value || "";
-  return div.innerHTML;
-
-}
-
-
-/* ---------- BOOT ---------- */
-
-async function boot(){
-
-  try{
-
-    /*
-      Event Config loads first because it authenticates the Admin page.
-    */
-
-    await loadEventConfig();
-
-    /*
-      Only after authentication succeeds do we load everything else.
-    */
-
-    await Promise.all([
-      loadJudges(),
-      loadCompetitors()
-    ]);
-
-    loadingEl.style.display = "none";
-    adminContentEl.style.display = "block";
-
-  }catch(err){
-
-    console.error(err);
-
-    showError(err.message || "Something went wrong loading the Admin page.");
-
-  }
-
-}
-
-boot();
 
 </script>
 
