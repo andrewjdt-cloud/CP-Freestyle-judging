@@ -5,7 +5,9 @@ Version: v1.2 READ ONLY
 Notes:
 - Read-only competition administration overview
 - No changes are made to the Google Sheet
-- Uses existing Google Sheet and existing Apps Script authentication
+- Uses existing Google Sheet structure
+- Protected by the existing AdminToken
+- Judge sheet header row is ignored
 -->
 
 <!DOCTYPE html>
@@ -79,12 +81,11 @@ h2 {
   color: #ff5252;
 }
 
-/* Judges table */
 .judge-header,
 .judge {
   display: grid;
-  grid-template-columns: 140px 1fr 110px;
-  column-gap: 20px;
+  grid-template-columns: 120px 1fr 100px;
+  gap: 16px;
   align-items: center;
 }
 
@@ -92,7 +93,7 @@ h2 {
   color: #aaa;
   font-size: 14px;
   font-weight: 600;
-  padding: 8px 0 12px 0;
+  padding: 8px 0 10px;
   border-bottom: 1px solid #2a2a2a;
 }
 
@@ -107,7 +108,11 @@ h2 {
 
 .judge-number {
   font-weight: bold;
-  color: #aaa;
+  color: #ccc;
+}
+
+.judge-name {
+  color: #ddd;
 }
 
 .judge-status {
@@ -141,8 +146,8 @@ h2 {
 
   .judge-header,
   .judge {
-    grid-template-columns: 100px 1fr 80px;
-    column-gap: 10px;
+    grid-template-columns: 75px 1fr 80px;
+    gap: 8px;
   }
 
   .judge-header {
@@ -161,6 +166,7 @@ h2 {
 
 <div id="adminContent" style="display:none;">
 
+  <!-- Competition Overview -->
   <div class="section">
     <h3>Competition</h3>
 
@@ -188,8 +194,10 @@ h2 {
       <span class="label">Panel Insights</span>
       <span class="value" id="panelInsights">—</span>
     </div>
+
   </div>
 
+  <!-- Judges Overview -->
   <div class="section">
     <h3>Judges</h3>
 
@@ -300,9 +308,16 @@ getSheetData(JUDGES_GID)
     const judgesDiv = document.getElementById("judges");
     judgesDiv.innerHTML = "";
 
-    j.table.rows.forEach(r => {
+    /*
+      IMPORTANT:
+      The first row of the Judges sheet contains the column headings:
+      JudgeName | JudgeToken | JudgeActive | ScoreboardID | Judge URL
 
-      if (!r.c || !r.c[0]) return;
+      We deliberately skip that row so it is never treated as a judge.
+    */
+    j.table.rows.slice(1).forEach(r => {
+
+      if (!r.c) return;
 
       const name =
         r.c[0] ? String(r.c[0].v || "").trim() : "";
@@ -324,6 +339,7 @@ getSheetData(JUDGES_GID)
       number.textContent = judgeNumber || "—";
 
       const judgeName = document.createElement("div");
+      judgeName.className = "judge-name";
       judgeName.textContent = name || "Unnamed Judge";
 
       const status = document.createElement("div");
