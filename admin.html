@@ -1,7 +1,7 @@
 <!--
 CP Freestyle Judging System
 File: admin.html
-Version: v1.1 READ ONLY
+Version: v1.2 READ ONLY
 Notes:
 - Read-only competition administration overview
 - No changes are made to the Google Sheet
@@ -79,11 +79,24 @@ h2 {
   color: #ff5252;
 }
 
+/* Judges table */
+.judge-header,
 .judge {
   display: grid;
-  grid-template-columns: 70px 1fr 100px;
-  gap: 12px;
+  grid-template-columns: 140px 1fr 110px;
+  column-gap: 20px;
   align-items: center;
+}
+
+.judge-header {
+  color: #aaa;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 0 12px 0;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.judge {
   padding: 12px 0;
   border-bottom: 1px solid #2a2a2a;
 }
@@ -95,6 +108,10 @@ h2 {
 .judge-number {
   font-weight: bold;
   color: #aaa;
+}
+
+.judge-status {
+  text-align: right;
 }
 
 .error {
@@ -122,8 +139,14 @@ h2 {
     text-align: left;
   }
 
+  .judge-header,
   .judge {
-    grid-template-columns: 55px 1fr 75px;
+    grid-template-columns: 100px 1fr 80px;
+    column-gap: 10px;
+  }
+
+  .judge-header {
+    font-size: 12px;
   }
 }
 </style>
@@ -165,11 +188,17 @@ h2 {
       <span class="label">Panel Insights</span>
       <span class="value" id="panelInsights">—</span>
     </div>
-
   </div>
 
   <div class="section">
     <h3>Judges</h3>
+
+    <div class="judge-header">
+      <div>Scoreboard ID</div>
+      <div>Judge Name</div>
+      <div style="text-align:right;">Status</div>
+    </div>
+
     <div id="judges" class="loading">Loading judges...</div>
   </div>
 
@@ -298,13 +327,14 @@ getSheetData(JUDGES_GID)
       judgeName.textContent = name || "Unnamed Judge";
 
       const status = document.createElement("div");
+      status.className = "judge-status";
 
       if (active === "YES") {
         status.textContent = "ACTIVE";
-        status.className = "status-yes";
+        status.classList.add("status-yes");
       } else {
         status.textContent = "INACTIVE";
-        status.className = "status-no";
+        status.classList.add("status-no");
       }
 
       row.appendChild(number);
