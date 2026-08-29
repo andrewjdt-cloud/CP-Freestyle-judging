@@ -11,10 +11,6 @@ This page:
 - Allows editing ONLY Event Name and Location
 - Keeps Round Status and Panel Insights read-only
 - Keeps the Judges section read-only
-
-IMPORTANT:
-The Apps Script only permits EventName and Location to be
-changed by the updateCompetitionDetails action.
 -->
 
 <!DOCTYPE html>
@@ -79,10 +75,6 @@ changed by the updateCompetitionDetails action.
       padding: 14px 0;
       border-bottom: 1px solid #2a2a2a;
       gap: 20px;
-    }
-
-    .info-row:last-child {
-      border-bottom: none;
     }
 
     .label {
@@ -159,10 +151,6 @@ changed by the updateCompetitionDetails action.
     .judge {
       padding: 16px 0;
       border-bottom: 1px solid #2a2a2a;
-    }
-
-    .judge:last-child {
-      border-bottom: none;
     }
 
     .judge-number {
@@ -306,7 +294,7 @@ changed by the updateCompetitionDetails action.
 
     <!-- =====================================================
          COMPETITION SECTION
-         ===================================================== -->
+         ====================================================== -->
 
     <div class="section">
 
@@ -413,7 +401,7 @@ changed by the updateCompetitionDetails action.
 
     <!-- =====================================================
          JUDGES SECTION - READ ONLY
-         ===================================================== -->
+         ====================================================== -->
 
     <div class="section">
 
@@ -431,7 +419,6 @@ changed by the updateCompetitionDetails action.
 
     </div>
 
-
   </div>
 
 
@@ -446,11 +433,6 @@ changed by the updateCompetitionDetails action.
     const EVENT_CONFIG_GID = "686531230";
 
     const JUDGES_GID = "1213944419";
-
-
-    /*
-       Existing Apps Script Web App deployment.
-    */
 
     const APPS_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbx9xfXW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
@@ -470,7 +452,6 @@ changed by the updateCompetitionDetails action.
        ========================================================= */
 
     let currentEventName = "";
-
     let currentLocation = "";
 
 
@@ -491,6 +472,7 @@ changed by the updateCompetitionDetails action.
           }
 
           return response.text();
+
         })
         .then(text => {
 
@@ -509,7 +491,7 @@ changed by the updateCompetitionDetails action.
     /* =========================================================
        SEND REQUEST TO APPS SCRIPT
 
-       Used only when saving Event Name and Location.
+       Used only for Event Name and Location.
        ========================================================= */
 
     function sendAdminAction(data) {
@@ -529,6 +511,7 @@ changed by the updateCompetitionDetails action.
 
         try {
           return JSON.parse(text);
+
         } catch (err) {
           throw new Error("Invalid response from Apps Script");
         }
@@ -540,6 +523,10 @@ changed by the updateCompetitionDetails action.
 
     /* =========================================================
        LOAD EVENT CONFIGURATION
+
+       IMPORTANT:
+       Google Visualization returns the sheet's data rows here.
+       We DO NOT skip the first row.
        ========================================================= */
 
     function loadEventConfig() {
@@ -550,40 +537,28 @@ changed by the updateCompetitionDetails action.
           const cfg = {};
 
 
-          /*
-             IMPORTANT:
-             Google GViz puts column headings separately.
-             table.rows contains the actual data rows.
-
-             Therefore we DO NOT skip the first row here.
-             This fixes EventName being skipped when it is
-             the first setting in the Event Config sheet.
-          */
-
           sheetData.table.rows.forEach(row => {
 
-            if (
-              row.c &&
-              row.c[0] &&
+            if (!row.c || !row.c[0]) {
+              return;
+            }
+
+            const key =
+              String(row.c[0].v || "").trim();
+
+            const value =
               row.c[1]
-            ) {
+                ? String(row.c[1].v || "").trim()
+                : "";
 
-              const key =
-                String(row.c[0].v || "").trim();
-
-              const value =
-                String(row.c[1].v || "").trim();
-
-              if (key) {
-                cfg[key] = value;
-              }
-
+            if (key) {
+              cfg[key] = value;
             }
 
           });
 
 
-          /* Check the Admin Token */
+          /* Check Admin Token */
 
           if (
             !adminToken ||
@@ -593,7 +568,7 @@ changed by the updateCompetitionDetails action.
           }
 
 
-          /* Store Event Name and Location */
+          /* Store current editable values */
 
           currentEventName =
             cfg.EventName || "";
@@ -666,7 +641,7 @@ changed by the updateCompetitionDetails action.
           }
 
 
-          /* Show page once authentication succeeds */
+          /* Show page after successful authentication */
 
           document.getElementById("adminContent").style.display =
             "block";
@@ -692,11 +667,9 @@ changed by the updateCompetitionDetails action.
 
 
           /*
-             IMPORTANT:
-             As with Event Config, GViz table.rows contains
-             actual data rows, so we do NOT skip the first row.
-
-             This ensures Judge 1 is not accidentally omitted.
+             Do not skip the first returned row.
+             The Google Visualization data already contains
+             data rows rather than the spreadsheet header row.
           */
 
           sheetData.table.rows.forEach(row => {
@@ -708,7 +681,6 @@ changed by the updateCompetitionDetails action.
 
             /*
                Judges sheet:
-
                Column A = JudgeName
                Column B = JudgeToken
                Column C = JudgeActive
@@ -740,7 +712,7 @@ changed by the updateCompetitionDetails action.
             }
 
 
-            /* Create the judge row */
+            /* Create judge row */
 
             const judgeRow =
               document.createElement("div");
@@ -777,6 +749,7 @@ changed by the updateCompetitionDetails action.
             statusElement.className =
               "judge-status";
 
+
             if (active === "YES") {
 
               statusElement.textContent =
@@ -798,8 +771,6 @@ changed by the updateCompetitionDetails action.
             }
 
 
-            /* Add the three columns */
-
             judgeRow.appendChild(idElement);
             judgeRow.appendChild(nameElement);
             judgeRow.appendChild(statusElement);
@@ -809,13 +780,9 @@ changed by the updateCompetitionDetails action.
           });
 
 
-          /* Handle an empty Judges sheet */
-
           if (!judgesDiv.innerHTML) {
-
             judgesDiv.textContent =
               "No judges configured.";
-
           }
 
         })
@@ -837,16 +804,11 @@ changed by the updateCompetitionDetails action.
       .getElementById("editCompetitionButton")
       .addEventListener("click", () => {
 
-        /* Put current values into the edit boxes */
-
         document.getElementById("eventNameInput").value =
           currentEventName;
 
         document.getElementById("eventLocationInput").value =
           currentLocation;
-
-
-        /* Clear old messages */
 
         document.getElementById("saveError").textContent =
           "";
@@ -854,8 +816,6 @@ changed by the updateCompetitionDetails action.
         document.getElementById("successMessage").textContent =
           "";
 
-
-        /* Switch to edit mode */
 
         document
           .getElementById("competitionReadMode")
@@ -865,8 +825,6 @@ changed by the updateCompetitionDetails action.
           .getElementById("competitionEditMode")
           .classList.remove("hidden");
 
-
-        /* Put cursor in Event Name */
 
         document
           .getElementById("eventNameInput")
@@ -899,13 +857,6 @@ changed by the updateCompetitionDetails action.
 
     /* =========================================================
        SAVE EVENT NAME AND LOCATION
-
-       This calls ONLY:
-       updateCompetitionDetails
-
-       Code.gs only updates:
-       - EventName
-       - Location
        ========================================================= */
 
     document
@@ -941,13 +892,9 @@ changed by the updateCompetitionDetails action.
           );
 
 
-        /* Clear previous messages */
-
         saveError.textContent = "";
         successMessage.textContent = "";
 
-
-        /* Safety checks */
 
         if (!newEventName) {
 
@@ -957,6 +904,7 @@ changed by the updateCompetitionDetails action.
           return;
 
         }
+
 
         if (!newLocation) {
 
@@ -968,15 +916,9 @@ changed by the updateCompetitionDetails action.
         }
 
 
-        /* Prevent accidental double saving */
-
         saveButton.disabled = true;
         saveButton.textContent = "Saving...";
 
-
-        /*
-           Send ONLY the two permitted values.
-        */
 
         sendAdminAction({
 
@@ -1001,8 +943,6 @@ changed by the updateCompetitionDetails action.
           }
 
 
-          /* Update page state */
-
           currentEventName =
             newEventName;
 
@@ -1010,16 +950,12 @@ changed by the updateCompetitionDetails action.
             newLocation;
 
 
-          /* Update visible display */
-
           document.getElementById("eventName").textContent =
             currentEventName;
 
           document.getElementById("eventLocation").textContent =
             currentLocation;
 
-
-          /* Return to normal read mode */
 
           document
             .getElementById("competitionEditMode")
@@ -1029,8 +965,6 @@ changed by the updateCompetitionDetails action.
             .getElementById("competitionReadMode")
             .classList.remove("hidden");
 
-
-          /* Confirm success */
 
           successMessage.textContent =
             "Competition details saved successfully.";
@@ -1054,10 +988,6 @@ changed by the updateCompetitionDetails action.
 
     /* =========================================================
        INITIAL PAGE LOAD
-
-       Load Event Config first because it checks the Admin Token.
-       Judges are loaded at the same time and remain hidden until
-       access is authorised.
        ========================================================= */
 
     Promise.all([
