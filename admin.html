@@ -8,7 +8,7 @@
     content="width=device-width, initial-scale=1, maximum-scale=1"
   >
 
-  <title>CP Freestyle Judging - Admin</title>
+  <title>CP Freestyle - Admin Panel</title>
 
   <style>
 
@@ -16,12 +16,13 @@
       --bg: #101216;
       --panel: #1b1f26;
       --panel2: #242a33;
-      --border: #3a4350;
+      --border: #343b45;
       --text: #f4f6f8;
       --muted: #aeb7c2;
-      --accent: #32b8ff;
-      --green: #35c46a;
-      --red: #ef5b62;
+      --accent: #3b82c4;
+      --green: #67d7a2;
+      --purple: #7650a8;
+      --danger: #ef5b62;
     }
 
     * {
@@ -35,42 +36,46 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    .header {
-      padding: 20px;
-      text-align: center;
-      background: #15191f;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 24px;
-    }
-
-    .header p {
-      margin: 7px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
     .container {
       width: 100%;
-      max-width: 1000px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 18px;
+      padding: 12px 18px 30px;
     }
 
     .hidden {
       display: none !important;
     }
 
-    /* =====================================================
+
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .page-header {
+      padding: 0 0 16px;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: 23px;
+      letter-spacing: 0.2px;
+    }
+
+    .page-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+
+    /* =========================================================
        LOGIN
-       ===================================================== */
+       ========================================================= */
 
     .login-box {
-      max-width: 420px;
-      margin: 50px auto;
+      max-width: 430px;
+      margin: 55px auto;
       padding: 24px;
       background: var(--panel);
       border: 1px solid var(--border);
@@ -79,83 +84,137 @@
 
     .login-box h2 {
       margin: 0 0 20px;
+      font-size: 21px;
     }
 
-    /* =====================================================
-       CARDS
-       ===================================================== */
 
-    .card {
-      margin-bottom: 18px;
+    /* =========================================================
+       PANELS
+       ========================================================= */
+
+    .panel {
+      margin-bottom: 16px;
       padding: 18px;
       background: var(--panel);
-      border: 1px solid var(--border);
       border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.02);
     }
 
-    .card h2 {
-      margin: 0 0 8px;
+    .panel h2 {
+      margin: 0 0 18px;
       font-size: 20px;
     }
 
-    .card-description {
-      margin: 0 0 18px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
 
-    /* =====================================================
-       FORMS
-       ===================================================== */
+    /* =========================================================
+       COMPETITION OVERVIEW
+       ========================================================= */
 
-    .form-grid {
+    .overview-row {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: 180px 1fr;
+      gap: 18px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
     }
 
-    label {
-      display: block;
-      margin-bottom: 6px;
+    .overview-label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .overview-value {
+      text-align: right;
+      font-size: 14px;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .status-open {
+      color: var(--green);
+    }
+
+    .status-closed {
+      color: var(--danger);
+    }
+
+    .panel-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+
+    /* =========================================================
+       JUDGES TABLE
+       ========================================================= */
+
+    .judge-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .judge-table th {
+      padding: 9px 0;
+      text-align: left;
       color: var(--muted);
       font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .judge-table td {
+      padding: 10px 0;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .judge-table th:nth-child(3),
+    .judge-table td:nth-child(3) {
+      text-align: center;
+    }
+
+    .judge-table th:last-child,
+    .judge-table td:last-child {
+      text-align: right;
+    }
+
+    .judge-slot {
       font-weight: bold;
+      width: 88px;
     }
 
-    input,
-    select {
-      width: 100%;
-      padding: 12px;
-      background: var(--panel2);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 16px;
+    .judge-status-active {
+      color: var(--green);
+      font-weight: bold;
+      font-size: 13px;
     }
 
-    input:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
+    .judge-status-inactive {
+      color: var(--muted);
+      font-weight: bold;
+      font-size: 13px;
     }
 
-    /* =====================================================
-       BUTTONS
-       ===================================================== */
-
-    .button-row {
+    .judge-actions {
       display: flex;
-      gap: 10px;
+      justify-content: flex-end;
+      gap: 7px;
       flex-wrap: wrap;
-      margin-top: 18px;
     }
+
+
+    /* =========================================================
+       BUTTONS
+       ========================================================= */
 
     button {
-      padding: 12px 18px;
       border: none;
-      border-radius: 8px;
-      font-size: 15px;
+      border-radius: 7px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 13px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -171,17 +230,136 @@
 
     .btn-primary {
       background: var(--accent);
-      color: #07151d;
+    }
+
+    .btn-copy {
+      background: #315f92;
+    }
+
+    .btn-qr {
+      background: #573681;
+    }
+
+    .btn-edit {
+      background: #30343a;
     }
 
     .btn-save {
-      background: var(--green);
-      color: #06150b;
+      background: #29985a;
+      color: #ffffff;
     }
 
-    /* =====================================================
-       STATUS MESSAGES
-       ===================================================== */
+    .btn-cancel {
+      background: #30343a;
+    }
+
+
+    /* =========================================================
+       FORMS
+       ========================================================= */
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 11px;
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+
+    /* =========================================================
+       MODALS
+       ========================================================= */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,0.72);
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .modal h2 {
+      margin: 0 0 20px;
+      font-size: 20px;
+    }
+
+    .qr-modal {
+      max-width: 430px;
+      text-align: center;
+    }
+
+    .qr-modal img {
+      width: min(280px, 100%);
+      margin: 10px auto 16px;
+      padding: 10px;
+      background: white;
+      border-radius: 8px;
+    }
+
+    .qr-url {
+      margin-top: 12px;
+      padding: 10px;
+      background: var(--panel2);
+      color: var(--muted);
+      border-radius: 7px;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+
+    /* =========================================================
+       STATUS
+       ========================================================= */
 
     .status-message {
       display: none;
@@ -193,70 +371,76 @@
 
     .status-success {
       display: block;
-      background: rgba(53, 196, 106, 0.14);
-      border: 1px solid rgba(53, 196, 106, 0.45);
+      background: rgba(53,196,106,0.14);
+      border: 1px solid rgba(53,196,106,0.45);
       color: #7ae9a0;
     }
 
     .status-error {
       display: block;
-      background: rgba(239, 91, 98, 0.14);
-      border: 1px solid rgba(239, 91, 98, 0.45);
+      background: rgba(239,91,98,0.14);
+      border: 1px solid rgba(239,91,98,0.45);
       color: #ffa0a5;
     }
 
-    /* =====================================================
-       JUDGES
-       ===================================================== */
 
-    .judge-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .judge-card {
-      padding: 16px;
-      background: var(--panel2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-    }
-
-    .judge-heading {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .judge-heading h3 {
-      margin: 0;
-      font-size: 17px;
-    }
-
-    .row-label {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .loading {
-      padding: 30px;
-      text-align: center;
-      color: var(--muted);
-    }
+    /* =========================================================
+       MOBILE
+       ========================================================= */
 
     @media (max-width: 650px) {
-
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
 
       .container {
         padding: 12px;
       }
 
-      .card {
-        padding: 15px;
+      .overview-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+
+      .overview-value {
+        text-align: left;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-group.full-width {
+        grid-column: auto;
+      }
+
+      .judge-table thead {
+        display: none;
+      }
+
+      .judge-table,
+      .judge-table tbody,
+      .judge-table tr,
+      .judge-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .judge-table tr {
+        padding: 13px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .judge-table td {
+        padding: 4px 0;
+        border: none;
+        text-align: left !important;
+      }
+
+      .judge-table td:nth-child(3) {
+        margin-top: 5px;
+      }
+
+      .judge-actions {
+        justify-content: flex-start;
+        margin-top: 8px;
       }
 
     }
@@ -267,24 +451,20 @@
 
 <body>
 
-  <!-- =======================================================
-       HEADER
-       ======================================================= -->
-
-  <div class="header">
-    <h1>CP Freestyle Judging</h1>
-    <p>Competition Administration</p>
-  </div>
-
 
   <!-- =======================================================
        LOGIN
-       ======================================================= -->
+       ======================================================== -->
 
   <div
     id="loginSection"
     class="container"
   >
+
+    <div class="page-header">
+      <h1>CP Freestyle – Admin Panel</h1>
+      <p>Competition setup overview</p>
+    </div>
 
     <div class="login-box">
 
@@ -302,14 +482,12 @@
       >
 
       <div class="button-row">
-
         <button
           class="btn-primary"
           onclick="login()"
         >
           Enter Admin Panel
         </button>
-
       </div>
 
       <div
@@ -324,141 +502,73 @@
 
   <!-- =======================================================
        ADMIN PANEL
-       ======================================================= -->
+       ======================================================== -->
 
   <div
     id="adminSection"
     class="container hidden"
   >
 
-
-    <!-- =====================================================
-         COMPETITION SETTINGS
-         ===================================================== -->
-
-    <div class="card">
-
-      <h2>Competition Settings</h2>
-
-      <p class="card-description">
-        These settings are stored in the Event Config sheet.
-      </p>
+    <div class="page-header">
+      <h1>CP Freestyle – Admin Panel</h1>
+      <p>Competition setup overview</p>
+    </div>
 
 
-      <div class="form-grid">
+    <!-- COMPETITION -->
 
-        <div>
+    <div class="panel">
 
-          <label for="eventName">
-            Event Name
-          </label>
+      <h2>Competition</h2>
 
-          <input
-            id="eventName"
-            type="text"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="location">
-            Location
-          </label>
-
-          <input
-            id="location"
-            type="text"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="roundNumber">
-            Round Number
-          </label>
-
-          <input
-            id="roundNumber"
-            type="text"
-          >
-
-        </div>
-
-
-        <div>
-
-          <label for="roundOpen">
-            Round Status
-          </label>
-
-          <select id="roundOpen">
-
-            <option value="YES">
-              YES - Round Open
-            </option>
-
-            <option value="NO">
-              NO - Round Closed
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <div>
-
-          <label for="panelInsights">
-            Panel Insights
-          </label>
-
-          <select id="panelInsights">
-
-            <option value="YES">
-              YES
-            </option>
-
-            <option value="NO">
-              NO
-            </option>
-
-          </select>
-
-        </div>
-
-
-        <div>
-
-          <label for="liveToken">
-            LiveToken
-          </label>
-
-          <input
-            id="liveToken"
-            type="text"
-          >
-
-        </div>
-
+      <div class="overview-row">
+        <div class="overview-label">Event Name</div>
+        <div
+          id="overviewEventName"
+          class="overview-value"
+        ></div>
       </div>
 
+      <div class="overview-row">
+        <div class="overview-label">Location</div>
+        <div
+          id="overviewLocation"
+          class="overview-value"
+        ></div>
+      </div>
 
-      <div class="button-row">
+      <div class="overview-row">
+        <div class="overview-label">Current Round</div>
+        <div
+          id="overviewRound"
+          class="overview-value"
+        ></div>
+      </div>
 
+      <div class="overview-row">
+        <div class="overview-label">Round Status</div>
+        <div
+          id="overviewRoundStatus"
+          class="overview-value"
+        ></div>
+      </div>
+
+      <div class="overview-row">
+        <div class="overview-label">Panel Insights</div>
+        <div
+          id="overviewPanelInsights"
+          class="overview-value"
+        ></div>
+      </div>
+
+      <div class="panel-footer">
         <button
-          id="saveCompetitionButton"
-          class="btn-primary"
-          onclick="saveCompetitionSettings()"
+          class="btn-edit"
+          onclick="openCompetitionModal()"
         >
-          Save Competition Settings
+          Edit Competition Details
         </button>
-
       </div>
-
 
       <div
         id="competitionStatus"
@@ -468,34 +578,223 @@
     </div>
 
 
-    <!-- =====================================================
-         JUDGES
-         ===================================================== -->
+    <!-- JUDGES -->
 
-    <div class="card">
+    <div class="panel">
 
       <h2>Judges</h2>
 
-      <p class="card-description">
-        All five fixed Judge records are always shown here,
-        including inactive judges. The Judge Slot / Scoreboard ID
-        can be reassigned to suit events with fewer judges.
-      </p>
+      <table class="judge-table">
+
+        <thead>
+          <tr>
+            <th>Judge Slot</th>
+            <th>Judge Name</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+
+        <tbody id="judgesContainer"></tbody>
+
+      </table>
+
+    </div>
+
+  </div>
 
 
-      <div
-        id="judgesContainer"
-        class="judge-list"
-      >
+  <!-- =======================================================
+       COMPETITION EDIT MODAL
+       ======================================================== -->
 
-        <div class="loading">
-          Loading Judge records...
+  <div
+    id="competitionModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal">
+
+      <h2>Edit Competition Details</h2>
+
+      <div class="form-grid">
+
+        <div class="form-group full-width">
+          <label for="eventName">Event Name</label>
+          <input id="eventName" type="text">
         </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input id="location" type="text">
+        </div>
+
+        <div class="form-group">
+          <label for="roundNumber">Round Number</label>
+          <input id="roundNumber" type="text">
+        </div>
+
+        <div class="form-group">
+          <label for="roundOpen">Round Status</label>
+
+          <select id="roundOpen">
+            <option value="YES">YES - Round Open</option>
+            <option value="NO">NO - Round Closed</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="panelInsights">Panel Insights</label>
+
+          <select id="panelInsights">
+            <option value="YES">YES</option>
+            <option value="NO">NO</option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="liveToken">LiveToken</label>
+          <input id="liveToken" type="text">
+        </div>
+
+      </div>
+
+      <div class="button-row">
+
+        <button
+          class="btn-cancel"
+          onclick="closeCompetitionModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="saveCompetitionButton"
+          class="btn-save"
+          onclick="saveCompetitionSettings()"
+        >
+          Save Competition Details
+        </button>
 
       </div>
 
     </div>
 
+  </div>
+
+
+  <!-- =======================================================
+       JUDGE EDIT MODAL
+       ======================================================== -->
+
+  <div
+    id="judgeModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal">
+
+      <h2 id="judgeModalTitle">
+        Edit Judge
+      </h2>
+
+      <input
+        id="editingJudgeRow"
+        type="hidden"
+      >
+
+      <div class="form-grid">
+
+        <div>
+          <label for="judgeName">Judge Name</label>
+          <input id="judgeName" type="text">
+        </div>
+
+        <div>
+          <label for="judgeToken">Judge Token</label>
+          <input id="judgeToken" type="text">
+        </div>
+
+        <div>
+          <label for="judgeActive">Judge Active</label>
+
+          <select id="judgeActive">
+            <option value="YES">YES - Active</option>
+            <option value="NO">NO - Inactive</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="scoreboardID">
+            Judge Slot / Scoreboard ID
+          </label>
+          <input id="scoreboardID" type="text">
+        </div>
+
+      </div>
+
+      <div class="button-row">
+
+        <button
+          class="btn-cancel"
+          onclick="closeJudgeModal()"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="saveJudgeButton"
+          class="btn-save"
+          onclick="saveEditedJudge()"
+        >
+          Save Judge
+        </button>
+
+      </div>
+
+      <div
+        id="judgeEditStatus"
+        class="status-message"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       QR MODAL
+       ======================================================== -->
+
+  <div
+    id="qrModal"
+    class="modal-backdrop hidden"
+  >
+
+    <div class="modal qr-modal">
+
+      <h2 id="qrTitle">Judge QR Code</h2>
+
+      <img
+        id="qrImage"
+        alt="Judge QR Code"
+      >
+
+      <div
+        id="qrUrl"
+        class="qr-url"
+      ></div>
+
+      <div class="button-row">
+        <button
+          class="btn-cancel"
+          onclick="closeQrModal()"
+        >
+          Close
+        </button>
+      </div>
+
+    </div>
 
   </div>
 
@@ -542,7 +841,6 @@
         return;
       }
 
-
       ADMIN_TOKEN = token;
 
       showStatus(
@@ -550,7 +848,6 @@
         "Loading competition settings...",
         true
       );
-
 
       try {
 
@@ -582,8 +879,6 @@
     }
 
 
-    // Press Enter to login
-
     document
       .getElementById("adminToken")
       .addEventListener(
@@ -609,7 +904,6 @@
           action: "getAdminData"
         });
 
-
       if (!response.ok) {
 
         throw new Error(
@@ -619,37 +913,105 @@
 
       }
 
-
       CURRENT_CONFIG =
         response.config || {};
 
       CURRENT_JUDGES =
         response.judges || [];
 
-
-      populateCompetitionSettings();
+      renderCompetitionOverview();
       renderJudges();
 
     }
 
 
     // =========================================================
-    // POPULATE COMPETITION SETTINGS
+    // COMPETITION OVERVIEW
     // =========================================================
 
-    function populateCompetitionSettings() {
+    function renderCompetitionOverview() {
+
+      setText(
+        "overviewEventName",
+        CURRENT_CONFIG.EventName || ""
+      );
+
+      setText(
+        "overviewLocation",
+        CURRENT_CONFIG.Location || ""
+      );
+
+      setText(
+        "overviewRound",
+        CURRENT_CONFIG.RoundNumber ||
+        CURRENT_CONFIG.Round ||
+        ""
+      );
+
+
+      const roundOpen =
+        String(
+          CURRENT_CONFIG.RoundOpen || ""
+        )
+        .trim()
+        .toUpperCase();
+
+      const roundElement =
+        document.getElementById(
+          "overviewRoundStatus"
+        );
+
+      if (roundOpen === "YES") {
+
+        roundElement.textContent =
+          "● OPEN";
+
+        roundElement.className =
+          "overview-value status-open";
+
+      } else {
+
+        roundElement.textContent =
+          "CLOSED";
+
+        roundElement.className =
+          "overview-value status-closed";
+
+      }
+
+
+      const insights =
+        String(
+          CURRENT_CONFIG.PanelInsights || ""
+        )
+        .trim()
+        .toUpperCase();
+
+      setText(
+        "overviewPanelInsights",
+        insights === "YES"
+          ? "ON"
+          : "OFF"
+      );
+
+    }
+
+
+    // =========================================================
+    // COMPETITION EDIT
+    // =========================================================
+
+    function openCompetitionModal() {
 
       document
         .getElementById("eventName")
         .value =
           CURRENT_CONFIG.EventName || "";
 
-
       document
         .getElementById("location")
         .value =
           CURRENT_CONFIG.Location || "";
-
 
       document
         .getElementById("roundNumber")
@@ -658,50 +1020,38 @@
           CURRENT_CONFIG.Round ||
           "";
 
-
       setYesNoValue(
         "roundOpen",
         CURRENT_CONFIG.RoundOpen
       );
-
 
       setYesNoValue(
         "panelInsights",
         CURRENT_CONFIG.PanelInsights
       );
 
-
       document
         .getElementById("liveToken")
         .value =
           CURRENT_CONFIG.LiveToken || "";
 
+      document
+        .getElementById("competitionModal")
+        .classList
+        .remove("hidden");
+
     }
 
 
-    function setYesNoValue(
-      elementId,
-      value
-    ) {
-
-      const normalized =
-        String(value || "")
-          .trim()
-          .toUpperCase();
+    function closeCompetitionModal() {
 
       document
-        .getElementById(elementId)
-        .value =
-          normalized === "YES"
-            ? "YES"
-            : "NO";
+        .getElementById("competitionModal")
+        .classList
+        .add("hidden");
 
     }
 
-
-    // =========================================================
-    // SAVE COMPETITION SETTINGS
-    // =========================================================
 
     async function saveCompetitionSettings() {
 
@@ -713,16 +1063,13 @@
       button.disabled = true;
       button.textContent = "Saving...";
 
-      clearStatus(
-        "competitionStatus"
-      );
-
-
       try {
 
         const response =
           await apiRequest({
-            action: "updateCompetitionDetails",
+
+            action:
+              "updateCompetitionDetails",
 
             eventName:
               document
@@ -763,6 +1110,7 @@
                 .getElementById("liveToken")
                 .value
                 .trim()
+
           });
 
 
@@ -775,13 +1123,13 @@
 
         }
 
-
         await loadAdminData();
 
+        closeCompetitionModal();
 
         showStatus(
           "competitionStatus",
-          "Competition settings saved successfully.",
+          "Competition details saved successfully.",
           true
         );
 
@@ -797,9 +1145,8 @@
       } finally {
 
         button.disabled = false;
-
         button.textContent =
-          "Save Competition Settings";
+          "Save Competition Details";
 
       }
 
@@ -807,13 +1154,7 @@
 
 
     // =========================================================
-    // RENDER JUDGES
-    //
-    // IMPORTANT:
-    // Always renders the five fixed spreadsheet records:
-    // Rows 2, 3, 4, 5 and 6.
-    //
-    // Inactive judges are NEVER filtered out.
+    // JUDGES
     // =========================================================
 
     function renderJudges() {
@@ -825,7 +1166,6 @@
 
       container.innerHTML = "";
 
-
       for (
         let sheetRow = 2;
         sheetRow <= 6;
@@ -833,233 +1173,338 @@
       ) {
 
         const judge =
-          CURRENT_JUDGES.find(
-            function(item) {
+          getJudgeForRow(sheetRow);
 
-              return Number(
-                item.sheetRow
-              ) === sheetRow;
-
-            }
+        const active =
+          String(
+            judge.judgeActive || ""
           )
-          ||
-          {
-            sheetRow: sheetRow,
-            judgeName: "",
-            judgeToken: "",
-            judgeActive: "NO",
-            scoreboardID: ""
-          };
+          .toUpperCase() === "YES";
 
+        const row =
+          document.createElement("tr");
 
-        const card =
-          document.createElement("div");
+        row.innerHTML = `
 
-        card.className =
-          "judge-card";
+          <td class="judge-slot">
+            ${escapeHtml(
+              judge.scoreboardID ||
+              "J" + (sheetRow - 1)
+            )}
+          </td>
 
+          <td>
+            ${escapeHtml(
+              judge.judgeName || ""
+            )}
+          </td>
 
-        card.innerHTML = `
-
-          <div class="judge-heading">
-
-            <h3>
-              Judge Record ${sheetRow - 1}
-            </h3>
-
-            <span class="row-label">
-              Judges sheet row ${sheetRow}
+          <td>
+            <span class="${
+              active
+                ? "judge-status-active"
+                : "judge-status-inactive"
+            }">
+              ${
+                active
+                  ? "ACTIVE"
+                  : "INACTIVE"
+              }
             </span>
+          </td>
 
-          </div>
+          <td>
+            <div class="judge-actions">
 
-
-          <div class="form-grid">
-
-
-            <div>
-
-              <label>
-                Judge Name
-              </label>
-
-              <input
-                id="judgeName_${sheetRow}"
-                type="text"
-                value="${escapeHtml(
-                  judge.judgeName || ""
-                )}"
+              <button
+                class="btn-copy"
+                onclick="copyJudgeUrl(${sheetRow})"
               >
+                Copy URL
+              </button>
+
+              <button
+                class="btn-qr"
+                onclick="showJudgeQr(${sheetRow})"
+              >
+                QR
+              </button>
+
+              <button
+                class="btn-edit"
+                onclick="openJudgeModal(${sheetRow})"
+              >
+                Edit
+              </button>
 
             </div>
-
-
-            <div>
-
-              <label>
-                Judge Token
-              </label>
-
-              <input
-                id="judgeToken_${sheetRow}"
-                type="text"
-                value="${escapeHtml(
-                  judge.judgeToken || ""
-                )}"
-              >
-
-            </div>
-
-
-            <div>
-
-              <label>
-                Judge Active
-              </label>
-
-              <select
-                id="judgeActive_${sheetRow}"
-              >
-
-                <option
-                  value="YES"
-                  ${
-                    String(
-                      judge.judgeActive || ""
-                    )
-                    .toUpperCase() === "YES"
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  YES - Active
-                </option>
-
-                <option
-                  value="NO"
-                  ${
-                    String(
-                      judge.judgeActive || ""
-                    )
-                    .toUpperCase() !== "YES"
-                      ? "selected"
-                      : ""
-                  }
-                >
-                  NO - Inactive
-                </option>
-
-              </select>
-
-            </div>
-
-
-            <div>
-
-              <label>
-                Judge Slot / Scoreboard ID
-              </label>
-
-              <input
-                id="scoreboardID_${sheetRow}"
-                type="text"
-                value="${escapeHtml(
-                  judge.scoreboardID || ""
-                )}"
-              >
-
-            </div>
-
-
-          </div>
-
-
-          <div class="button-row">
-
-            <button
-              id="saveJudge_${sheetRow}"
-              class="btn-save"
-              onclick="saveJudge(${sheetRow})"
-            >
-              Save Judge
-            </button>
-
-          </div>
-
-
-          <div
-            id="judgeStatus_${sheetRow}"
-            class="status-message"
-          ></div>
+          </td>
 
         `;
 
-
-        container.appendChild(card);
+        container.appendChild(row);
 
       }
 
     }
 
 
+    function getJudgeForRow(sheetRow) {
+
+      return (
+        CURRENT_JUDGES.find(
+          function(item) {
+
+            return Number(
+              item.sheetRow
+            ) === sheetRow;
+
+          }
+        )
+        ||
+        {
+          sheetRow: sheetRow,
+          judgeName: "",
+          judgeToken: "",
+          judgeActive: "NO",
+          scoreboardID:
+            "J" + (sheetRow - 1)
+        }
+      );
+
+    }
+
+
     // =========================================================
-    // SAVE ONE JUDGE
+    // JUDGE URL
+    //
+    // IMPORTANT:
+    // The Judge Token remains embedded in the Judge URL.
+    // If the backend provides an existing URL, use it exactly.
     // =========================================================
 
-    async function saveJudge(sheetRow) {
+    function buildJudgeUrl(judge) {
+
+      if (judge.judgeUrl) {
+        return judge.judgeUrl;
+      }
+
+      if (judge.url) {
+        return judge.url;
+      }
+
+      const judgePage =
+        new URL(
+          "index.html",
+          window.location.href
+        );
+
+      judgePage.searchParams.set(
+        "token",
+        judge.judgeToken || ""
+      );
+
+      return judgePage.toString();
+
+    }
+
+
+    async function copyJudgeUrl(sheetRow) {
+
+      const judge =
+        getJudgeForRow(sheetRow);
+
+      const url =
+        buildJudgeUrl(judge);
+
+      try {
+
+        await navigator.clipboard.writeText(
+          url
+        );
+
+        alert(
+          "Judge URL copied to clipboard."
+        );
+
+      } catch (error) {
+
+        prompt(
+          "Copy this Judge URL:",
+          url
+        );
+
+      }
+
+    }
+
+
+    function showJudgeQr(sheetRow) {
+
+      const judge =
+        getJudgeForRow(sheetRow);
+
+      const url =
+        buildJudgeUrl(judge);
+
+      document
+        .getElementById("qrTitle")
+        .textContent =
+          (judge.judgeName || "Judge") +
+          " – Judge QR Code";
+
+      document
+        .getElementById("qrUrl")
+        .textContent =
+          url;
+
+      document
+        .getElementById("qrImage")
+        .src =
+          "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+          encodeURIComponent(url);
+
+      document
+        .getElementById("qrModal")
+        .classList
+        .remove("hidden");
+
+    }
+
+
+    function closeQrModal() {
+
+      document
+        .getElementById("qrModal")
+        .classList
+        .add("hidden");
+
+    }
+
+
+    // =========================================================
+    // JUDGE EDIT
+    // =========================================================
+
+    function openJudgeModal(sheetRow) {
+
+      const judge =
+        getJudgeForRow(sheetRow);
+
+      document
+        .getElementById("editingJudgeRow")
+        .value =
+          sheetRow;
+
+      document
+        .getElementById("judgeModalTitle")
+        .textContent =
+          "Edit " +
+          (
+            judge.scoreboardID ||
+            "Judge Record " +
+            (sheetRow - 1)
+          );
+
+      document
+        .getElementById("judgeName")
+        .value =
+          judge.judgeName || "";
+
+      document
+        .getElementById("judgeToken")
+        .value =
+          judge.judgeToken || "";
+
+      setYesNoValue(
+        "judgeActive",
+        judge.judgeActive
+      );
+
+      document
+        .getElementById("scoreboardID")
+        .value =
+          judge.scoreboardID || "";
+
+      clearStatus(
+        "judgeEditStatus"
+      );
+
+      document
+        .getElementById("judgeModal")
+        .classList
+        .remove("hidden");
+
+    }
+
+
+    function closeJudgeModal() {
+
+      document
+        .getElementById("judgeModal")
+        .classList
+        .add("hidden");
+
+    }
+
+
+    async function saveEditedJudge() {
+
+      const sheetRow =
+        Number(
+          document
+            .getElementById(
+              "editingJudgeRow"
+            )
+            .value
+        );
 
       const button =
         document.getElementById(
-          "saveJudge_" + sheetRow
+          "saveJudgeButton"
         );
 
       button.disabled = true;
       button.textContent = "Saving...";
 
       clearStatus(
-        "judgeStatus_" + sheetRow
+        "judgeEditStatus"
       );
-
 
       try {
 
         const response =
           await apiRequest({
-            action: "updateJudgeDetails",
+
+            action:
+              "updateJudgeDetails",
 
             sheetRow:
               sheetRow,
 
             judgeName:
               document
-                .getElementById(
-                  "judgeName_" + sheetRow
-                )
+                .getElementById("judgeName")
                 .value
                 .trim(),
 
             judgeToken:
               document
-                .getElementById(
-                  "judgeToken_" + sheetRow
-                )
+                .getElementById("judgeToken")
                 .value
                 .trim(),
 
             judgeActive:
               document
-                .getElementById(
-                  "judgeActive_" + sheetRow
-                )
+                .getElementById("judgeActive")
                 .value,
 
             scoreboardID:
               document
-                .getElementById(
-                  "scoreboardID_" + sheetRow
-                )
+                .getElementById("scoreboardID")
                 .value
                 .trim()
+
           });
 
 
@@ -1072,25 +1517,14 @@
 
         }
 
-
         await loadAdminData();
 
-
-        /*
-          loadAdminData() redraws the cards, so show the
-          confirmation after the redraw.
-        */
-
-        showStatus(
-          "judgeStatus_" + sheetRow,
-          "Judge saved successfully.",
-          true
-        );
+        closeJudgeModal();
 
       } catch (error) {
 
         showStatus(
-          "judgeStatus_" + sheetRow,
+          "judgeEditStatus",
           error.message ||
             "Unable to save this Judge.",
           false
@@ -1098,31 +1532,9 @@
 
       } finally {
 
-        /*
-          The button may have been recreated by renderJudges().
-          Therefore we don't try to modify the old DOM element
-          after a successful refresh.
-        */
-
-        if (
-          document.getElementById(
-            "saveJudge_" + sheetRow
-          )
-        ) {
-
-          document
-            .getElementById(
-              "saveJudge_" + sheetRow
-            )
-            .disabled = false;
-
-          document
-            .getElementById(
-              "saveJudge_" + sheetRow
-            )
-            .textContent = "Save Judge";
-
-        }
+        button.disabled = false;
+        button.textContent =
+          "Save Judge";
 
       }
 
@@ -1140,9 +1552,7 @@
         adminToken: ADMIN_TOKEN
       };
 
-
       let response;
-
 
       try {
 
@@ -1172,13 +1582,10 @@
 
       }
 
-
       const text =
         await response.text();
 
-
       let data;
-
 
       try {
 
@@ -1193,15 +1600,47 @@
 
       }
 
-
       return data;
 
     }
 
 
     // =========================================================
-    // STATUS HELPERS
+    // HELPERS
     // =========================================================
+
+    function setYesNoValue(
+      elementId,
+      value
+    ) {
+
+      const normalized =
+        String(value || "")
+          .trim()
+          .toUpperCase();
+
+      document
+        .getElementById(elementId)
+        .value =
+          normalized === "YES"
+            ? "YES"
+            : "NO";
+
+    }
+
+
+    function setText(
+      elementId,
+      value
+    ) {
+
+      document
+        .getElementById(elementId)
+        .textContent =
+          value || "";
+
+    }
+
 
     function showStatus(
       elementId,
@@ -1218,10 +1657,8 @@
         return;
       }
 
-
       element.textContent =
         message;
-
 
       element.className =
         success
@@ -1244,18 +1681,12 @@
         return;
       }
 
-
       element.textContent = "";
-
       element.className =
         "status-message";
 
     }
 
-
-    // =========================================================
-    // HTML ESCAPING
-    // =========================================================
 
     function escapeHtml(value) {
 
