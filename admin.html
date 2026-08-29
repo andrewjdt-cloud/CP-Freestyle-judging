@@ -11,7 +11,6 @@
 
     /* =========================================================
        CP FREESTYLE – ADMIN PANEL
-       Clean competition control panel
        ========================================================= */
 
     * {
@@ -21,15 +20,11 @@
     :root {
       --bg: #08090c;
       --panel: #15161b;
-      --panel-2: #1b1c22;
       --line: #2a2c33;
       --text: #f2f3f5;
       --muted: #a5a8b0;
       --green: #55d892;
       --red: #ff7070;
-      --blue: #2f6fae;
-      --purple: #5d438e;
-      --button: #292b31;
     }
 
     body {
@@ -110,14 +105,13 @@
 
     .info-row {
       display: grid;
-      grid-template-columns: minmax(150px, 1fr) minmax(220px, 1.7fr) auto;
+      grid-template-columns:
+        minmax(150px, 1fr)
+        minmax(180px, 1.7fr)
+        minmax(130px, auto);
       align-items: center;
       gap: 18px;
-      min-height: 51px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .info-row:last-of-type {
+      min-height: 58px;
       border-bottom: 1px solid var(--line);
     }
 
@@ -137,6 +131,12 @@
     .value.empty {
       color: var(--muted);
       font-weight: 500;
+    }
+
+    .row-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 7px;
     }
 
 
@@ -209,37 +209,53 @@
 
     .button-edit,
     .button-cancel {
-      background: linear-gradient(
-        180deg,
-        #34363d,
-        #292b31
-      );
+      background:
+        linear-gradient(
+          180deg,
+          #34363d,
+          #292b31
+        );
       box-shadow:
         inset 0 1px rgba(255, 255, 255, .06);
     }
 
-    .button-save {
-      background: linear-gradient(
-        180deg,
-        #169d62,
-        #087a49
-      );
+    .button-save,
+    .button-open,
+    .button-on {
+      background:
+        linear-gradient(
+          180deg,
+          #169d62,
+          #087a49
+        );
+    }
+
+    .button-close,
+    .button-off {
+      background:
+        linear-gradient(
+          180deg,
+          #bd5252,
+          #923838
+        );
     }
 
     .button-copy {
-      background: linear-gradient(
-        180deg,
-        #346fa8,
-        #235886
-      );
+      background:
+        linear-gradient(
+          180deg,
+          #346fa8,
+          #235886
+        );
     }
 
     .button-qr {
-      background: linear-gradient(
-        180deg,
-        #7054a5,
-        #533b81
-      );
+      background:
+        linear-gradient(
+          180deg,
+          #7054a5,
+          #533b81
+        );
     }
 
     .button-small {
@@ -274,7 +290,9 @@
 
     .form-row {
       display: grid;
-      grid-template-columns: minmax(150px, 1fr) minmax(280px, 1.7fr);
+      grid-template-columns:
+        minmax(150px, 1fr)
+        minmax(280px, 1.7fr);
       align-items: center;
       gap: 18px;
       min-height: 58px;
@@ -297,7 +315,8 @@
     select:focus {
       outline: none;
       border-color: var(--green);
-      box-shadow: 0 0 0 2px rgba(85, 216, 146, .10);
+      box-shadow:
+        0 0 0 2px rgba(85, 216, 146, .10);
     }
 
     .form-actions {
@@ -337,7 +356,11 @@
     .judge-header,
     .judge-row {
       display: grid;
-      grid-template-columns: 82px minmax(180px, 1fr) 120px auto;
+      grid-template-columns:
+        82px
+        minmax(180px, 1fr)
+        120px
+        auto;
       align-items: center;
       gap: 18px;
     }
@@ -405,7 +428,7 @@
 
 
     /* =========================================================
-       QR MODAL
+       MODAL
        ========================================================= */
 
     .modal {
@@ -424,13 +447,13 @@
     }
 
     .modal-card {
-      width: min(380px, 100%);
+      width: min(420px, 100%);
       background: #1b1c22;
       border: 1px solid #363841;
       border-radius: 16px;
       padding: 22px;
-      text-align: center;
-      box-shadow: 0 20px 70px rgba(0, 0, 0, .5);
+      box-shadow:
+        0 20px 70px rgba(0, 0, 0, .5);
     }
 
     .modal-card h3 {
@@ -442,6 +465,14 @@
       color: var(--muted);
       margin-bottom: 18px;
       font-size: 14px;
+    }
+
+    .modal-card input {
+      margin-top: 8px;
+    }
+
+    #qrModal .modal-card {
+      text-align: center;
     }
 
     #qrImage {
@@ -456,8 +487,9 @@
 
     .modal-actions {
       display: flex;
-      justify-content: center;
+      justify-content: flex-end;
       gap: 10px;
+      margin-top: 18px;
     }
 
 
@@ -490,6 +522,12 @@
         grid-column: 2;
       }
 
+      .row-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+        padding-bottom: 2px;
+      }
+
       .form-row {
         grid-template-columns: 1fr;
         gap: 7px;
@@ -498,7 +536,10 @@
 
       .judge-header,
       .judge-row {
-        grid-template-columns: 58px minmax(0, 1fr) 76px;
+        grid-template-columns:
+          58px
+          minmax(0, 1fr)
+          76px;
         gap: 8px;
       }
 
@@ -550,10 +591,6 @@
 
   <main class="page">
 
-    <!-- =====================================================
-         HEADER
-         ===================================================== -->
-
     <header class="page-header">
       <h1>CP Freestyle – Admin Panel</h1>
       <div class="subtitle">Competition setup overview</div>
@@ -564,73 +601,120 @@
 
     <div id="adminContent" class="hidden">
 
-      <!-- ===================================================
+      <!-- =====================================================
            COMPETITION
-           =================================================== -->
+           ====================================================== -->
 
       <section class="panel">
 
         <h2>Competition</h2>
 
 
-        <!-- READ MODE -->
+        <!-- EVENT NAME -->
 
-        <div id="competitionReadMode">
-
-          <div class="info-row">
-            <div class="label">Event Name</div>
-            <div class="value" id="eventName">—</div>
-            <div></div>
-          </div>
-
-          <div class="info-row">
-            <div class="label">Location</div>
-            <div class="value" id="eventLocation">—</div>
-            <div></div>
-          </div>
-
-          <div class="info-row">
-            <div class="label">Current Round</div>
-            <div class="value" id="eventRound">—</div>
-            <div></div>
-          </div>
-
-          <div class="info-row">
-            <div class="label">Round Status</div>
-            <div class="value" id="roundStatus">—</div>
-            <div></div>
-          </div>
-
-          <div class="info-row">
-            <div class="label">Panel Insights</div>
-            <div class="value" id="panelInsights">—</div>
-            <div></div>
-          </div>
-
-          <div class="info-row">
-            <div class="label">LiveToken</div>
-            <div class="value" id="liveToken">—</div>
-            <div></div>
-          </div>
-
-          <div class="competition-actions">
-            <button
-              type="button"
-              class="button-edit"
-              id="editCompetitionButton">
-              Edit Competition Details
-            </button>
-          </div>
-
-          <div
-            id="competitionSuccess"
-            class="message">
-          </div>
-
+        <div class="info-row">
+          <div class="label">Event Name</div>
+          <div class="value" id="eventName">—</div>
+          <div></div>
         </div>
 
 
-        <!-- EDIT MODE -->
+        <!-- LOCATION -->
+
+        <div class="info-row">
+          <div class="label">Location</div>
+          <div class="value" id="eventLocation">—</div>
+          <div></div>
+        </div>
+
+
+        <!-- CURRENT ROUND -->
+
+        <div class="info-row">
+          <div class="label">Current Round</div>
+          <div class="value" id="eventRound">—</div>
+
+          <div class="row-actions">
+            <button
+              type="button"
+              class="button-edit button-small"
+              id="editRoundButton">
+              Edit
+            </button>
+          </div>
+        </div>
+
+
+        <!-- ROUND STATUS -->
+
+        <div class="info-row">
+          <div class="label">Round Status</div>
+          <div class="value" id="roundStatus">—</div>
+
+          <div class="row-actions">
+            <button
+              type="button"
+              class="button-open button-small"
+              id="roundStatusButton">
+              Open Round
+            </button>
+          </div>
+        </div>
+
+
+        <!-- PANEL INSIGHTS -->
+
+        <div class="info-row">
+          <div class="label">Panel Insights</div>
+          <div class="value" id="panelInsights">—</div>
+
+          <div class="row-actions">
+            <button
+              type="button"
+              class="button-on button-small"
+              id="panelInsightsButton">
+              Turn ON
+            </button>
+          </div>
+        </div>
+
+
+        <!-- LIVE TOKEN -->
+
+        <div class="info-row">
+          <div class="label">LiveToken</div>
+          <div class="value" id="liveToken">—</div>
+
+          <div class="row-actions">
+            <button
+              type="button"
+              class="button-edit button-small"
+              id="editLiveTokenButton">
+              Edit
+            </button>
+          </div>
+        </div>
+
+
+        <!-- EVENT / LOCATION EDIT -->
+
+        <div class="competition-actions">
+          <button
+            type="button"
+            class="button-edit"
+            id="editCompetitionButton">
+            Edit Competition Details
+          </button>
+        </div>
+
+
+        <div
+          id="competitionSuccess"
+          class="message">
+        </div>
+
+
+        <!-- COMPETITION EDITOR -->
 
         <div
           id="competitionEditMode"
@@ -688,9 +772,9 @@
       </section>
 
 
-      <!-- ===================================================
+      <!-- =====================================================
            JUDGES
-           =================================================== -->
+           ====================================================== -->
 
       <section class="panel">
 
@@ -802,9 +886,58 @@
   </main>
 
 
-  <!-- =====================================================
+  <!-- =========================================================
+       EDIT VALUE MODAL
+       ========================================================== -->
+
+  <div
+    id="editValueModal"
+    class="modal"
+    role="dialog"
+    aria-modal="true">
+
+    <div class="modal-card">
+
+      <h3 id="editValueTitle">Edit</h3>
+
+      <div class="modal-subtitle" id="editValueSubtitle">
+        Update this setting.
+      </div>
+
+      <input
+        id="editValueInput"
+        type="text"
+        autocomplete="off">
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="button-cancel"
+          id="cancelEditValueButton">
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="button-save"
+          id="saveEditValueButton">
+          Save
+        </button>
+      </div>
+
+      <div
+        id="editValueMessage"
+        class="message">
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================================================
        QR MODAL
-       ===================================================== -->
+       ========================================================== -->
 
   <div
     id="qrModal"
@@ -842,7 +975,7 @@
 
     /* =========================================================
        CONFIGURATION
-       ========================================================= */
+       ========================================================== */
 
     const SHEET_ID =
       "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
@@ -859,7 +992,7 @@
 
     /* =========================================================
        AUTHENTICATION
-       ========================================================= */
+       ========================================================== */
 
     const params =
       new URLSearchParams(
@@ -872,21 +1005,20 @@
 
     /* =========================================================
        PAGE STATE
-       ========================================================= */
+       ========================================================== */
 
     let currentConfig = {};
-
     let currentEventName = "";
     let currentLocation = "";
-
     let currentJudges = [];
-
     let editingJudgeRow = null;
+
+    let editingConfigField = null;
 
 
     /* =========================================================
        HELPERS
-       ========================================================= */
+       ========================================================== */
 
     function sleep(milliseconds) {
       return new Promise(resolve => {
@@ -896,9 +1028,7 @@
 
 
     function normalise(value) {
-      return String(
-        value ?? ""
-      ).trim();
+      return String(value ?? "").trim();
     }
 
 
@@ -926,14 +1056,47 @@
     }
 
 
+    function isRoundOpen() {
+
+      const value =
+        normalise(
+          currentConfig.RoundStatus ||
+          currentConfig.RoundOpen ||
+          ""
+        ).toUpperCase();
+
+      return (
+        value === "OPEN" ||
+        value === "YES" ||
+        value === "TRUE"
+      );
+    }
+
+
+    function isPanelInsightsOn() {
+
+      const value =
+        normalise(
+          currentConfig.PanelInsights ||
+          currentConfig.Insights ||
+          ""
+        ).toUpperCase();
+
+      return (
+        value === "ON" ||
+        value === "YES" ||
+        value === "TRUE"
+      );
+    }
+
+
     /* =========================================================
        READ GOOGLE SHEETS
-       ========================================================= */
+       ========================================================== */
 
     async function getSheetData(gid) {
 
-      const cacheBuster =
-        Date.now();
+      const cacheBuster = Date.now();
 
       const url =
         `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${cacheBuster}`;
@@ -975,11 +1138,7 @@
 
     /* =========================================================
        SEND ADMIN ACTION
-
-       Apps Script is hosted separately from GitHub Pages, so
-       this is deliberately a fire-and-forget POST. Every save
-       is subsequently verified by reading the Sheet again.
-       ========================================================= */
+       ========================================================== */
 
     async function sendAdminAction(data) {
 
@@ -1022,7 +1181,7 @@
 
     /* =========================================================
        LOAD EVENT CONFIG
-       ========================================================= */
+       ========================================================== */
 
     async function loadEventConfig() {
 
@@ -1099,6 +1258,8 @@
         .getElementById("liveToken")
         .textContent =
           cfg.LiveToken || "—";
+
+      updateControlButtons();
     }
 
 
@@ -1182,16 +1343,648 @@
     }
 
 
+    function updateControlButtons() {
+
+      const roundButton =
+        document.getElementById(
+          "roundStatusButton"
+        );
+
+      if (isRoundOpen()) {
+        roundButton.textContent =
+          "Close Round";
+
+        roundButton.className =
+          "button-close button-small";
+
+      } else {
+        roundButton.textContent =
+          "Open Round";
+
+        roundButton.className =
+          "button-open button-small";
+      }
+
+
+      const insightsButton =
+        document.getElementById(
+          "panelInsightsButton"
+        );
+
+      if (isPanelInsightsOn()) {
+        insightsButton.textContent =
+          "Turn OFF";
+
+        insightsButton.className =
+          "button-off button-small";
+
+      } else {
+        insightsButton.textContent =
+          "Turn ON";
+
+        insightsButton.className =
+          "button-on button-small";
+      }
+    }
+
+
+    /* =========================================================
+       CONFIG SAVE
+       ========================================================== */
+
+    async function saveEventControls(
+      updates,
+      button,
+      originalText
+    ) {
+
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Saving...";
+      }
+
+      try {
+
+        const currentRound =
+          updates.currentRound ??
+          currentConfig.CurrentRound ??
+          currentConfig.Round ??
+          "";
+
+        const roundStatus =
+          updates.roundStatus ??
+          (isRoundOpen() ? "OPEN" : "CLOSED");
+
+        const panelInsights =
+          updates.panelInsights ??
+          (isPanelInsightsOn() ? "ON" : "OFF");
+
+        const liveToken =
+          updates.liveToken ??
+          currentConfig.LiveToken ??
+          "";
+
+        await sendAdminAction({
+          action: "updateEventControls",
+          adminToken,
+          currentRound,
+          roundStatus,
+          panelInsights,
+          liveToken
+        });
+
+
+        let saved = false;
+
+        for (
+          let attempt = 0;
+          attempt < 5;
+          attempt++
+        ) {
+
+          await sleep(1000);
+
+          await loadEventConfig();
+
+          const loadedRound =
+            currentConfig.CurrentRound ||
+            currentConfig.Round ||
+            "";
+
+          const loadedStatus =
+            isRoundOpen()
+              ? "OPEN"
+              : "CLOSED";
+
+          const loadedInsights =
+            isPanelInsightsOn()
+              ? "ON"
+              : "OFF";
+
+          const loadedToken =
+            currentConfig.LiveToken || "";
+
+          if (
+            loadedRound === currentRound &&
+            loadedStatus === roundStatus &&
+            loadedInsights === panelInsights &&
+            loadedToken === liveToken
+          ) {
+            saved = true;
+            break;
+          }
+        }
+
+        if (!saved) {
+          throw new Error(
+            "The sheet did not confirm the changes."
+          );
+        }
+
+        showCompetitionSuccess(
+          "Settings saved successfully."
+        );
+
+        return true;
+
+      } catch (error) {
+
+        alert(
+          "Could not save settings: " +
+          (
+            error.message ||
+            String(error)
+          )
+        );
+
+        return false;
+
+      } finally {
+
+        if (button) {
+          button.disabled = false;
+          button.textContent =
+            originalText;
+        }
+      }
+    }
+
+
+    function showCompetitionSuccess(text) {
+
+      const success =
+        document.getElementById(
+          "competitionSuccess"
+        );
+
+      success.textContent = text;
+      success.className =
+        "message success";
+    }
+
+
+    /* =========================================================
+       CURRENT ROUND
+       ========================================================== */
+
+    document
+      .getElementById("editRoundButton")
+      .addEventListener(
+        "click",
+        () => {
+
+          openValueEditor(
+            "currentRound",
+            "Edit Current Round",
+            "Enter the current competition round.",
+            currentConfig.CurrentRound ||
+              currentConfig.Round ||
+              ""
+          );
+
+        }
+      );
+
+
+    /* =========================================================
+       ROUND OPEN / CLOSE
+       ========================================================== */
+
+    document
+      .getElementById("roundStatusButton")
+      .addEventListener(
+        "click",
+        async event => {
+
+          const button =
+            event.currentTarget;
+
+          const newStatus =
+            isRoundOpen()
+              ? "CLOSED"
+              : "OPEN";
+
+          const actionText =
+            newStatus === "OPEN"
+              ? "open"
+              : "close";
+
+          if (
+            !confirm(
+              `Are you sure you want to ${actionText} the round?`
+            )
+          ) {
+            return;
+          }
+
+          await saveEventControls(
+            {
+              roundStatus: newStatus
+            },
+            button,
+            button.textContent
+          );
+
+        }
+      );
+
+
+    /* =========================================================
+       PANEL INSIGHTS ON / OFF
+       ========================================================== */
+
+    document
+      .getElementById("panelInsightsButton")
+      .addEventListener(
+        "click",
+        async event => {
+
+          const button =
+            event.currentTarget;
+
+          const newValue =
+            isPanelInsightsOn()
+              ? "OFF"
+              : "ON";
+
+          await saveEventControls(
+            {
+              panelInsights: newValue
+            },
+            button,
+            button.textContent
+          );
+
+        }
+      );
+
+
+    /* =========================================================
+       LIVE TOKEN
+       ========================================================== */
+
+    document
+      .getElementById("editLiveTokenButton")
+      .addEventListener(
+        "click",
+        () => {
+
+          openValueEditor(
+            "liveToken",
+            "Edit LiveToken",
+            "Enter the LiveToken.",
+            currentConfig.LiveToken || ""
+          );
+
+        }
+      );
+
+
+    /* =========================================================
+       GENERIC VALUE EDITOR
+       ========================================================== */
+
+    function openValueEditor(
+      field,
+      title,
+      subtitle,
+      value
+    ) {
+
+      editingConfigField = field;
+
+      document
+        .getElementById("editValueTitle")
+        .textContent = title;
+
+      document
+        .getElementById("editValueSubtitle")
+        .textContent = subtitle;
+
+      document
+        .getElementById("editValueInput")
+        .value = value;
+
+      document
+        .getElementById("editValueMessage")
+        .textContent = "";
+
+      document
+        .getElementById("editValueModal")
+        .classList.add("show");
+
+      setTimeout(() => {
+        document
+          .getElementById("editValueInput")
+          .focus();
+      }, 50);
+    }
+
+
+    function closeValueEditor() {
+
+      editingConfigField = null;
+
+      document
+        .getElementById("editValueModal")
+        .classList.remove("show");
+    }
+
+
+    document
+      .getElementById("cancelEditValueButton")
+      .addEventListener(
+        "click",
+        closeValueEditor
+      );
+
+
+    document
+      .getElementById("saveEditValueButton")
+      .addEventListener(
+        "click",
+        saveEditedValue
+      );
+
+
+    async function saveEditedValue() {
+
+      const value =
+        document
+          .getElementById("editValueInput")
+          .value
+          .trim();
+
+      const saveButton =
+        document.getElementById(
+          "saveEditValueButton"
+        );
+
+      const message =
+        document.getElementById(
+          "editValueMessage"
+        );
+
+      message.textContent = "";
+
+      if (!value) {
+        message.textContent =
+          "This value cannot be empty.";
+        message.className =
+          "message error";
+        return;
+      }
+
+      let updates = {};
+
+      if (
+        editingConfigField ===
+        "currentRound"
+      ) {
+        updates.currentRound = value;
+      }
+
+      if (
+        editingConfigField ===
+        "liveToken"
+      ) {
+        updates.liveToken = value;
+      }
+
+      const saved =
+        await saveEventControls(
+          updates,
+          saveButton,
+          "Save"
+        );
+
+      if (saved) {
+        closeValueEditor();
+      }
+    }
+
+
+    /* =========================================================
+       COMPETITION EDIT MODE
+       ========================================================== */
+
+    document
+      .getElementById(
+        "editCompetitionButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          document
+            .getElementById(
+              "eventNameInput"
+            )
+            .value =
+              currentEventName;
+
+          document
+            .getElementById(
+              "eventLocationInput"
+            )
+            .value =
+              currentLocation;
+
+          document
+            .getElementById(
+              "competitionSaveMessage"
+            )
+            .textContent = "";
+
+          document
+            .getElementById(
+              "competitionSuccess"
+            )
+            .textContent = "";
+
+          document
+            .getElementById(
+              "competitionEditMode"
+            )
+            .classList.remove("hidden");
+
+          document
+            .getElementById(
+              "eventNameInput"
+            )
+            .focus();
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "cancelCompetitionButton"
+      )
+      .addEventListener(
+        "click",
+        closeCompetitionEditor
+      );
+
+
+    function closeCompetitionEditor() {
+
+      document
+        .getElementById(
+          "competitionEditMode"
+        )
+        .classList.add("hidden");
+
+      document
+        .getElementById(
+          "competitionSaveMessage"
+        )
+        .textContent = "";
+    }
+
+
+    document
+      .getElementById(
+        "saveCompetitionButton"
+      )
+      .addEventListener(
+        "click",
+        saveCompetition
+      );
+
+
+    async function saveCompetition() {
+
+      const newEventName =
+        document
+          .getElementById(
+            "eventNameInput"
+          )
+          .value
+          .trim();
+
+      const newLocation =
+        document
+          .getElementById(
+            "eventLocationInput"
+          )
+          .value
+          .trim();
+
+      const saveButton =
+        document.getElementById(
+          "saveCompetitionButton"
+        );
+
+      const message =
+        document.getElementById(
+          "competitionSaveMessage"
+        );
+
+      message.textContent = "";
+      message.className = "message";
+
+      if (!newEventName) {
+        showCompetitionError(
+          "Event Name cannot be empty."
+        );
+        return;
+      }
+
+      if (!newLocation) {
+        showCompetitionError(
+          "Location cannot be empty."
+        );
+        return;
+      }
+
+      saveButton.disabled = true;
+      saveButton.textContent = "Saving...";
+
+      try {
+
+        await sendAdminAction({
+          action:
+            "updateCompetitionDetails",
+          adminToken,
+          eventName:
+            newEventName,
+          location:
+            newLocation
+        });
+
+
+        let saved = false;
+
+        for (
+          let attempt = 0;
+          attempt < 5;
+          attempt++
+        ) {
+
+          await sleep(1000);
+
+          await loadEventConfig();
+
+          if (
+            currentEventName ===
+              newEventName &&
+            currentLocation ===
+              newLocation
+          ) {
+            saved = true;
+            break;
+          }
+        }
+
+        if (!saved) {
+          throw new Error(
+            "The sheet did not confirm the changes."
+          );
+        }
+
+        closeCompetitionEditor();
+
+        showCompetitionSuccess(
+          "Competition details saved successfully."
+        );
+
+      } catch (error) {
+
+        showCompetitionError(
+          "Could not save changes: " +
+          (
+            error.message ||
+            String(error)
+          )
+        );
+
+      } finally {
+
+        saveButton.disabled = false;
+        saveButton.textContent =
+          "Save Changes";
+      }
+    }
+
+
+    function showCompetitionError(text) {
+
+      const message =
+        document.getElementById(
+          "competitionSaveMessage"
+        );
+
+      message.textContent = text;
+      message.className =
+        "message error";
+    }
+
+
     /* =========================================================
        LOAD JUDGES
-
-       Judges sheet:
-       A = Judge Name
-       B = Judge Token
-       C = Judge Active
-       D = Scoreboard ID / Judge Slot
-       E = Judge URL
-       ========================================================= */
+       ========================================================== */
 
     async function loadJudges() {
 
@@ -1209,10 +2002,6 @@
 
       sheetData.table.rows.forEach(
         (row, index) => {
-
-          /*
-             Skip the header row.
-          */
 
           if (index === 0) {
             return;
@@ -1246,11 +2035,6 @@
             normalise(
               getCellValue(row.c[4])
             );
-
-          /*
-             Keep the original spreadsheet row number.
-             Header is row 1, so index 1 = sheet row 2.
-          */
 
           if (
             name ||
@@ -1390,7 +2174,7 @@
 
     /* =========================================================
        COPY JUDGE URL
-       ========================================================= */
+       ========================================================== */
 
     async function copyJudgeUrl(judge) {
 
@@ -1434,7 +2218,7 @@
 
     /* =========================================================
        QR CODE
-       ========================================================= */
+       ========================================================== */
 
     function showQr(judge) {
 
@@ -1451,11 +2235,6 @@
           judge.name ||
           judge.scoreboardID ||
           "Judge QR Code";
-
-      /*
-         QR image service is only used to display the URL as
-         a QR code. The judge URL itself remains unchanged.
-      */
 
       document
         .getElementById("qrImage")
@@ -1505,7 +2284,7 @@
 
     /* =========================================================
        JUDGE EDITOR
-       ========================================================= */
+       ========================================================== */
 
     function openJudgeEditor(judge) {
 
@@ -1687,10 +2466,6 @@
         });
 
 
-        /*
-           Re-read the Sheet and confirm the save.
-        */
-
         let saved = false;
 
         for (
@@ -1787,256 +2562,8 @@
 
 
     /* =========================================================
-       COMPETITION EDIT MODE
-       ========================================================= */
-
-    document
-      .getElementById(
-        "editCompetitionButton"
-      )
-      .addEventListener(
-        "click",
-        () => {
-
-          document
-            .getElementById(
-              "eventNameInput"
-            )
-            .value =
-              currentEventName;
-
-          document
-            .getElementById(
-              "eventLocationInput"
-            )
-            .value =
-              currentLocation;
-
-          document
-            .getElementById(
-              "competitionSaveMessage"
-            )
-            .textContent =
-              "";
-
-          document
-            .getElementById(
-              "competitionSuccess"
-            )
-            .textContent =
-              "";
-
-          document
-            .getElementById(
-              "competitionReadMode"
-            )
-            .classList.add("hidden");
-
-          document
-            .getElementById(
-              "competitionEditMode"
-            )
-            .classList.remove("hidden");
-
-          document
-            .getElementById(
-              "eventNameInput"
-            )
-            .focus();
-
-        }
-      );
-
-
-    document
-      .getElementById(
-        "cancelCompetitionButton"
-      )
-      .addEventListener(
-        "click",
-        closeCompetitionEditor
-      );
-
-
-    function closeCompetitionEditor() {
-
-      document
-        .getElementById(
-          "competitionEditMode"
-        )
-        .classList.add("hidden");
-
-      document
-        .getElementById(
-          "competitionReadMode"
-        )
-        .classList.remove("hidden");
-
-      document
-        .getElementById(
-          "competitionSaveMessage"
-        )
-        .textContent =
-          "";
-    }
-
-
-    /* =========================================================
-       SAVE COMPETITION DETAILS
-       ========================================================= */
-
-    document
-      .getElementById(
-        "saveCompetitionButton"
-      )
-      .addEventListener(
-        "click",
-        saveCompetition
-      );
-
-
-    async function saveCompetition() {
-
-      const newEventName =
-        document
-          .getElementById(
-            "eventNameInput"
-          )
-          .value
-          .trim();
-
-      const newLocation =
-        document
-          .getElementById(
-            "eventLocationInput"
-          )
-          .value
-          .trim();
-
-      const saveButton =
-        document.getElementById(
-          "saveCompetitionButton"
-        );
-
-      const message =
-        document.getElementById(
-          "competitionSaveMessage"
-        );
-
-      message.textContent = "";
-      message.className = "message";
-
-      if (!newEventName) {
-        showCompetitionError(
-          "Event Name cannot be empty."
-        );
-        return;
-      }
-
-      if (!newLocation) {
-        showCompetitionError(
-          "Location cannot be empty."
-        );
-        return;
-      }
-
-      saveButton.disabled = true;
-      saveButton.textContent = "Saving...";
-
-      try {
-
-        await sendAdminAction({
-          action:
-            "updateCompetitionDetails",
-          adminToken,
-          eventName:
-            newEventName,
-          location:
-            newLocation
-        });
-
-
-        /*
-           Re-read and confirm the save.
-        */
-
-        let saved = false;
-
-        for (
-          let attempt = 0;
-          attempt < 5;
-          attempt++
-        ) {
-
-          await sleep(1000);
-
-          await loadEventConfig();
-
-          if (
-            currentEventName ===
-              newEventName &&
-            currentLocation ===
-              newLocation
-          ) {
-            saved = true;
-            break;
-          }
-        }
-
-        if (!saved) {
-          throw new Error(
-            "The sheet did not confirm the changes."
-          );
-        }
-
-        closeCompetitionEditor();
-
-        const success =
-          document.getElementById(
-            "competitionSuccess"
-          );
-
-        success.textContent =
-          "Competition details saved successfully.";
-
-        success.className =
-          "message success";
-
-      } catch (error) {
-
-        showCompetitionError(
-          "Could not save changes: " +
-          (
-            error.message ||
-            String(error)
-          )
-        );
-
-      } finally {
-
-        saveButton.disabled = false;
-        saveButton.textContent =
-          "Save Changes";
-      }
-    }
-
-
-    function showCompetitionError(text) {
-
-      const message =
-        document.getElementById(
-          "competitionSaveMessage"
-        );
-
-      message.textContent = text;
-      message.className =
-        "message error";
-    }
-
-
-    /* =========================================================
        INITIAL LOAD
-       ========================================================= */
+       ========================================================== */
 
     async function initialise() {
 
@@ -2046,12 +2573,6 @@
         );
 
       try {
-
-        /*
-           The Apps Script performs the actual security check
-           whenever something is saved. The token is passed
-           through unchanged from the Admin URL.
-        */
 
         await Promise.all([
           loadEventConfig(),
