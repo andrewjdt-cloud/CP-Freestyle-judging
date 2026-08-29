@@ -1,18 +1,3 @@
-<!--
-CP Freestyle Judging System
-File: admin.html
-Version: v1.3
-
-SAFE ADMIN VERSION
-
-This page:
-- Reads Competition information from the Google Sheet
-- Reads Judges from the Google Sheet
-- Allows editing ONLY Event Name and Location
-- Keeps Round Status and Panel Insights read-only
-- Keeps the Judges section read-only
--->
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -23,27 +8,32 @@ This page:
   <title>CP Freestyle – Admin Panel</title>
 
   <style>
-
     /* =========================================================
        PAGE
        ========================================================= */
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: #0b0b0b;
-      color: #fff;
+      color: #f5f5f5;
       padding: 20px;
       max-width: 1200px;
       margin: auto;
     }
 
     h2 {
-      margin-bottom: 6px;
+      margin: 0 0 6px 0;
+      font-size: 28px;
     }
 
     .subtitle {
       color: #aaa;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
+      font-size: 17px;
     }
 
 
@@ -52,15 +42,15 @@ This page:
        ========================================================= */
 
     .section {
-      background: #111;
-      border-radius: 14px;
-      padding: 22px;
-      margin-bottom: 20px;
+      background: #151515;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 22px;
     }
 
     .section h3 {
-      margin-top: 0;
-      margin-bottom: 20px;
+      margin: 0 0 20px 0;
+      font-size: 22px;
     }
 
 
@@ -72,19 +62,22 @@ This page:
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 14px 0;
-      border-bottom: 1px solid #2a2a2a;
-      gap: 20px;
+      padding: 15px 0;
+      border-bottom: 1px solid #303030;
+      gap: 25px;
     }
 
     .label {
-      color: #aaa;
+      color: #b5b5b5;
       font-size: 16px;
+      flex: 1;
     }
 
     .value {
       text-align: right;
       font-weight: 600;
+      flex: 1;
+      word-break: break-word;
     }
 
 
@@ -93,20 +86,20 @@ This page:
        ========================================================= */
 
     .edit-input {
-      background: #1a1a1a;
+      background: #202020;
       border: 1px solid #444;
-      border-radius: 7px;
+      border-radius: 8px;
       color: #fff;
       font-family: inherit;
       font-size: 16px;
-      padding: 9px 10px;
-      width: 55%;
+      padding: 11px 12px;
+      width: 60%;
       text-align: right;
     }
 
     .edit-input:focus {
       outline: none;
-      border-color: #00d26a;
+      border-color: #00c96b;
     }
 
 
@@ -116,12 +109,12 @@ This page:
 
     .status-open,
     .status-yes {
-      color: #00d26a;
+      color: #42d88b;
     }
 
     .status-closed,
     .status-no {
-      color: #ff5252;
+      color: #ff6b6b;
     }
 
 
@@ -132,7 +125,7 @@ This page:
     .judge-header,
     .judge {
       display: grid;
-      grid-template-columns: 160px 1fr 120px;
+      grid-template-columns: 180px 1fr 120px;
       gap: 18px;
       align-items: center;
     }
@@ -141,7 +134,7 @@ This page:
       color: #aaa;
       font-weight: 600;
       padding: 10px 0 12px 0;
-      border-bottom: 1px solid #2a2a2a;
+      border-bottom: 1px solid #303030;
     }
 
     .judge-header-status {
@@ -149,18 +142,22 @@ This page:
     }
 
     .judge {
-      padding: 16px 0;
-      border-bottom: 1px solid #2a2a2a;
+      padding: 15px 0;
+      border-bottom: 1px solid #303030;
+    }
+
+    .judge:last-child {
+      border-bottom: none;
     }
 
     .judge-number {
-      font-weight: bold;
-      color: #ddd;
+      font-weight: 700;
+      color: #e0e0e0;
     }
 
     .judge-status {
       text-align: right;
-      font-weight: 600;
+      font-weight: 700;
     }
 
 
@@ -172,16 +169,16 @@ This page:
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 22px;
     }
 
     button {
       border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
+      border-radius: 9px;
+      padding: 12px 20px;
       font-family: inherit;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 650;
       cursor: pointer;
     }
 
@@ -192,12 +189,12 @@ This page:
 
     .edit-button,
     .cancel-button {
-      background: #2a2a2a;
+      background: #2b2b2b;
       color: #fff;
     }
 
     .save-button {
-      background: #00b85c;
+      background: #08a95b;
       color: #fff;
     }
 
@@ -207,23 +204,23 @@ This page:
        ========================================================= */
 
     .error {
-      color: #ff5252;
-      margin-bottom: 12px;
-      font-weight: bold;
+      color: #ff6b6b;
+      margin-bottom: 16px;
+      font-weight: 700;
     }
 
     .success-message {
-      color: #00d26a;
-      margin-top: 14px;
-      font-weight: 600;
-      min-height: 22px;
+      color: #42d88b;
+      margin-top: 16px;
+      font-weight: 650;
+      min-height: 24px;
     }
 
     .save-error {
-      color: #ff5252;
-      margin-top: 14px;
-      font-weight: 600;
-      min-height: 22px;
+      color: #ff6b6b;
+      margin-top: 16px;
+      font-weight: 650;
+      min-height: 24px;
     }
 
     .loading {
@@ -245,6 +242,10 @@ This page:
         padding: 12px;
       }
 
+      h2 {
+        font-size: 24px;
+      }
+
       .section {
         padding: 18px;
       }
@@ -252,19 +253,18 @@ This page:
       .info-row {
         align-items: flex-start;
         flex-direction: column;
-        gap: 6px;
+        gap: 8px;
       }
 
       .value,
       .edit-input {
         text-align: left;
         width: 100%;
-        box-sizing: border-box;
       }
 
       .judge-header,
       .judge {
-        grid-template-columns: 80px 1fr 80px;
+        grid-template-columns: 85px 1fr 85px;
         gap: 8px;
       }
 
@@ -274,6 +274,14 @@ This page:
 
       .judge-status {
         text-align: right;
+      }
+
+      .actions {
+        width: 100%;
+      }
+
+      button {
+        flex: 1;
       }
     }
 
@@ -291,17 +299,16 @@ This page:
 
   <div id="adminContent" style="display:none;">
 
-
     <!-- =====================================================
          COMPETITION SECTION
-         ====================================================== -->
+         ===================================================== -->
 
     <div class="section">
 
       <h3>Competition</h3>
 
 
-      <!-- READ-ONLY VIEW -->
+      <!-- READ MODE -->
 
       <div id="competitionReadMode">
 
@@ -344,7 +351,7 @@ This page:
       </div>
 
 
-      <!-- EDIT VIEW -->
+      <!-- EDIT MODE -->
 
       <div id="competitionEditMode" class="hidden">
 
@@ -360,7 +367,6 @@ This page:
             autocomplete="off">
         </div>
 
-
         <div class="info-row">
           <label class="label" for="eventLocationInput">
             Location
@@ -372,7 +378,6 @@ This page:
             type="text"
             autocomplete="off">
         </div>
-
 
         <div class="actions">
 
@@ -400,8 +405,8 @@ This page:
 
 
     <!-- =====================================================
-         JUDGES SECTION - READ ONLY
-         ====================================================== -->
+         JUDGES SECTION
+         ===================================================== -->
 
     <div class="section">
 
@@ -433,6 +438,13 @@ This page:
     const EVENT_CONFIG_GID = "686531230";
 
     const JUDGES_GID = "1213944419";
+
+
+    /*
+       Apps Script Web App deployment URL.
+
+       This is the deployment you just updated.
+    */
 
     const APPS_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbx9xfXW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
@@ -468,7 +480,7 @@ This page:
         .then(response => {
 
           if (!response.ok) {
-            throw new Error("Could not load sheet data");
+            throw new Error("Could not load sheet data.");
           }
 
           return response.text();
@@ -476,12 +488,14 @@ This page:
         })
         .then(text => {
 
-          return JSON.parse(
-            text.substring(
-              text.indexOf("{"),
-              text.lastIndexOf("}") + 1
-            )
-          );
+          const start = text.indexOf("{");
+          const end = text.lastIndexOf("}") + 1;
+
+          if (start === -1 || end === 0) {
+            throw new Error("Invalid response from Google Sheets.");
+          }
+
+          return JSON.parse(text.substring(start, end));
 
         });
 
@@ -489,33 +503,22 @@ This page:
 
 
     /* =========================================================
-       SEND REQUEST TO APPS SCRIPT
+       SEND SAVE REQUEST TO APPS SCRIPT
 
-       Used only for Event Name and Location.
+       The Admin page is hosted separately from Apps Script.
+       no-cors allows the POST request to be sent successfully.
+       We then reload the sheet to verify the saved values.
        ========================================================= */
 
     function sendAdminAction(data) {
 
       return fetch(APPS_SCRIPT_URL, {
         method: "POST",
-
+        mode: "no-cors",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
-
         body: JSON.stringify(data)
-
-      })
-      .then(response => response.text())
-      .then(text => {
-
-        try {
-          return JSON.parse(text);
-
-        } catch (err) {
-          throw new Error("Invalid response from Apps Script");
-        }
-
       });
 
     }
@@ -525,8 +528,12 @@ This page:
        LOAD EVENT CONFIGURATION
 
        IMPORTANT:
-       Google Visualization returns the sheet's data rows here.
-       We DO NOT skip the first row.
+       Google Visualization API puts column headings in
+       table.cols, NOT table.rows.
+
+       Therefore we do NOT skip row zero here.
+       That was the reason EventName could disappear when it
+       was the first configuration entry.
        ========================================================= */
 
     function loadEventConfig() {
@@ -536,19 +543,20 @@ This page:
 
           const cfg = {};
 
-
           sheetData.table.rows.forEach(row => {
 
-            if (!row.c || !row.c[0]) {
+            if (!row.c) {
               return;
             }
 
             const key =
-              String(row.c[0].v || "").trim();
+              row.c[0] && row.c[0].v !== null
+                ? String(row.c[0].v).trim()
+                : "";
 
             const value =
-              row.c[1]
-                ? String(row.c[1].v || "").trim()
+              row.c[1] && row.c[1].v !== null
+                ? String(row.c[1].v).trim()
                 : "";
 
             if (key) {
@@ -560,21 +568,15 @@ This page:
 
           /* Check Admin Token */
 
-          if (
-            !adminToken ||
-            cfg.AdminToken !== adminToken
-          ) {
-            throw new Error("Access denied");
+          if (!adminToken || cfg.AdminToken !== adminToken) {
+            throw new Error("Access denied.");
           }
 
 
-          /* Store current editable values */
+          /* Store current values */
 
-          currentEventName =
-            cfg.EventName || "";
-
-          currentLocation =
-            cfg.Location || "";
+          currentEventName = cfg.EventName || "";
+          currentLocation = cfg.Location || "";
 
 
           /* Display Event Name */
@@ -606,14 +608,12 @@ This page:
           if (roundOpen === "YES") {
 
             roundStatus.textContent = "● OPEN";
-            roundStatus.className =
-              "value status-open";
+            roundStatus.className = "value status-open";
 
           } else {
 
             roundStatus.textContent = "● CLOSED";
-            roundStatus.className =
-              "value status-closed";
+            roundStatus.className = "value status-closed";
 
           }
 
@@ -629,14 +629,12 @@ This page:
           if (insights === "YES") {
 
             insightsStatus.textContent = "ON";
-            insightsStatus.className =
-              "value status-yes";
+            insightsStatus.className = "value status-yes";
 
           } else {
 
             insightsStatus.textContent = "OFF";
-            insightsStatus.className =
-              "value status-no";
+            insightsStatus.className = "value status-no";
 
           }
 
@@ -652,7 +650,12 @@ This page:
 
 
     /* =========================================================
-       LOAD JUDGES - READ ONLY
+       LOAD JUDGES
+
+       We DO NOT skip the first data row.
+
+       Instead, we explicitly detect and ignore a possible
+       header row if the sheet happens to return one as data.
        ========================================================= */
 
     function loadJudges() {
@@ -665,13 +668,6 @@ This page:
 
           judgesDiv.innerHTML = "";
 
-
-          /*
-             Do not skip the first returned row.
-             The Google Visualization data already contains
-             data rows rather than the spreadsheet header row.
-          */
-
           sheetData.table.rows.forEach(row => {
 
             if (!row.c) {
@@ -679,30 +675,38 @@ This page:
             }
 
 
-            /*
-               Judges sheet:
-               Column A = JudgeName
-               Column B = JudgeToken
-               Column C = JudgeActive
-               Column D = ScoreboardID
-            */
-
             const name =
-              row.c[0]
-                ? String(row.c[0].v || "").trim()
+              row.c[0] && row.c[0].v !== null
+                ? String(row.c[0].v).trim()
                 : "";
 
             const active =
-              row.c[2]
-                ? String(row.c[2].v || "")
-                    .trim()
-                    .toUpperCase()
+              row.c[2] && row.c[2].v !== null
+                ? String(row.c[2].v).trim().toUpperCase()
                 : "";
 
             const scoreboardID =
-              row.c[3]
-                ? String(row.c[3].v || "").trim()
+              row.c[3] && row.c[3].v !== null
+                ? String(row.c[3].v).trim()
                 : "";
+
+
+            /*
+               Safety check:
+               Ignore a header row if it appears in the data.
+            */
+
+            const nameUpper = name.toUpperCase();
+            const idUpper = scoreboardID.toUpperCase();
+
+            if (
+              nameUpper === "JUDGENAME" ||
+              nameUpper === "JUDGE NAME" ||
+              idUpper === "SCOREBOARDID" ||
+              idUpper === "SCOREBOARD ID"
+            ) {
+              return;
+            }
 
 
             /* Skip completely empty rows */
@@ -712,7 +716,7 @@ This page:
             }
 
 
-            /* Create judge row */
+            /* Create row */
 
             const judgeRow =
               document.createElement("div");
@@ -725,11 +729,8 @@ This page:
             const idElement =
               document.createElement("div");
 
-            idElement.className =
-              "judge-number";
-
-            idElement.textContent =
-              scoreboardID || "—";
+            idElement.className = "judge-number";
+            idElement.textContent = scoreboardID || "—";
 
 
             /* Judge Name */
@@ -746,27 +747,17 @@ This page:
             const statusElement =
               document.createElement("div");
 
-            statusElement.className =
-              "judge-status";
-
+            statusElement.className = "judge-status";
 
             if (active === "YES") {
 
-              statusElement.textContent =
-                "ACTIVE";
-
-              statusElement.classList.add(
-                "status-yes"
-              );
+              statusElement.textContent = "ACTIVE";
+              statusElement.classList.add("status-yes");
 
             } else {
 
-              statusElement.textContent =
-                "INACTIVE";
-
-              statusElement.classList.add(
-                "status-no"
-              );
+              statusElement.textContent = "INACTIVE";
+              statusElement.classList.add("status-no");
 
             }
 
@@ -780,13 +771,12 @@ This page:
           });
 
 
-          if (!judgesDiv.innerHTML) {
-            judgesDiv.textContent =
-              "No judges configured.";
+          if (!judgesDiv.children.length) {
+            judgesDiv.textContent = "No judges configured.";
           }
 
         })
-        .catch(err => {
+        .catch(() => {
 
           document.getElementById("judges").textContent =
             "Could not load judges.";
@@ -810,12 +800,8 @@ This page:
         document.getElementById("eventLocationInput").value =
           currentLocation;
 
-        document.getElementById("saveError").textContent =
-          "";
-
-        document.getElementById("successMessage").textContent =
-          "";
-
+        document.getElementById("saveError").textContent = "";
+        document.getElementById("successMessage").textContent = "";
 
         document
           .getElementById("competitionReadMode")
@@ -825,10 +811,7 @@ This page:
           .getElementById("competitionEditMode")
           .classList.remove("hidden");
 
-
-        document
-          .getElementById("eventNameInput")
-          .focus();
+        document.getElementById("eventNameInput").focus();
 
       });
 
@@ -849,14 +832,13 @@ This page:
           .getElementById("competitionReadMode")
           .classList.remove("hidden");
 
-        document.getElementById("saveError").textContent =
-          "";
+        document.getElementById("saveError").textContent = "";
 
       });
 
 
     /* =========================================================
-       SAVE EVENT NAME AND LOCATION
+       SAVE COMPETITION DETAILS
        ========================================================= */
 
     document
@@ -875,21 +857,14 @@ This page:
             .value
             .trim();
 
-
         const saveButton =
-          document.getElementById(
-            "saveCompetitionButton"
-          );
+          document.getElementById("saveCompetitionButton");
 
         const saveError =
-          document.getElementById(
-            "saveError"
-          );
+          document.getElementById("saveError");
 
         const successMessage =
-          document.getElementById(
-            "successMessage"
-          );
+          document.getElementById("successMessage");
 
 
         saveError.textContent = "";
@@ -897,22 +872,15 @@ This page:
 
 
         if (!newEventName) {
-
           saveError.textContent =
             "Event Name cannot be empty.";
-
           return;
-
         }
 
-
         if (!newLocation) {
-
           saveError.textContent =
             "Location cannot be empty.";
-
           return;
-
         }
 
 
@@ -920,41 +888,47 @@ This page:
         saveButton.textContent = "Saving...";
 
 
+        /*
+           Send the request.
+
+           Because no-cors gives us an opaque response, we do not
+           try to read the response. Instead, after allowing Apps
+           Script a moment to write to the sheet, we reload the
+           Event Config and confirm the values.
+        */
+
         sendAdminAction({
-
           action: "updateCompetitionDetails",
-
           adminToken: adminToken,
-
           eventName: newEventName,
-
           location: newLocation
+        })
+        .then(() => {
+
+          /*
+             Give Apps Script a short moment to complete the write.
+          */
+
+          return new Promise(resolve => {
+            setTimeout(resolve, 1500);
+          });
 
         })
-        .then(result => {
+        .then(() => loadEventConfig())
+        .then(() => {
 
-          if (!result.ok) {
+          /*
+             Check that the sheet now contains the values we sent.
+          */
 
+          if (
+            currentEventName !== newEventName ||
+            currentLocation !== newLocation
+          ) {
             throw new Error(
-              result.error ||
-              "The changes could not be saved."
+              "The sheet did not confirm the changes."
             );
-
           }
-
-
-          currentEventName =
-            newEventName;
-
-          currentLocation =
-            newLocation;
-
-
-          document.getElementById("eventName").textContent =
-            currentEventName;
-
-          document.getElementById("eventLocation").textContent =
-            currentLocation;
 
 
           document
@@ -964,7 +938,6 @@ This page:
           document
             .getElementById("competitionReadMode")
             .classList.remove("hidden");
-
 
           successMessage.textContent =
             "Competition details saved successfully.";
@@ -988,19 +961,19 @@ This page:
 
     /* =========================================================
        INITIAL PAGE LOAD
+
+       Load Event Config first because it checks the Admin Token.
+       Only after that succeeds do we load the Judges.
        ========================================================= */
 
-    Promise.all([
-      loadEventConfig(),
-      loadJudges()
-    ])
-    .catch(err => {
+    loadEventConfig()
+      .then(() => loadJudges())
+      .catch(err => {
 
-      document.getElementById("error").textContent =
-        err.message ||
-        "Could not load the Admin Panel.";
+        document.getElementById("error").textContent =
+          err.message || "Could not load the Admin Panel.";
 
-    });
+      });
 
   </script>
 
