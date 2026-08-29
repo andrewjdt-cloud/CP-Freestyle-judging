@@ -1,17 +1,24 @@
 <!--
 CP Freestyle Judging System
 File: admin.html
-Version: v1.3 READ ONLY
-Notes:
-- Read-only competition administration overview
-- No changes are made to the Google Sheet
-- Uses the existing Google Sheet structure and IDs
-- Protected by the existing AdminToken
-- Judges sheet column heading row is explicitly ignored
+Version: v1.2
+
+SAFE ADMIN VERSION
+
+This page:
+- Reads Competition information from the Google Sheet
+- Reads Judges from the Google Sheet
+- Allows editing ONLY Event Name and Location
+- Keeps Round Status and Panel Insights read-only
+- Keeps the Judges section read-only
+
+The Apps Script only permits EventName and Location to be
+changed by the updateCompetitionDetails action.
 -->
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,12 +26,17 @@ Notes:
 <title>CP Freestyle – Admin Panel</title>
 
 <style>
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
 body {
   font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background: #0b0b0b;
   color: #fff;
   padding: 20px;
-  max-width: 900px;
+  max-width: 1200px;
   margin: auto;
 }
 
@@ -37,24 +49,33 @@ h2 {
   margin-bottom: 20px;
 }
 
+
+/* =========================================================
+   SECTIONS
+   ========================================================= */
+
 .section {
   background: #111;
   border-radius: 14px;
-  padding: 18px;
+  padding: 22px;
   margin-bottom: 20px;
 }
 
 .section h3 {
   margin-top: 0;
+  margin-bottom: 20px;
 }
 
-/* ---------- Competition information ---------- */
+
+/* =========================================================
+   COMPETITION INFORMATION
+   ========================================================= */
 
 .info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 11px 0;
+  padding: 14px 0;
   border-bottom: 1px solid #2a2a2a;
   gap: 20px;
 }
@@ -65,13 +86,40 @@ h2 {
 
 .label {
   color: #aaa;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .value {
   text-align: right;
   font-weight: 600;
 }
+
+
+/* =========================================================
+   EDIT INPUTS
+   ========================================================= */
+
+.edit-input {
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 7px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  padding: 9px 10px;
+  width: 55%;
+  text-align: right;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: #00d26a;
+}
+
+
+/* =========================================================
+   STATUS COLOURS
+   ========================================================= */
 
 .status-open,
 .status-yes {
@@ -83,26 +131,32 @@ h2 {
   color: #ff5252;
 }
 
-/* ---------- Judges ---------- */
+
+/* =========================================================
+   JUDGES
+   ========================================================= */
 
 .judge-header,
 .judge {
   display: grid;
-  grid-template-columns: 160px 1fr 100px;
-  gap: 20px;
+  grid-template-columns: 160px 1fr 120px;
+  gap: 18px;
   align-items: center;
 }
 
 .judge-header {
   color: #aaa;
-  font-size: 14px;
   font-weight: 600;
-  padding: 8px 0 10px;
+  padding: 10px 0 12px 0;
   border-bottom: 1px solid #2a2a2a;
 }
 
+.judge-header-status {
+  text-align: right;
+}
+
 .judge {
-  padding: 12px 0;
+  padding: 16px 0;
   border-bottom: 1px solid #2a2a2a;
 }
 
@@ -112,19 +166,56 @@ h2 {
 
 .judge-number {
   font-weight: bold;
-  color: #ccc;
-}
-
-.judge-name {
   color: #ddd;
 }
 
 .judge-status {
   text-align: right;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* ---------- Messages ---------- */
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-button,
+.cancel-button {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+.save-button {
+  background: #00b85c;
+  color: #fff;
+}
+
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
 
 .error {
   color: #ff5252;
@@ -132,39 +223,74 @@ h2 {
   font-weight: bold;
 }
 
+.success-message {
+  color: #00d26a;
+  margin-top: 14px;
+  font-weight: 600;
+  min-height: 22px;
+}
+
+.save-error {
+  color: #ff5252;
+  margin-top: 14px;
+  font-weight: 600;
+  min-height: 22px;
+}
+
 .loading {
   color: #aaa;
 }
 
-/* ---------- Mobile ---------- */
+.hidden {
+  display: none !important;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
 @media (max-width: 600px) {
+
   body {
     padding: 12px;
+  }
+
+  .section {
+    padding: 18px;
   }
 
   .info-row {
     align-items: flex-start;
     flex-direction: column;
-    gap: 3px;
+    gap: 6px;
   }
 
-  .value {
+  .value,
+  .edit-input {
     text-align: left;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   .judge-header,
   .judge {
-    grid-template-columns: 105px 1fr 75px;
+    grid-template-columns: 80px 1fr 80px;
     gap: 8px;
   }
 
   .judge-header {
-    font-size: 12px;
+    font-size: 13px;
+  }
+
+  .judge-status {
+    text-align: right;
   }
 }
+
 </style>
 </head>
+
 
 <body>
 
@@ -173,222 +299,794 @@ h2 {
 
 <div id="error" class="error"></div>
 
+
 <div id="adminContent" style="display:none;">
 
-  <!-- Competition -->
+
+  <!-- =====================================================
+       COMPETITION SECTION
+       ===================================================== -->
+
   <div class="section">
+
     <h3>Competition</h3>
 
-    <div class="info-row">
-      <span class="label">Event Name</span>
-      <span class="value" id="eventName">—</span>
+
+    <!-- READ-ONLY VIEW -->
+
+    <div id="competitionReadMode">
+
+      <div class="info-row">
+        <span class="label">Event Name</span>
+        <span class="value" id="eventName">—</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Location</span>
+        <span class="value" id="eventLocation">—</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Current Round</span>
+        <span class="value" id="eventRound">—</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Round Status</span>
+        <span class="value" id="roundStatus">—</span>
+      </div>
+
+      <div class="info-row">
+        <span class="label">Panel Insights</span>
+        <span class="value" id="panelInsights">—</span>
+      </div>
+
+      <div class="actions">
+        <button
+          type="button"
+          class="edit-button"
+          id="editCompetitionButton">
+          Edit Competition Details
+        </button>
+      </div>
+
+      <div id="successMessage" class="success-message"></div>
+
     </div>
 
-    <div class="info-row">
-      <span class="label">Location</span>
-      <span class="value" id="eventLocation">—</span>
+
+    <!-- EDIT VIEW -->
+
+    <div id="competitionEditMode" class="hidden">
+
+      <div class="info-row">
+        <label class="label" for="eventNameInput">
+          Event Name
+        </label>
+
+        <input
+          class="edit-input"
+          id="eventNameInput"
+          type="text"
+          autocomplete="off">
+      </div>
+
+
+      <div class="info-row">
+        <label class="label" for="eventLocationInput">
+          Location
+        </label>
+
+        <input
+          class="edit-input"
+          id="eventLocationInput"
+          type="text"
+          autocomplete="off">
+      </div>
+
+
+      <div class="actions">
+
+        <button
+          type="button"
+          class="cancel-button"
+          id="cancelCompetitionButton">
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="save-button"
+          id="saveCompetitionButton">
+          Save Changes
+        </button>
+
+      </div>
+
+      <div id="saveError" class="save-error"></div>
+
     </div>
 
-    <div class="info-row">
-      <span class="label">Current Round</span>
-      <span class="value" id="eventRound">—</span>
-    </div>
-
-    <div class="info-row">
-      <span class="label">Round Status</span>
-      <span class="value" id="roundStatus">—</span>
-    </div>
-
-    <div class="info-row">
-      <span class="label">Panel Insights</span>
-      <span class="value" id="panelInsights">—</span>
-    </div>
   </div>
 
-  <!-- Judges -->
+
+  <!-- =====================================================
+       JUDGES SECTION - READ ONLY
+       ===================================================== -->
+
   <div class="section">
+
     <h3>Judges</h3>
 
-    <!-- These are the ADMIN PAGE headings only -->
     <div class="judge-header">
       <div>Scoreboard ID</div>
       <div>Judge Name</div>
-      <div style="text-align:right;">Status</div>
+      <div class="judge-header-status">Status</div>
     </div>
 
-    <div id="judges" class="loading">Loading judges...</div>
+    <div id="judges" class="loading">
+      Loading judges...
+    </div>
+
   </div>
+
 
 </div>
 
+
 <script>
-/* ---------- CONFIG ---------- */
+
+/* =========================================================
+   CONFIGURATION
+   ========================================================= */
 
 const SHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
+
 const EVENT_CONFIG_GID = "686531230";
+
 const JUDGES_GID = "1213944419";
 
-/* ---------- AUTH ---------- */
+
+/*
+   This is the existing Apps Script Web App deployment.
+
+   We are using the deployment you just successfully updated.
+*/
+
+const APPS_SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbx9xfXW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
+
+
+/* =========================================================
+   AUTHENTICATION
+   ========================================================= */
 
 const params = new URLSearchParams(window.location.search);
+
 const adminToken = params.get("token");
 
-/* ---------- HELPER: READ GOOGLE SHEET ---------- */
+
+/* =========================================================
+   PAGE STATE
+   ========================================================= */
+
+let currentEventName = "";
+
+let currentLocation = "";
+
+
+/* =========================================================
+   READ GOOGLE SHEET
+   ========================================================= */
 
 function getSheetData(gid) {
+
   const url =
     `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json`;
 
   return fetch(url)
-    .then(r => r.text())
-    .then(t => {
+    .then(response => {
+
+      if (!response.ok) {
+        throw new Error("Could not load sheet data");
+      }
+
+      return response.text();
+    })
+    .then(text => {
+
       return JSON.parse(
-        t.substring(t.indexOf("{"), t.lastIndexOf("}") + 1)
+        text.substring(
+          text.indexOf("{"),
+          text.lastIndexOf("}") + 1
+        )
       );
+
     });
+
 }
 
-/* ---------- LOAD EVENT CONFIG ---------- */
 
-getSheetData(EVENT_CONFIG_GID)
-  .then(j => {
+/* =========================================================
+   SEND A REQUEST TO APPS SCRIPT
 
-    const cfg = {};
+   Used only when saving Event Name and Location.
+   ========================================================= */
 
-    j.table.rows.forEach(r => {
-      if (r.c && r.c[0] && r.c[1]) {
-        const key = String(r.c[0].v).trim();
-        const value = String(r.c[1].v).trim();
-        cfg[key] = value;
-      }
-    });
+function sendAdminAction(data) {
 
-    /*
-      Keep exactly the same AdminToken protection used by
-      the existing admin page.
-    */
-    if (!adminToken || cfg.AdminToken !== adminToken) {
-      document.getElementById("error").textContent = "Access denied";
-      return;
-    }
+  return fetch(APPS_SCRIPT_URL, {
+    method: "POST",
 
-    document.getElementById("adminContent").style.display = "block";
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
 
-    document.getElementById("eventName").textContent =
-      cfg.EventName || "—";
-
-    document.getElementById("eventLocation").textContent =
-      cfg.Location || "—";
-
-    document.getElementById("eventRound").textContent =
-      cfg.Round || "—";
-
-    const roundOpen = (cfg.RoundOpen || "").toUpperCase();
-    const roundStatus = document.getElementById("roundStatus");
-
-    if (roundOpen === "YES") {
-      roundStatus.textContent = "● OPEN";
-      roundStatus.className = "value status-open";
-    } else {
-      roundStatus.textContent = "● CLOSED";
-      roundStatus.className = "value status-closed";
-    }
-
-    const insights = (cfg.PanelInsights || "").toUpperCase();
-    const insightsStatus = document.getElementById("panelInsights");
-
-    if (insights === "YES") {
-      insightsStatus.textContent = "ON";
-      insightsStatus.className = "value status-yes";
-    } else {
-      insightsStatus.textContent = "OFF";
-      insightsStatus.className = "value status-no";
-    }
+    body: JSON.stringify(data)
 
   })
-  .catch(err => {
-    document.getElementById("error").textContent =
-      "Could not load Event Config: " + err;
+  .then(response => response.text())
+  .then(text => {
+
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      throw new Error("Invalid response from Apps Script");
+    }
+
   });
 
+}
 
-/* ---------- LOAD JUDGES ---------- */
 
-getSheetData(JUDGES_GID)
-  .then(j => {
+/* =========================================================
+   LOAD EVENT CONFIGURATION
+   ========================================================= */
 
-    const judgesDiv = document.getElementById("judges");
-    judgesDiv.innerHTML = "";
+function loadEventConfig() {
 
-    j.table.rows.forEach(r => {
+  return getSheetData(EVENT_CONFIG_GID)
+    .then(sheetData => {
 
-      if (!r.c) return;
+      const cfg = {};
 
-      const name =
-        r.c[0] ? String(r.c[0].v || "").trim() : "";
-
-      const active =
-        r.c[2] ? String(r.c[2].v || "").trim().toUpperCase() : "";
-
-      const judgeNumber =
-        r.c[3] ? String(r.c[3].v || "").trim() : "";
 
       /*
-        The Google Sheet's first row contains column headings:
-        JudgeName | JudgeToken | JudgeActive | ScoreboardID | Judge URL
-
-        Explicitly ignore that row. This is deliberately based on
-        its actual heading text, so it cannot appear as an INACTIVE judge.
+         The first row contains the Event Config headers,
+         so we skip it.
       */
+
+      sheetData.table.rows.forEach((row, index) => {
+
+        if (index === 0) {
+          return;
+        }
+
+        if (
+          row.c &&
+          row.c[0] &&
+          row.c[1]
+        ) {
+
+          const key =
+            String(row.c[0].v).trim();
+
+          const value =
+            String(row.c[1].v).trim();
+
+          cfg[key] = value;
+
+        }
+
+      });
+
+
+      /* Check the existing Admin Token */
+
       if (
-        name.toUpperCase() === "JUDGENAME" ||
-        judgeNumber.toUpperCase() === "SCOREBOARDID"
+        !adminToken ||
+        cfg.AdminToken !== adminToken
       ) {
-        return;
+        throw new Error("Access denied");
       }
 
-      /* Skip completely empty rows */
-      if (!name && !judgeNumber) return;
 
-      const row = document.createElement("div");
-      row.className = "judge";
+      /* Store Event Name and Location */
 
-      const number = document.createElement("div");
-      number.className = "judge-number";
-      number.textContent = judgeNumber || "—";
+      currentEventName =
+        cfg.EventName || "";
 
-      const judgeName = document.createElement("div");
-      judgeName.className = "judge-name";
-      judgeName.textContent = name || "Unnamed Judge";
+      currentLocation =
+        cfg.Location || "";
 
-      const status = document.createElement("div");
-      status.className = "judge-status";
 
-      /* Only actual judges reach this point */
-      if (active === "YES") {
-        status.textContent = "ACTIVE";
-        status.classList.add("status-yes");
+      /* Display Event Name */
+
+      document.getElementById("eventName").textContent =
+        currentEventName || "—";
+
+
+      /* Display Location */
+
+      document.getElementById("eventLocation").textContent =
+        currentLocation || "—";
+
+
+      /* Display Current Round */
+
+      document.getElementById("eventRound").textContent =
+        cfg.Round || "—";
+
+
+      /* Display Round Status */
+
+      const roundOpen =
+        (cfg.RoundOpen || "").toUpperCase();
+
+      const roundStatus =
+        document.getElementById("roundStatus");
+
+      if (roundOpen === "YES") {
+
+        roundStatus.textContent = "● OPEN";
+        roundStatus.className =
+          "value status-open";
+
       } else {
-        status.textContent = "INACTIVE";
-        status.classList.add("status-no");
+
+        roundStatus.textContent = "● CLOSED";
+        roundStatus.className =
+          "value status-closed";
+
       }
 
-      row.appendChild(number);
-      row.appendChild(judgeName);
-      row.appendChild(status);
 
-      judgesDiv.appendChild(row);
+      /* Display Panel Insights */
+
+      const insights =
+        (cfg.PanelInsights || "").toUpperCase();
+
+      const insightsStatus =
+        document.getElementById("panelInsights");
+
+      if (insights === "YES") {
+
+        insightsStatus.textContent = "ON";
+        insightsStatus.className =
+          "value status-yes";
+
+      } else {
+
+        insightsStatus.textContent = "OFF";
+        insightsStatus.className =
+          "value status-no";
+
+      }
+
+
+      /* Show the page once authentication succeeds */
+
+      document.getElementById("adminContent").style.display =
+        "block";
+
     });
 
-    if (!judgesDiv.innerHTML) {
-      judgesDiv.textContent = "No judges configured.";
+}
+
+
+/* =========================================================
+   LOAD JUDGES - READ ONLY
+   ========================================================= */
+
+function loadJudges() {
+
+  return getSheetData(JUDGES_GID)
+    .then(sheetData => {
+
+      const judgesDiv =
+        document.getElementById("judges");
+
+      judgesDiv.innerHTML = "";
+
+
+      /*
+         The first row contains the Judges sheet headers,
+         so we skip it.
+      */
+
+      sheetData.table.rows.forEach((row, index) => {
+
+        if (index === 0) {
+          return;
+        }
+
+        if (!row.c) {
+          return;
+        }
+
+
+        /*
+           Judges sheet:
+
+           Column A = JudgeName
+           Column B = JudgeToken
+           Column C = JudgeActive
+           Column D = ScoreboardID
+        */
+
+        const name =
+          row.c[0]
+            ? String(row.c[0].v || "").trim()
+            : "";
+
+        const active =
+          row.c[2]
+            ? String(row.c[2].v || "")
+                .trim()
+                .toUpperCase()
+            : "";
+
+        const scoreboardID =
+          row.c[3]
+            ? String(row.c[3].v || "").trim()
+            : "";
+
+
+        /* Skip completely empty rows */
+
+        if (!name && !scoreboardID) {
+          return;
+        }
+
+
+        /* Create the judge row */
+
+        const judgeRow =
+          document.createElement("div");
+
+        judgeRow.className = "judge";
+
+
+        /* Scoreboard ID */
+
+        const idElement =
+          document.createElement("div");
+
+        idElement.className =
+          "judge-number";
+
+        idElement.textContent =
+          scoreboardID || "—";
+
+
+        /* Judge Name */
+
+        const nameElement =
+          document.createElement("div");
+
+        nameElement.textContent =
+          name || "Unnamed Judge";
+
+
+        /* Status */
+
+        const statusElement =
+          document.createElement("div");
+
+        statusElement.className =
+          "judge-status";
+
+
+        if (active === "YES") {
+
+          statusElement.textContent =
+            "ACTIVE";
+
+          statusElement.classList.add(
+            "status-yes"
+          );
+
+        } else {
+
+          statusElement.textContent =
+            "INACTIVE";
+
+          statusElement.classList.add(
+            "status-no"
+          );
+
+        }
+
+
+        /* Add the three columns */
+
+        judgeRow.appendChild(idElement);
+        judgeRow.appendChild(nameElement);
+        judgeRow.appendChild(statusElement);
+
+        judgesDiv.appendChild(judgeRow);
+
+      });
+
+
+      /* Handle an empty Judges sheet */
+
+      if (!judgesDiv.innerHTML) {
+
+        judgesDiv.textContent =
+          "No judges configured.";
+
+      }
+
+    })
+    .catch(err => {
+
+      document.getElementById("judges").textContent =
+        "Could not load judges.";
+
+    });
+
+}
+
+
+/* =========================================================
+   OPEN EDIT MODE
+   ========================================================= */
+
+document
+  .getElementById("editCompetitionButton")
+  .addEventListener("click", () => {
+
+
+    /* Put current values into the edit boxes */
+
+    document.getElementById("eventNameInput").value =
+      currentEventName;
+
+    document.getElementById("eventLocationInput").value =
+      currentLocation;
+
+
+    /* Clear any old messages */
+
+    document.getElementById("saveError").textContent =
+      "";
+
+    document.getElementById("successMessage").textContent =
+      "";
+
+
+    /* Switch to edit mode */
+
+    document
+      .getElementById("competitionReadMode")
+      .classList.add("hidden");
+
+    document
+      .getElementById("competitionEditMode")
+      .classList.remove("hidden");
+
+
+    /* Put cursor in Event Name */
+
+    document
+      .getElementById("eventNameInput")
+      .focus();
+
+  });
+
+
+/* =========================================================
+   CANCEL EDIT MODE
+   ========================================================= */
+
+document
+  .getElementById("cancelCompetitionButton")
+  .addEventListener("click", () => {
+
+    document
+      .getElementById("competitionEditMode")
+      .classList.add("hidden");
+
+    document
+      .getElementById("competitionReadMode")
+      .classList.remove("hidden");
+
+    document.getElementById("saveError").textContent =
+      "";
+
+  });
+
+
+/* =========================================================
+   SAVE EVENT NAME AND LOCATION
+
+   This calls ONLY:
+   updateCompetitionDetails
+
+   The Apps Script then only updates:
+   - EventName
+   - Location
+   ========================================================= */
+
+document
+  .getElementById("saveCompetitionButton")
+  .addEventListener("click", () => {
+
+
+    const newEventName =
+      document
+        .getElementById("eventNameInput")
+        .value
+        .trim();
+
+    const newLocation =
+      document
+        .getElementById("eventLocationInput")
+        .value
+        .trim();
+
+
+    const saveButton =
+      document.getElementById(
+        "saveCompetitionButton"
+      );
+
+    const saveError =
+      document.getElementById(
+        "saveError"
+      );
+
+    const successMessage =
+      document.getElementById(
+        "successMessage"
+      );
+
+
+    /* Clear previous messages */
+
+    saveError.textContent = "";
+    successMessage.textContent = "";
+
+
+    /* Simple safety checks */
+
+    if (!newEventName) {
+
+      saveError.textContent =
+        "Event Name cannot be empty.";
+
+      return;
+
     }
 
-  })
-  .catch(err => {
-    document.getElementById("judges").textContent =
-      "Could not load judges.";
+
+    if (!newLocation) {
+
+      saveError.textContent =
+        "Location cannot be empty.";
+
+      return;
+
+    }
+
+
+    /* Prevent accidental double saving */
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving...";
+
+
+    /*
+       Send ONLY the two permitted values
+       to the existing Apps Script.
+    */
+
+    sendAdminAction({
+
+      action: "updateCompetitionDetails",
+
+      adminToken: adminToken,
+
+      eventName: newEventName,
+
+      location: newLocation
+
+    })
+    .then(result => {
+
+
+      if (!result.ok) {
+
+        throw new Error(
+          result.error ||
+          "The changes could not be saved."
+        );
+
+      }
+
+
+      /*
+         Update the values held by the page
+         after a successful save.
+      */
+
+      currentEventName =
+        newEventName;
+
+      currentLocation =
+        newLocation;
+
+
+      /*
+         Update the visible read-only display.
+      */
+
+      document.getElementById("eventName").textContent =
+        currentEventName;
+
+      document.getElementById("eventLocation").textContent =
+        currentLocation;
+
+
+      /*
+         Return to normal read mode.
+      */
+
+      document
+        .getElementById("competitionEditMode")
+        .classList.add("hidden");
+
+      document
+        .getElementById("competitionReadMode")
+        .classList.remove("hidden");
+
+
+      /* Confirm success */
+
+      successMessage.textContent =
+        "Competition details saved successfully.";
+
+    })
+    .catch(err => {
+
+      saveError.textContent =
+        "Could not save changes: " + err.message;
+
+    })
+    .finally(() => {
+
+      saveButton.disabled = false;
+      saveButton.textContent = "Save Changes";
+
+    });
+
   });
+
+
+/* =========================================================
+   INITIAL PAGE LOAD
+   ========================================================= */
+
+/*
+   Load Event Config first because it checks the Admin Token.
+
+   Judges are also loaded, but they remain inside the hidden
+   adminContent area until access is authorised.
+*/
+
+Promise.all([
+  loadEventConfig(),
+  loadJudges()
+])
+.catch(err => {
+
+  document.getElementById("error").textContent =
+    err.message ||
+    "Could not load the Admin Panel.";
+
+});
+
 </script>
 
 </body>
