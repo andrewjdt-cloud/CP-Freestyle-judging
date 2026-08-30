@@ -9,10 +9,6 @@
 
   <style>
 
-    /* =========================================================
-       CP FREESTYLE – ADMIN PANEL
-       ========================================================= */
-
     * {
       box-sizing: border-box;
     }
@@ -51,11 +47,6 @@
       padding: 12px 0 40px;
     }
 
-
-    /* =========================================================
-       HEADER
-       ========================================================= */
-
     .page-header {
       margin-bottom: 20px;
     }
@@ -64,18 +55,12 @@
       margin: 0 0 4px;
       font-size: 28px;
       line-height: 1.25;
-      letter-spacing: .01em;
     }
 
     .subtitle {
       color: var(--muted);
       font-size: 16px;
     }
-
-
-    /* =========================================================
-       PANELS
-       ========================================================= */
 
     .panel {
       background:
@@ -86,7 +71,7 @@
         );
       border: 1px solid rgba(255, 255, 255, .025);
       border-radius: 16px;
-      padding: 22px 20px 10px;
+      padding: 22px 20px 18px;
       margin-bottom: 18px;
       box-shadow:
         0 12px 35px rgba(0, 0, 0, .18);
@@ -95,13 +80,7 @@
     .panel h2 {
       margin: 0 0 16px;
       font-size: 21px;
-      letter-spacing: .01em;
     }
-
-
-    /* =========================================================
-       COMPETITION ROWS
-       ========================================================= */
 
     .info-row {
       display: grid;
@@ -113,6 +92,10 @@
       gap: 18px;
       min-height: 58px;
       border-bottom: 1px solid var(--line);
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
     }
 
     .label {
@@ -128,21 +111,13 @@
       word-break: break-word;
     }
 
-    .value.empty {
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .row-actions {
+    .row-actions,
+    .scoreboard-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 7px;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-
-
-    /* =========================================================
-       STATUS
-       ========================================================= */
 
     .status {
       display: inline-flex;
@@ -150,15 +125,6 @@
       justify-content: flex-end;
       gap: 7px;
       font-weight: 750;
-      letter-spacing: .02em;
-    }
-
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      display: inline-block;
-      background: currentColor;
     }
 
     .open,
@@ -173,11 +139,6 @@
       color: var(--red);
     }
 
-
-    /* =========================================================
-       BUTTONS
-       ========================================================= */
-
     button {
       appearance: none;
       border: 0;
@@ -188,18 +149,10 @@
       font-weight: 700;
       color: var(--text);
       cursor: pointer;
-      transition:
-        transform .12s ease,
-        filter .12s ease,
-        opacity .12s ease;
     }
 
     button:hover:not(:disabled) {
       filter: brightness(1.12);
-    }
-
-    button:active:not(:disabled) {
-      transform: translateY(1px);
     }
 
     button:disabled {
@@ -209,53 +162,26 @@
 
     .button-edit,
     .button-cancel {
-      background:
-        linear-gradient(
-          180deg,
-          #34363d,
-          #292b31
-        );
-      box-shadow:
-        inset 0 1px rgba(255, 255, 255, .06);
+      background: linear-gradient(180deg, #34363d, #292b31);
     }
 
     .button-save,
     .button-open,
     .button-on {
-      background:
-        linear-gradient(
-          180deg,
-          #169d62,
-          #087a49
-        );
+      background: linear-gradient(180deg, #169d62, #087a49);
     }
 
     .button-close,
     .button-off {
-      background:
-        linear-gradient(
-          180deg,
-          #bd5252,
-          #923838
-        );
+      background: linear-gradient(180deg, #bd5252, #923838);
     }
 
     .button-copy {
-      background:
-        linear-gradient(
-          180deg,
-          #346fa8,
-          #235886
-        );
+      background: linear-gradient(180deg, #346fa8, #235886);
     }
 
     .button-qr {
-      background:
-        linear-gradient(
-          180deg,
-          #7054a5,
-          #533b81
-        );
+      background: linear-gradient(180deg, #7054a5, #533b81);
     }
 
     .button-small {
@@ -264,90 +190,25 @@
       white-space: nowrap;
     }
 
-    .competition-actions {
-      display: flex;
-      justify-content: flex-end;
-      padding: 20px 0 26px;
-    }
-
-    .competition-actions button {
-      min-width: 210px;
-      font-size: 15px;
-    }
-
-
-    /* =========================================================
-       EDIT MODE
-       ========================================================= */
-
     .hidden {
       display: none !important;
     }
 
-    .edit-form {
-      padding-bottom: 16px;
+    .error {
+      color: var(--red);
+      margin-bottom: 16px;
+      font-weight: 700;
     }
-
-    .form-row {
-      display: grid;
-      grid-template-columns:
-        minmax(150px, 1fr)
-        minmax(280px, 1.7fr);
-      align-items: center;
-      gap: 18px;
-      min-height: 58px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    input,
-    select {
-      width: 100%;
-      padding: 11px 13px;
-      border-radius: 8px;
-      border: 1px solid #3a3c44;
-      background: #202127;
-      color: var(--text);
-      font: inherit;
-      font-size: 15px;
-    }
-
-    input:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--green);
-      box-shadow:
-        0 0 0 2px rgba(85, 216, 146, .10);
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      padding-top: 20px;
-    }
-
-
-    /* =========================================================
-       MESSAGES
-       ========================================================= */
 
     .message {
       min-height: 22px;
-      padding-top: 12px;
-      font-size: 14px;
+      margin-top: 14px;
       font-weight: 650;
     }
 
     .success {
       color: var(--green);
     }
-
-    .error {
-      color: var(--red);
-      margin-bottom: 16px;
-      font-weight: 650;
-    }
-
 
     /* =========================================================
        JUDGES
@@ -357,39 +218,34 @@
     .judge-row {
       display: grid;
       grid-template-columns:
-        82px
-        minmax(180px, 1fr)
-        120px
+        90px
+        minmax(150px, 1fr)
+        100px
         auto;
+      gap: 16px;
       align-items: center;
-      gap: 18px;
     }
 
     .judge-header {
-      min-height: 40px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
+      padding: 0 0 10px;
       border-bottom: 1px solid var(--line);
     }
 
     .judge-row {
-      min-height: 57px;
+      padding: 13px 0;
       border-bottom: 1px solid var(--line);
     }
 
     .judge-slot {
       font-weight: 750;
-      color: #d9dbe0;
-    }
-
-    .judge-name {
-      font-weight: 600;
     }
 
     .judge-status {
       text-align: right;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 750;
     }
 
@@ -397,49 +253,67 @@
       display: flex;
       justify-content: flex-end;
       gap: 7px;
+      flex-wrap: wrap;
     }
-
-    .loading {
-      color: var(--muted);
-      padding: 20px 0;
-    }
-
 
     /* =========================================================
-       JUDGE EDITOR
+       EDITOR
        ========================================================= */
 
-    .judge-editor {
-      margin-top: 16px;
-      padding: 18px;
-      background: rgba(0, 0, 0, .14);
-      border: 1px solid var(--line);
-      border-radius: 12px;
+    .editor {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
     }
 
-    .judge-editor h3 {
-      margin: 0 0 14px;
-      font-size: 17px;
+    .form-row {
+      display: grid;
+      grid-template-columns:
+        minmax(150px, 1fr)
+        minmax(280px, 1.7fr);
+      align-items: center;
+      gap: 18px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
     }
 
-    .judge-editor .form-row {
-      grid-template-columns: 150px 1fr;
+    input,
+    select {
+      width: 100%;
+      background: #202127;
+      border: 1px solid #3a3c45;
+      border-radius: 8px;
+      padding: 11px 12px;
+      color: var(--text);
+      font: inherit;
     }
 
+    input:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--green);
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
 
     /* =========================================================
-       MODAL
+       MODALS
        ========================================================= */
 
     .modal {
       position: fixed;
       inset: 0;
-      z-index: 1000;
+      background: rgba(0, 0, 0, .75);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
-      background: rgba(0, 0, 0, .72);
+      z-index: 1000;
     }
 
     .modal.show {
@@ -448,60 +322,40 @@
 
     .modal-card {
       width: min(420px, 100%);
-      background: #1b1c22;
-      border: 1px solid #363841;
+      background: #18191e;
       border-radius: 16px;
-      padding: 22px;
-      box-shadow:
-        0 20px 70px rgba(0, 0, 0, .5);
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .55);
     }
 
     .modal-card h3 {
-      margin: 0 0 6px;
-      font-size: 20px;
+      margin: 0 0 8px;
     }
 
-    .modal-subtitle {
+    .modal-card p {
+      margin: 0 0 18px;
       color: var(--muted);
-      margin-bottom: 18px;
-      font-size: 14px;
     }
 
-    .modal-card input {
-      margin-top: 8px;
-    }
-
-    #qrModal .modal-card {
-      text-align: center;
-    }
-
-    #qrImage {
-      display: block;
-      width: min(250px, 100%);
-      aspect-ratio: 1;
-      margin: 0 auto 18px;
-      padding: 10px;
-      background: #fff;
-      border-radius: 10px;
-    }
-
-    .modal-actions {
+    .qr-wrap {
+      background: white;
+      padding: 14px;
+      border-radius: 12px;
       display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
+      justify-content: center;
+      margin-bottom: 18px;
     }
 
-
-    /* =========================================================
-       MOBILE
-       ========================================================= */
+    .qr-wrap img {
+      width: min(280px, 100%);
+      height: auto;
+      display: block;
+    }
 
     @media (max-width: 700px) {
 
       .page {
         width: min(100% - 24px, 1120px);
-        padding-top: 14px;
       }
 
       h1 {
@@ -509,7 +363,7 @@
       }
 
       .panel {
-        padding: 18px 15px 8px;
+        padding: 18px 15px;
       }
 
       .info-row {
@@ -522,16 +376,10 @@
         grid-column: 2;
       }
 
-      .row-actions {
+      .row-actions,
+      .scoreboard-actions {
         grid-column: 1 / -1;
         justify-content: flex-end;
-        padding-bottom: 2px;
-      }
-
-      .form-row {
-        grid-template-columns: 1fr;
-        gap: 7px;
-        padding: 13px 0;
       }
 
       .judge-header,
@@ -549,24 +397,12 @@
 
       .judge-actions {
         grid-column: 1 / -1;
-        justify-content: flex-end;
-        padding-bottom: 10px;
+        padding-bottom: 5px;
       }
 
-      .judge-row {
-        padding: 10px 0 0;
-      }
-
-      .judge-status {
-        font-size: 12px;
-      }
-
-      .competition-actions {
-        padding-bottom: 18px;
-      }
-
-      .competition-actions button {
-        width: 100%;
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 7px;
       }
 
       .form-actions {
@@ -577,15 +413,10 @@
         flex: 1;
       }
 
-      .judge-editor .form-row {
-        grid-template-columns: 1fr;
-      }
-
     }
 
   </style>
 </head>
-
 
 <body>
 
@@ -598,19 +429,56 @@
 
     <div id="pageError" class="error"></div>
 
-
     <div id="adminContent" class="hidden">
 
       <!-- =====================================================
+           LIVE SCOREBOARD VIEW
+           ===================================================== -->
+
+      <section class="panel">
+
+        <h2>🏆 LIVE Scoreboard View</h2>
+
+        <div class="info-row">
+          <div class="label">
+            Public Scoreboard
+          </div>
+
+          <div
+            class="value"
+            id="liveScoreboardStatus">
+            Loading...
+          </div>
+
+          <div class="scoreboard-actions">
+            <button
+              type="button"
+              class="button-copy button-small"
+              id="copyLiveScoreboardButton"
+              disabled>
+              Copy URL
+            </button>
+
+            <button
+              type="button"
+              class="button-qr button-small"
+              id="showLiveScoreboardQRButton"
+              disabled>
+              View QR Code
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
            COMPETITION
-           ====================================================== -->
+           ===================================================== -->
 
       <section class="panel">
 
         <h2>Competition</h2>
-
-
-        <!-- EVENT NAME -->
 
         <div class="info-row">
           <div class="label">Event Name</div>
@@ -618,17 +486,11 @@
           <div></div>
         </div>
 
-
-        <!-- LOCATION -->
-
         <div class="info-row">
           <div class="label">Location</div>
           <div class="value" id="eventLocation">—</div>
           <div></div>
         </div>
-
-
-        <!-- CURRENT ROUND -->
 
         <div class="info-row">
           <div class="label">Current Round</div>
@@ -644,9 +506,6 @@
           </div>
         </div>
 
-
-        <!-- ROUND STATUS -->
-
         <div class="info-row">
           <div class="label">Round Status</div>
           <div class="value" id="roundStatus">—</div>
@@ -660,9 +519,6 @@
             </button>
           </div>
         </div>
-
-
-        <!-- PANEL INSIGHTS -->
 
         <div class="info-row">
           <div class="label">Panel Insights</div>
@@ -678,9 +534,6 @@
           </div>
         </div>
 
-
-        <!-- LIVE TOKEN -->
-
         <div class="info-row">
           <div class="label">LiveToken</div>
           <div class="value" id="liveToken">—</div>
@@ -695,78 +548,9 @@
           </div>
         </div>
 
-
-        <!-- EVENT / LOCATION EDIT -->
-
-        <div class="competition-actions">
-          <button
-            type="button"
-            class="button-edit"
-            id="editCompetitionButton">
-            Edit Competition Details
-          </button>
-        </div>
-
-
         <div
           id="competitionSuccess"
           class="message">
-        </div>
-
-
-        <!-- COMPETITION EDITOR -->
-
-        <div
-          id="competitionEditMode"
-          class="edit-form hidden">
-
-          <div class="form-row">
-            <label
-              class="label"
-              for="eventNameInput">
-              Event Name
-            </label>
-
-            <input
-              id="eventNameInput"
-              type="text"
-              autocomplete="off">
-          </div>
-
-          <div class="form-row">
-            <label
-              class="label"
-              for="eventLocationInput">
-              Location
-            </label>
-
-            <input
-              id="eventLocationInput"
-              type="text"
-              autocomplete="off">
-          </div>
-
-          <div class="form-actions">
-            <button
-              type="button"
-              class="button-cancel"
-              id="cancelCompetitionButton">
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              class="button-save"
-              id="saveCompetitionButton">
-              Save Changes
-            </button>
-          </div>
-
-          <div
-            id="competitionSaveMessage"
-            class="message">
-          </div>
-
         </div>
 
       </section>
@@ -774,67 +558,52 @@
 
       <!-- =====================================================
            JUDGES
-           ====================================================== -->
+           ===================================================== -->
 
       <section class="panel">
 
         <h2>Judges</h2>
 
         <div class="judge-header">
-          <div>Judge Slot</div>
+          <div>Slot</div>
           <div>Judge Name</div>
-          <div style="text-align:right;">Status</div>
+          <div>Status</div>
           <div></div>
         </div>
 
-        <div
-          id="judges"
-          class="loading">
+        <div id="judges">
           Loading judges...
         </div>
 
-
-        <!-- JUDGE EDITOR -->
-
         <div
           id="judgeEditor"
-          class="judge-editor hidden">
+          class="editor hidden">
 
           <h3 id="judgeEditorTitle">
             Edit Judge
           </h3>
 
           <div class="form-row">
-            <label
-              class="label"
-              for="judgeNameInput">
+            <label for="judgeNameInput">
               Judge Name
             </label>
-
             <input
               id="judgeNameInput"
-              type="text"
-              autocomplete="off">
+              type="text">
           </div>
 
           <div class="form-row">
-            <label
-              class="label"
-              for="judgeTokenInput">
+            <label for="judgeTokenInput">
               Judge Token
             </label>
-
             <input
               id="judgeTokenInput"
-              type="text"
-              autocomplete="off">
+              type="text">
           </div>
 
           <div class="form-row">
-            <label
-              class="label"
-              for="judgeActiveInput">
-              Status
+            <label for="judgeActiveInput">
+              Judge Status
             </label>
 
             <select id="judgeActiveInput">
@@ -844,19 +613,16 @@
           </div>
 
           <div class="form-row">
-            <label
-              class="label"
-              for="scoreboardIDInput">
-              Judge Slot
+            <label for="scoreboardIDInput">
+              Judge Slot / Scoreboard ID
             </label>
-
             <input
               id="scoreboardIDInput"
-              type="text"
-              autocomplete="off">
+              type="text">
           </div>
 
           <div class="form-actions">
+
             <button
               type="button"
               class="button-cancel"
@@ -870,6 +636,7 @@
               id="saveJudgeButton">
               Save Judge
             </button>
+
           </div>
 
           <div
@@ -886,30 +653,80 @@
   </main>
 
 
-  <!-- =========================================================
-       EDIT VALUE MODAL
-       ========================================================== -->
+  <!-- =======================================================
+       QR CODE MODAL
+       ======================================================== -->
 
   <div
-    id="editValueModal"
-    class="modal"
-    role="dialog"
-    aria-modal="true">
+    id="qrModal"
+    class="modal">
 
     <div class="modal-card">
 
-      <h3 id="editValueTitle">Edit</h3>
+      <h3 id="qrTitle">
+        QR Code
+      </h3>
 
-      <div class="modal-subtitle" id="editValueSubtitle">
-        Update this setting.
+      <p id="qrSubtitle">
+        Scan this QR code to open the page.
+      </p>
+
+      <div class="qr-wrap">
+        <img
+          id="qrImage"
+          alt="QR Code">
       </div>
+
+      <div class="form-actions">
+
+        <button
+          type="button"
+          class="button-copy"
+          id="copyQRUrlButton">
+          Copy URL
+        </button>
+
+        <button
+          type="button"
+          class="button-cancel"
+          id="closeQrButton">
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =======================================================
+       VALUE EDITOR MODAL
+       ======================================================== -->
+
+  <div
+    id="editValueModal"
+    class="modal">
+
+    <div class="modal-card">
+
+      <h3 id="editValueTitle">
+        Edit Value
+      </h3>
+
+      <p id="editValueSubtitle"></p>
 
       <input
         id="editValueInput"
-        type="text"
-        autocomplete="off">
+        type="text">
 
-      <div class="modal-actions">
+      <div
+        id="editValueMessage"
+        class="message">
+      </div>
+
+      <div class="form-actions">
+
         <button
           type="button"
           class="button-cancel"
@@ -923,47 +740,7 @@
           id="saveEditValueButton">
           Save
         </button>
-      </div>
 
-      <div
-        id="editValueMessage"
-        class="message">
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- =========================================================
-       QR MODAL
-       ========================================================== -->
-
-  <div
-    id="qrModal"
-    class="modal"
-    role="dialog"
-    aria-modal="true">
-
-    <div class="modal-card">
-
-      <h3 id="qrTitle">Judge QR Code</h3>
-
-      <div class="modal-subtitle">
-        Scan to open the judge panel
-      </div>
-
-      <img
-        id="qrImage"
-        alt="Judge QR Code">
-
-      <div class="modal-actions">
-        <button
-          type="button"
-          class="button-cancel"
-          id="closeQrButton">
-          Close
-        </button>
       </div>
 
     </div>
@@ -975,7 +752,7 @@
 
     /* =========================================================
        CONFIGURATION
-       ========================================================== */
+       ========================================================= */
 
     const SHEET_ID =
       "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
@@ -986,13 +763,16 @@
     const JUDGES_GID =
       "1213944419";
 
+    const URLS_GID =
+      "1750768877";
+
     const APPS_SCRIPT_URL =
       "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
 
 
     /* =========================================================
        AUTHENTICATION
-       ========================================================== */
+       ========================================================= */
 
     const params =
       new URLSearchParams(
@@ -1005,20 +785,20 @@
 
     /* =========================================================
        PAGE STATE
-       ========================================================== */
+       ========================================================= */
 
     let currentConfig = {};
-    let currentEventName = "";
-    let currentLocation = "";
     let currentJudges = [];
     let editingJudgeRow = null;
-
     let editingConfigField = null;
+
+    let liveScoreboardURL = "";
+    let currentQRUrl = "";
 
 
     /* =========================================================
        HELPERS
-       ========================================================== */
+       ========================================================= */
 
     function sleep(milliseconds) {
       return new Promise(resolve => {
@@ -1045,14 +825,18 @@
         return String(cell.v);
       }
 
-      if (
-        cell.f !== null &&
-        cell.f !== undefined
-      ) {
-        return String(cell.f);
-      }
-
       return "";
+    }
+
+
+    function escapeHtml(value) {
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
 
@@ -1092,19 +876,21 @@
 
     /* =========================================================
        READ GOOGLE SHEETS
-       ========================================================== */
+       ========================================================= */
 
     async function getSheetData(gid) {
 
-      const cacheBuster = Date.now();
+      const cacheBuster =
+        Date.now();
 
       const url =
         `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${cacheBuster}`;
 
       const response =
-        await fetch(url, {
-          cache: "no-store"
-        });
+        await fetch(
+          url,
+          { cache: "no-store" }
+        );
 
       if (!response.ok) {
         throw new Error(
@@ -1138,7 +924,7 @@
 
     /* =========================================================
        SEND ADMIN ACTION
-       ========================================================== */
+       ========================================================= */
 
     async function sendAdminAction(data) {
 
@@ -1180,8 +966,212 @@
 
 
     /* =========================================================
+       LIVE SCOREBOARD URL
+
+       This reads only URLS!B4.
+       Nothing in this section writes to the spreadsheet.
+       ========================================================= */
+
+    async function loadLiveScoreboardURL() {
+
+      const status =
+        document.getElementById(
+          "liveScoreboardStatus"
+        );
+
+      const copyButton =
+        document.getElementById(
+          "copyLiveScoreboardButton"
+        );
+
+      const qrButton =
+        document.getElementById(
+          "showLiveScoreboardQRButton"
+        );
+
+      status.textContent =
+        "Loading...";
+
+      copyButton.disabled = true;
+      qrButton.disabled = true;
+
+      try {
+
+        const sheetData =
+          await getSheetData(
+            URLS_GID
+          );
+
+        /*
+           URLS!B4 means:
+           spreadsheet row 4
+           column B
+
+           Google Visualization row index 3,
+           column index 1.
+        */
+
+        const row =
+          sheetData.table.rows[3];
+
+        const cell =
+          row &&
+          row.c
+            ? row.c[1]
+            : null;
+
+        liveScoreboardURL =
+          normalise(
+            getCellValue(cell)
+          );
+
+        if (!liveScoreboardURL) {
+          status.textContent =
+            "No Live Scoreboard URL found.";
+          return;
+        }
+
+        status.textContent =
+          "Ready";
+
+        copyButton.disabled = false;
+        qrButton.disabled = false;
+
+      } catch (error) {
+
+        liveScoreboardURL = "";
+
+        status.textContent =
+          "Could not load URL.";
+
+      }
+    }
+
+
+    /* =========================================================
+       COPY TO CLIPBOARD
+       ========================================================= */
+
+    async function copyText(text) {
+
+      if (!text) {
+        return false;
+      }
+
+      try {
+
+        if (
+          navigator.clipboard &&
+          window.isSecureContext
+        ) {
+          await navigator.clipboard.writeText(
+            text
+          );
+          return true;
+        }
+
+        const textarea =
+          document.createElement(
+            "textarea"
+          );
+
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+
+        document.body.appendChild(
+          textarea
+        );
+
+        textarea.select();
+
+        const success =
+          document.execCommand(
+            "copy"
+          );
+
+        textarea.remove();
+
+        return success;
+
+      } catch (error) {
+        return false;
+      }
+    }
+
+
+    function flashButton(button, text) {
+
+      const original =
+        button.textContent;
+
+      button.textContent =
+        text;
+
+      setTimeout(() => {
+        button.textContent =
+          original;
+      }, 1400);
+    }
+
+
+    /* =========================================================
+       LIVE SCOREBOARD BUTTONS
+       ========================================================= */
+
+    document
+      .getElementById(
+        "copyLiveScoreboardButton"
+      )
+      .addEventListener(
+        "click",
+        async event => {
+
+          const copied =
+            await copyText(
+              liveScoreboardURL
+            );
+
+          if (copied) {
+            flashButton(
+              event.currentTarget,
+              "Copied!"
+            );
+          } else {
+            alert(
+              "Could not copy the Live Scoreboard URL."
+            );
+          }
+
+        }
+      );
+
+
+    document
+      .getElementById(
+        "showLiveScoreboardQRButton"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          if (!liveScoreboardURL) {
+            return;
+          }
+
+          showQRCode(
+            "LIVE Scoreboard View",
+            liveScoreboardURL,
+            "Scan this code to open the live public scoreboard."
+          );
+
+        }
+      );
+
+
+    /* =========================================================
        LOAD EVENT CONFIG
-       ========================================================== */
+       ========================================================= */
 
     async function loadEventConfig() {
 
@@ -1192,48 +1182,53 @@
 
       const cfg = {};
 
-      sheetData.table.rows.forEach(row => {
+      sheetData.table.rows.forEach(
+        row => {
 
-        if (
-          !row.c ||
-          row.c.length < 2
-        ) {
-          return;
+          if (
+            !row.c ||
+            row.c.length < 2
+          ) {
+            return;
+          }
+
+          const key =
+            normalise(
+              getCellValue(row.c[0])
+            );
+
+          const value =
+            normalise(
+              getCellValue(row.c[1])
+            );
+
+          if (key) {
+            cfg[key] = value;
+          }
+
         }
+      );
 
-        const key =
-          normalise(
-            getCellValue(row.c[0])
-          );
-
-        const value =
-          normalise(
-            getCellValue(row.c[1])
-          );
-
-        if (key) {
-          cfg[key] = value;
-        }
-
-      });
+      if (
+        !adminToken ||
+        cfg.AdminToken !== adminToken
+      ) {
+        throw new Error(
+          "Access denied."
+        );
+      }
 
       currentConfig = cfg;
-
-      currentEventName =
-        cfg.EventName || "";
-
-      currentLocation =
-        cfg.Location || "";
 
       document
         .getElementById("eventName")
         .textContent =
-          currentEventName || "—";
+          cfg.EventName || "—";
 
       document
         .getElementById("eventLocation")
         .textContent =
-          currentLocation || "—";
+          cfg.Location || "—";
 
       document
         .getElementById("eventRound")
@@ -1242,104 +1237,32 @@
           cfg.Round ||
           "—";
 
-      setRoundStatus(
-        cfg.RoundStatus ||
-        cfg.RoundOpen ||
-        ""
-      );
-
-      setPanelInsights(
-        cfg.PanelInsights ||
-        cfg.Insights ||
-        ""
-      );
-
       document
         .getElementById("liveToken")
         .textContent =
           cfg.LiveToken || "—";
 
-      updateControlButtons();
-    }
-
-
-    function setRoundStatus(value) {
-
-      const element =
+      const roundStatus =
         document.getElementById(
           "roundStatus"
         );
 
-      const raw =
-        normalise(value).toUpperCase();
+      roundStatus.innerHTML =
+        isRoundOpen()
+          ? `<span class="status open">OPEN</span>`
+          : `<span class="status closed">CLOSED</span>`;
 
-      element.className = "value";
-
-      if (
-        raw === "OPEN" ||
-        raw === "YES" ||
-        raw === "TRUE"
-      ) {
-        element.innerHTML =
-          `<span class="status open">
-            <span class="status-dot"></span>
-            OPEN
-          </span>`;
-
-      } else if (
-        raw === "CLOSED" ||
-        raw === "NO" ||
-        raw === "FALSE"
-      ) {
-        element.innerHTML =
-          `<span class="status closed">
-            <span class="status-dot"></span>
-            CLOSED
-          </span>`;
-
-      } else {
-        element.textContent =
-          value || "—";
-      }
-    }
-
-
-    function setPanelInsights(value) {
-
-      const element =
+      const panelInsights =
         document.getElementById(
           "panelInsights"
         );
 
-      const raw =
-        normalise(value).toUpperCase();
+      panelInsights.innerHTML =
+        isPanelInsightsOn()
+          ? `<span class="status yes">ON</span>`
+          : `<span class="status no">OFF</span>`;
 
-      element.className = "value";
-
-      if (
-        raw === "ON" ||
-        raw === "YES" ||
-        raw === "TRUE"
-      ) {
-        element.innerHTML =
-          `<span class="status yes">
-            ON
-          </span>`;
-
-      } else if (
-        raw === "OFF" ||
-        raw === "NO" ||
-        raw === "FALSE"
-      ) {
-        element.innerHTML =
-          `<span class="status no">
-            OFF
-          </span>`;
-
-      } else {
-        element.textContent =
-          value || "—";
-      }
+      updateControlButtons();
     }
 
 
@@ -1353,18 +1276,14 @@
       if (isRoundOpen()) {
         roundButton.textContent =
           "Close Round";
-
         roundButton.className =
           "button-close button-small";
-
       } else {
         roundButton.textContent =
           "Open Round";
-
         roundButton.className =
           "button-open button-small";
       }
-
 
       const insightsButton =
         document.getElementById(
@@ -1374,14 +1293,11 @@
       if (isPanelInsightsOn()) {
         insightsButton.textContent =
           "Turn OFF";
-
         insightsButton.className =
           "button-off button-small";
-
       } else {
         insightsButton.textContent =
           "Turn ON";
-
         insightsButton.className =
           "button-on button-small";
       }
@@ -1389,8 +1305,8 @@
 
 
     /* =========================================================
-       CONFIG SAVE
-       ========================================================== */
+       SAVE EVENT CONTROLS
+       ========================================================= */
 
     async function saveEventControls(
       updates,
@@ -1432,7 +1348,6 @@
           panelInsights,
           liveToken
         });
-
 
         let saved = false;
 
@@ -1481,9 +1396,16 @@
           );
         }
 
-        showCompetitionSuccess(
-          "Settings saved successfully."
-        );
+        const message =
+          document.getElementById(
+            "competitionSuccess"
+          );
+
+        message.textContent =
+          "Settings saved successfully.";
+
+        message.className =
+          "message success";
 
         return true;
 
@@ -1510,22 +1432,9 @@
     }
 
 
-    function showCompetitionSuccess(text) {
-
-      const success =
-        document.getElementById(
-          "competitionSuccess"
-        );
-
-      success.textContent = text;
-      success.className =
-        "message success";
-    }
-
-
     /* =========================================================
        CURRENT ROUND
-       ========================================================== */
+       ========================================================= */
 
     document
       .getElementById("editRoundButton")
@@ -1547,8 +1456,8 @@
 
 
     /* =========================================================
-       ROUND OPEN / CLOSE
-       ========================================================== */
+       ROUND STATUS
+       ========================================================= */
 
     document
       .getElementById("roundStatusButton")
@@ -1564,14 +1473,13 @@
               ? "CLOSED"
               : "OPEN";
 
-          const actionText =
-            newStatus === "OPEN"
-              ? "open"
-              : "close";
-
           if (
             !confirm(
-              `Are you sure you want to ${actionText} the round?`
+              `Are you sure you want to ${
+                newStatus === "OPEN"
+                  ? "open"
+                  : "close"
+              } the round?`
             )
           ) {
             return;
@@ -1590,8 +1498,8 @@
 
 
     /* =========================================================
-       PANEL INSIGHTS ON / OFF
-       ========================================================== */
+       PANEL INSIGHTS
+       ========================================================= */
 
     document
       .getElementById("panelInsightsButton")
@@ -1621,7 +1529,7 @@
 
     /* =========================================================
        LIVE TOKEN
-       ========================================================== */
+       ========================================================= */
 
     document
       .getElementById("editLiveTokenButton")
@@ -1642,7 +1550,7 @@
 
     /* =========================================================
        GENERIC VALUE EDITOR
-       ========================================================== */
+       ========================================================= */
 
     function openValueEditor(
       field,
@@ -1703,288 +1611,63 @@
       .getElementById("saveEditValueButton")
       .addEventListener(
         "click",
-        saveEditedValue
-      );
+        async () => {
 
+          const value =
+            document
+              .getElementById(
+                "editValueInput"
+              )
+              .value
+              .trim();
 
-    async function saveEditedValue() {
+          const message =
+            document.getElementById(
+              "editValueMessage"
+            );
 
-      const value =
-        document
-          .getElementById("editValueInput")
-          .value
-          .trim();
+          if (!value) {
+            message.textContent =
+              "This value cannot be empty.";
+            return;
+          }
 
-      const saveButton =
-        document.getElementById(
-          "saveEditValueButton"
-        );
-
-      const message =
-        document.getElementById(
-          "editValueMessage"
-        );
-
-      message.textContent = "";
-
-      if (!value) {
-        message.textContent =
-          "This value cannot be empty.";
-        message.className =
-          "message error";
-        return;
-      }
-
-      let updates = {};
-
-      if (
-        editingConfigField ===
-        "currentRound"
-      ) {
-        updates.currentRound = value;
-      }
-
-      if (
-        editingConfigField ===
-        "liveToken"
-      ) {
-        updates.liveToken = value;
-      }
-
-      const saved =
-        await saveEventControls(
-          updates,
-          saveButton,
-          "Save"
-        );
-
-      if (saved) {
-        closeValueEditor();
-      }
-    }
-
-
-    /* =========================================================
-       COMPETITION EDIT MODE
-       ========================================================== */
-
-    document
-      .getElementById(
-        "editCompetitionButton"
-      )
-      .addEventListener(
-        "click",
-        () => {
-
-          document
-            .getElementById(
-              "eventNameInput"
-            )
-            .value =
-              currentEventName;
-
-          document
-            .getElementById(
-              "eventLocationInput"
-            )
-            .value =
-              currentLocation;
-
-          document
-            .getElementById(
-              "competitionSaveMessage"
-            )
-            .textContent = "";
-
-          document
-            .getElementById(
-              "competitionSuccess"
-            )
-            .textContent = "";
-
-          document
-            .getElementById(
-              "competitionEditMode"
-            )
-            .classList.remove("hidden");
-
-          document
-            .getElementById(
-              "eventNameInput"
-            )
-            .focus();
-
-        }
-      );
-
-
-    document
-      .getElementById(
-        "cancelCompetitionButton"
-      )
-      .addEventListener(
-        "click",
-        closeCompetitionEditor
-      );
-
-
-    function closeCompetitionEditor() {
-
-      document
-        .getElementById(
-          "competitionEditMode"
-        )
-        .classList.add("hidden");
-
-      document
-        .getElementById(
-          "competitionSaveMessage"
-        )
-        .textContent = "";
-    }
-
-
-    document
-      .getElementById(
-        "saveCompetitionButton"
-      )
-      .addEventListener(
-        "click",
-        saveCompetition
-      );
-
-
-    async function saveCompetition() {
-
-      const newEventName =
-        document
-          .getElementById(
-            "eventNameInput"
-          )
-          .value
-          .trim();
-
-      const newLocation =
-        document
-          .getElementById(
-            "eventLocationInput"
-          )
-          .value
-          .trim();
-
-      const saveButton =
-        document.getElementById(
-          "saveCompetitionButton"
-        );
-
-      const message =
-        document.getElementById(
-          "competitionSaveMessage"
-        );
-
-      message.textContent = "";
-      message.className = "message";
-
-      if (!newEventName) {
-        showCompetitionError(
-          "Event Name cannot be empty."
-        );
-        return;
-      }
-
-      if (!newLocation) {
-        showCompetitionError(
-          "Location cannot be empty."
-        );
-        return;
-      }
-
-      saveButton.disabled = true;
-      saveButton.textContent = "Saving...";
-
-      try {
-
-        await sendAdminAction({
-          action:
-            "updateCompetitionDetails",
-          adminToken,
-          eventName:
-            newEventName,
-          location:
-            newLocation
-        });
-
-
-        let saved = false;
-
-        for (
-          let attempt = 0;
-          attempt < 5;
-          attempt++
-        ) {
-
-          await sleep(1000);
-
-          await loadEventConfig();
+          let updates = {};
 
           if (
-            currentEventName ===
-              newEventName &&
-            currentLocation ===
-              newLocation
+            editingConfigField ===
+            "currentRound"
           ) {
-            saved = true;
-            break;
+            updates.currentRound = value;
           }
+
+          if (
+            editingConfigField ===
+            "liveToken"
+          ) {
+            updates.liveToken = value;
+          }
+
+          const saved =
+            await saveEventControls(
+              updates,
+              document.getElementById(
+                "saveEditValueButton"
+              ),
+              "Save"
+            );
+
+          if (saved) {
+            closeValueEditor();
+          }
+
         }
-
-        if (!saved) {
-          throw new Error(
-            "The sheet did not confirm the changes."
-          );
-        }
-
-        closeCompetitionEditor();
-
-        showCompetitionSuccess(
-          "Competition details saved successfully."
-        );
-
-      } catch (error) {
-
-        showCompetitionError(
-          "Could not save changes: " +
-          (
-            error.message ||
-            String(error)
-          )
-        );
-
-      } finally {
-
-        saveButton.disabled = false;
-        saveButton.textContent =
-          "Save Changes";
-      }
-    }
-
-
-    function showCompetitionError(text) {
-
-      const message =
-        document.getElementById(
-          "competitionSaveMessage"
-        );
-
-      message.textContent = text;
-      message.className =
-        "message error";
-    }
+      );
 
 
     /* =========================================================
        LOAD JUDGES
-       ========================================================== */
+       ========================================================= */
 
     async function loadJudges() {
 
@@ -2003,11 +1686,11 @@
       sheetData.table.rows.forEach(
         (row, index) => {
 
-          if (index === 0) {
-            return;
-          }
+          /*
+             Row 1 is the header.
+          */
 
-          if (!row.c) {
+          if (index === 0 || !row.c) {
             return;
           }
 
@@ -2036,20 +1719,27 @@
               getCellValue(row.c[4])
             );
 
+          /*
+             Completely empty records are not shown.
+             This prevents phantom INACTIVE judges.
+          */
+
           if (
-            name ||
-            token ||
-            scoreboardID
+            !name &&
+            !token &&
+            !scoreboardID
           ) {
-            judges.push({
-              sheetRow: index + 1,
-              name,
-              token,
-              active,
-              scoreboardID,
-              judgeUrl
-            });
+            return;
           }
+
+          judges.push({
+            sheetRow: index + 1,
+            name,
+            token,
+            active,
+            scoreboardID,
+            judgeUrl
+          });
 
         }
       );
@@ -2059,10 +1749,8 @@
       container.innerHTML = "";
 
       if (!judges.length) {
-        container.innerHTML =
-          `<div class="loading">
-            No judges found.
-          </div>`;
+        container.textContent =
+          "No judges found.";
         return;
       }
 
@@ -2081,18 +1769,12 @@
             judge.active === "TRUE"
           );
 
-        const statusText =
-          isActive
-            ? "ACTIVE"
-            : "INACTIVE";
-
-        const slot =
-          judge.scoreboardID ||
-          `J${judge.sheetRow - 1}`;
-
         row.innerHTML = `
           <div class="judge-slot">
-            ${escapeHtml(slot)}
+            ${escapeHtml(
+              judge.scoreboardID ||
+              `J${judge.sheetRow - 1}`
+            )}
           </div>
 
           <div class="judge-name">
@@ -2107,7 +1789,11 @@
                 ? "active"
                 : "inactive"
             }">
-              ${statusText}
+              ${
+                isActive
+                  ? "ACTIVE"
+                  : "INACTIVE"
+              }
             </span>
           </div>
 
@@ -2137,23 +1823,50 @@
         const buttons =
           row.querySelectorAll("button");
 
-        buttons[0]
-          .addEventListener(
-            "click",
-            () => copyJudgeUrl(judge)
-          );
+        buttons[0].disabled =
+          !judge.judgeUrl;
 
-        buttons[1]
-          .addEventListener(
-            "click",
-            () => showQr(judge)
-          );
+        buttons[1].disabled =
+          !judge.judgeUrl;
 
-        buttons[2]
-          .addEventListener(
-            "click",
-            () => openJudgeEditor(judge)
-          );
+        buttons[0].addEventListener(
+          "click",
+          async event => {
+
+            const copied =
+              await copyText(
+                judge.judgeUrl
+              );
+
+            if (copied) {
+              flashButton(
+                event.currentTarget,
+                "Copied!"
+              );
+            }
+
+          }
+        );
+
+        buttons[1].addEventListener(
+          "click",
+          () => {
+
+            showQRCode(
+              judge.name ||
+                judge.scoreboardID ||
+                "Judge QR Code",
+              judge.judgeUrl,
+              "Scan this code to open the judge scoring page."
+            );
+
+          }
+        );
+
+        buttons[2].addEventListener(
+          "click",
+          () => openJudgeEditor(judge)
+        );
 
         container.appendChild(row);
 
@@ -2161,130 +1874,9 @@
     }
 
 
-    function escapeHtml(value) {
-
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-
-    /* =========================================================
-       COPY JUDGE URL
-       ========================================================== */
-
-    async function copyJudgeUrl(judge) {
-
-      const url =
-        judge.judgeUrl;
-
-      if (!url) {
-        alert(
-          "No Judge URL was found for this judge."
-        );
-        return;
-      }
-
-      try {
-
-        await navigator.clipboard.writeText(
-          url
-        );
-
-      } catch (error) {
-
-        const textarea =
-          document.createElement("textarea");
-
-        textarea.value = url;
-
-        document.body.appendChild(
-          textarea
-        );
-
-        textarea.select();
-
-        document.execCommand(
-          "copy"
-        );
-
-        textarea.remove();
-      }
-    }
-
-
-    /* =========================================================
-       QR CODE
-       ========================================================== */
-
-    function showQr(judge) {
-
-      if (!judge.judgeUrl) {
-        alert(
-          "No Judge URL was found for this judge."
-        );
-        return;
-      }
-
-      document
-        .getElementById("qrTitle")
-        .textContent =
-          judge.name ||
-          judge.scoreboardID ||
-          "Judge QR Code";
-
-      document
-        .getElementById("qrImage")
-        .src =
-          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=" +
-          encodeURIComponent(
-            judge.judgeUrl
-          );
-
-      document
-        .getElementById("qrModal")
-        .classList.add("show");
-    }
-
-
-    document
-      .getElementById("closeQrButton")
-      .addEventListener(
-        "click",
-        closeQr
-      );
-
-
-    document
-      .getElementById("qrModal")
-      .addEventListener(
-        "click",
-        event => {
-
-          if (
-            event.target.id === "qrModal"
-          ) {
-            closeQr();
-          }
-
-        }
-      );
-
-
-    function closeQr() {
-
-      document
-        .getElementById("qrModal")
-        .classList.remove("show");
-    }
-
-
     /* =========================================================
        JUDGE EDITOR
-       ========================================================== */
+       ========================================================= */
 
     function openJudgeEditor(judge) {
 
@@ -2296,58 +1888,46 @@
           "judgeEditorTitle"
         )
         .textContent =
-          `Edit ${judge.scoreboardID || "Judge"}`;
+          `Edit ${
+            judge.scoreboardID ||
+            "Judge"
+          }`;
 
       document
-        .getElementById(
-          "judgeNameInput"
-        )
+        .getElementById("judgeNameInput")
         .value =
           judge.name;
 
       document
-        .getElementById(
-          "judgeTokenInput"
-        )
+        .getElementById("judgeTokenInput")
         .value =
           judge.token;
 
       document
-        .getElementById(
-          "judgeActiveInput"
-        )
+        .getElementById("judgeActiveInput")
         .value =
           (
-            judge.active === "YES" ||
-            judge.active === "ACTIVE"
+            judge.active === "NO" ||
+            judge.active === "INACTIVE"
           )
-            ? "YES"
-            : "NO";
+            ? "NO"
+            : "YES";
 
       document
-        .getElementById(
-          "scoreboardIDInput"
-        )
+        .getElementById("scoreboardIDInput")
         .value =
           judge.scoreboardID;
 
       document
-        .getElementById(
-          "judgeSaveMessage"
-        )
-        .textContent =
-          "";
+        .getElementById("judgeSaveMessage")
+        .textContent = "";
 
       document
-        .getElementById(
-          "judgeEditor"
-        )
+        .getElementById("judgeEditor")
         .classList.remove("hidden");
 
       document
-        .getElementById(
-          "judgeEditor"
-        )
+        .getElementById("judgeEditor")
         .scrollIntoView({
           behavior: "smooth",
           block: "nearest"
@@ -2364,9 +1944,7 @@
           editingJudgeRow = null;
 
           document
-            .getElementById(
-              "judgeEditor"
-            )
+            .getElementById("judgeEditor")
             .classList.add("hidden");
 
         }
@@ -2377,193 +1955,235 @@
       .getElementById("saveJudgeButton")
       .addEventListener(
         "click",
-        saveJudge
-      );
+        async () => {
 
+          if (!editingJudgeRow) {
+            return;
+          }
 
-    async function saveJudge() {
+          const judgeName =
+            document
+              .getElementById("judgeNameInput")
+              .value
+              .trim();
 
-      const message =
-        document.getElementById(
-          "judgeSaveMessage"
-        );
+          const judgeToken =
+            document
+              .getElementById("judgeTokenInput")
+              .value
+              .trim();
 
-      const saveButton =
-        document.getElementById(
-          "saveJudgeButton"
-        );
+          const judgeActive =
+            document
+              .getElementById("judgeActiveInput")
+              .value
+              .trim();
 
-      const judgeName =
-        document
-          .getElementById(
-            "judgeNameInput"
-          )
-          .value
-          .trim();
+          const scoreboardID =
+            document
+              .getElementById("scoreboardIDInput")
+              .value
+              .trim();
 
-      const judgeToken =
-        document
-          .getElementById(
-            "judgeTokenInput"
-          )
-          .value
-          .trim();
+          const message =
+            document.getElementById(
+              "judgeSaveMessage"
+            );
 
-      const judgeActive =
-        document
-          .getElementById(
-            "judgeActiveInput"
-          )
-          .value;
-
-      const scoreboardID =
-        document
-          .getElementById(
-            "scoreboardIDInput"
-          )
-          .value
-          .trim();
-
-      message.textContent = "";
-      message.className = "message";
-
-      if (!judgeName) {
-        showJudgeError(
-          "Judge Name cannot be empty."
-        );
-        return;
-      }
-
-      if (!judgeToken) {
-        showJudgeError(
-          "Judge Token cannot be empty."
-        );
-        return;
-      }
-
-      if (!scoreboardID) {
-        showJudgeError(
-          "Judge Slot cannot be empty."
-        );
-        return;
-      }
-
-      saveButton.disabled = true;
-      saveButton.textContent = "Saving...";
-
-      try {
-
-        await sendAdminAction({
-          action:
-            "updateJudgeDetails",
-          adminToken,
-          sheetRow:
-            editingJudgeRow,
-          judgeName,
-          judgeToken,
-          judgeActive,
-          scoreboardID
-        });
-
-
-        let saved = false;
-
-        for (
-          let attempt = 0;
-          attempt < 5;
-          attempt++
-        ) {
-
-          await sleep(1000);
-
-          await loadJudges();
-
-          const confirmed =
-            currentJudges.find(
-              judge =>
-                judge.sheetRow ===
-                editingJudgeRow
+          const saveButton =
+            document.getElementById(
+              "saveJudgeButton"
             );
 
           if (
-            confirmed &&
-            confirmed.name === judgeName &&
-            confirmed.token === judgeToken &&
-            (
-              confirmed.active ===
-                judgeActive ||
-              (
-                judgeActive === "YES" &&
-                confirmed.active === "ACTIVE"
-              )
-            ) &&
-            confirmed.scoreboardID ===
-              scoreboardID
+            !judgeName ||
+            !judgeToken ||
+            !scoreboardID
           ) {
-            saved = true;
-            break;
+            message.textContent =
+              "Judge Name, Judge Token and Scoreboard ID cannot be empty.";
+            return;
           }
+
+          saveButton.disabled = true;
+          saveButton.textContent =
+            "Saving...";
+
+          try {
+
+            await sendAdminAction({
+              action: "updateJudgeDetails",
+              adminToken,
+              sheetRow: editingJudgeRow,
+              judgeName,
+              judgeToken,
+              judgeActive,
+              scoreboardID
+            });
+
+            let saved = false;
+
+            for (
+              let attempt = 0;
+              attempt < 5;
+              attempt++
+            ) {
+
+              await sleep(1000);
+
+              await loadJudges();
+
+              const confirmed =
+                currentJudges.find(
+                  judge =>
+                    judge.sheetRow ===
+                    editingJudgeRow
+                );
+
+              if (
+                confirmed &&
+                confirmed.name === judgeName &&
+                confirmed.token === judgeToken &&
+                confirmed.scoreboardID === scoreboardID
+              ) {
+                saved = true;
+                break;
+              }
+            }
+
+            if (!saved) {
+              throw new Error(
+                "The sheet did not confirm the judge changes."
+              );
+            }
+
+            message.textContent =
+              "Judge details saved successfully.";
+
+            message.className =
+              "message success";
+
+            editingJudgeRow = null;
+
+            setTimeout(() => {
+              document
+                .getElementById("judgeEditor")
+                .classList.add("hidden");
+            }, 700);
+
+          } catch (error) {
+
+            message.textContent =
+              "Could not save judge: " +
+              (
+                error.message ||
+                String(error)
+              );
+
+          } finally {
+
+            saveButton.disabled = false;
+            saveButton.textContent =
+              "Save Judge";
+          }
+
         }
+      );
 
-        if (!saved) {
-          throw new Error(
-            "The sheet did not confirm the judge changes."
-          );
-        }
 
-        message.textContent =
-          "Judge details saved successfully.";
+    /* =========================================================
+       QR CODE
+       ========================================================= */
 
-        message.className =
-          "message success";
+    function showQRCode(
+      title,
+      url,
+      subtitle
+    ) {
 
-        editingJudgeRow = null;
-
-        setTimeout(() => {
-
-          document
-            .getElementById(
-              "judgeEditor"
-            )
-            .classList.add("hidden");
-
-        }, 800);
-
-      } catch (error) {
-
-        showJudgeError(
-          "Could not save judge: " +
-          (
-            error.message ||
-            String(error)
-          )
-        );
-
-      } finally {
-
-        saveButton.disabled = false;
-        saveButton.textContent =
-          "Save Judge";
+      if (!url) {
+        return;
       }
+
+      currentQRUrl = url;
+
+      document
+        .getElementById("qrTitle")
+        .textContent = title;
+
+      document
+        .getElementById("qrSubtitle")
+        .textContent = subtitle;
+
+      document
+        .getElementById("qrImage")
+        .src =
+          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=" +
+          encodeURIComponent(url);
+
+      document
+        .getElementById("qrModal")
+        .classList.add("show");
     }
 
 
-    function showJudgeError(text) {
+    function closeQRCode() {
 
-      const message =
-        document.getElementById(
-          "judgeSaveMessage"
-        );
-
-      message.textContent = text;
-      message.className =
-        "message error";
+      document
+        .getElementById("qrModal")
+        .classList.remove("show");
     }
+
+
+    document
+      .getElementById("closeQrButton")
+      .addEventListener(
+        "click",
+        closeQRCode
+      );
+
+
+    document
+      .getElementById("copyQRUrlButton")
+      .addEventListener(
+        "click",
+        async event => {
+
+          const copied =
+            await copyText(
+              currentQRUrl
+            );
+
+          if (copied) {
+            flashButton(
+              event.currentTarget,
+              "Copied!"
+            );
+          }
+
+        }
+      );
+
+
+    document
+      .getElementById("qrModal")
+      .addEventListener(
+        "click",
+        event => {
+
+          if (
+            event.target.id === "qrModal"
+          ) {
+            closeQRCode();
+          }
+
+        }
+      );
 
 
     /* =========================================================
        INITIAL LOAD
-       ========================================================== */
+       ========================================================= */
 
     async function initialise() {
 
@@ -2574,15 +2194,21 @@
 
       try {
 
+        /*
+           Event Config authenticates the admin page first.
+           The scoreboard URL is then read independently
+           from URLS!B4.
+        */
+
+        await loadEventConfig();
+
         await Promise.all([
-          loadEventConfig(),
-          loadJudges()
+          loadJudges(),
+          loadLiveScoreboardURL()
         ]);
 
         document
-          .getElementById(
-            "adminContent"
-          )
+          .getElementById("adminContent")
           .classList.remove("hidden");
 
       } catch (error) {
@@ -2603,4 +2229,3 @@
 
 </body>
 </html>
-
