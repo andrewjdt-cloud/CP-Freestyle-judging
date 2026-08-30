@@ -7,406 +7,439 @@
 <title>CP Freestyle – Competitor Management</title>
 
 <style>
-  :root {
-    --bg: #0b1018;
-    --panel: #141c28;
-    --panel2: #192231;
-    --border: #2a3748;
-    --text: #e8edf5;
-    --muted: #9ba9bb;
+:root {
+  --bg: #0b1018;
+  --panel: #141c28;
+  --panel2: #192231;
+  --border: #2a3748;
+  --text: #e8edf5;
+  --muted: #9ba9bb;
 
-    --green: #62c98d;
-    --blue: #77b7ef;
-    --purple: #d39bea;
-    --gold: #f2c866;
+  --green: #62c98d;
+  --blue: #77b7ef;
+  --purple: #d39bea;
+  --gold: #f2c866;
 
-    --round1: rgba(156, 82, 105, 0.45);
-    --round1b: rgba(104, 58, 75, 0.55);
+  --round1a: #563b49;
+  --round1b: #493541;
 
-    --round2: rgba(64, 105, 140, 0.55);
-    --round2b: rgba(50, 82, 111, 0.60);
+  --round2a: #334b62;
+  --round2b: #2c4155;
 
-    --round3: rgba(145, 103, 25, 0.55);
-    --round3b: rgba(104, 73, 18, 0.60);
+  --round3a: #60491c;
+  --round3b: #513d18;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.page {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 20px 24px 35px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 14px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 29px;
+  letter-spacing: 0.2px;
+}
+
+.subtitle {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.back-btn {
+  color: var(--text);
+  text-decoration: none;
+  background: #162130;
+  border: 1px solid #304055;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.back-btn:hover {
+  background: #202d3e;
+}
+
+/* =========================
+   EVENT SUMMARY
+========================= */
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.summary-item {
+  min-height: 68px;
+  padding: 13px 24px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.summary-icon {
+  font-size: 23px;
+}
+
+.summary-label {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 5px;
+}
+
+.summary-value {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* =========================
+   TOOLBAR
+========================= */
+
+.toolbar {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px 12px 0 0;
+  padding: 9px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+button {
+  color: var(--text);
+  background: #182433;
+  border: 1px solid #304055;
+  border-radius: 7px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.15);
+}
+
+.add-btn {
+  background: #195b43;
+  border-color: #2b7c5f;
+}
+
+.paste-btn {
+  background: #215588;
+  border-color: #3974ac;
+}
+
+.search-wrap {
+  margin-left: auto;
+}
+
+.search {
+  width: 220px;
+  padding: 10px 13px;
+  color: var(--text);
+  background: #0e151e;
+  border: 1px solid #304055;
+  border-radius: 7px;
+  outline: none;
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-wrap {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  padding: 8px;
+  overflow-x: auto;
+  position: relative;
+}
+
+table {
+  width: 100%;
+  min-width: 1570px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th,
+td {
+  border-right: 1px solid #2a3849;
+  border-bottom: 1px solid #2a3849;
+}
+
+th:last-child,
+td:last-child {
+  border-right: none;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+th {
+  background: #192331;
+  color: #d7e0eb;
+  padding: 11px 10px;
+  font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th.group {
+  text-align: center;
+  font-size: 13px;
+}
+
+th.round1 {
+  color: #e9b9c9;
+}
+
+th.round2 {
+  color: #afd3f3;
+}
+
+th.round3 {
+  color: #efd071;
+}
+
+td {
+  padding: 13px 10px;
+  font-size: 13px;
+  vertical-align: middle;
+}
+
+.drag {
+  width: 38px;
+  min-width: 38px;
+  text-align: center;
+  color: #8494a7;
+  font-size: 17px;
+}
+
+.order {
+  width: 80px;
+  min-width: 80px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.number {
+  width: 75px;
+  min-width: 75px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.name {
+  width: 190px;
+  min-width: 190px;
+  font-weight: bold;
+}
+
+/* Nice wide move columns */
+
+.move {
+  width: 180px;
+  min-width: 180px;
+  line-height: 1.35;
+  font-size: 13px;
+}
+
+.r1a { background: var(--round1a); }
+.r1b { background: var(--round1b); }
+
+.r2a { background: var(--round2a); }
+.r2b { background: var(--round2b); }
+
+.r3a { background: var(--round3a); }
+.r3b { background: var(--round3b); }
+
+/* =========================
+   STICKY ACTIONS COLUMN
+========================= */
+
+.actions {
+  width: 125px;
+  min-width: 125px;
+  text-align: center;
+  white-space: nowrap;
+  position: sticky;
+  right: 0;
+  z-index: 5;
+  background: #141c28;
+  box-shadow: -4px 0 10px rgba(0,0,0,0.20);
+}
+
+th.actions {
+  background: #192331;
+  z-index: 10;
+}
+
+.icon-btn {
+  width: 37px;
+  height: 34px;
+  padding: 0;
+  margin: 0 3px;
+  font-size: 15px;
+  background: #162230;
+}
+
+.delete-btn {
+  color: #ff7f7f;
+  border-color: #6a3030;
+}
+
+.delete-btn:hover {
+  background: #352020;
+}
+
+/* =========================
+   COMPLETED ROW
+========================= */
+
+.completed-row td {
+  background: #10251d !important;
+  color: #a9d9af;
+  border-top: 1px solid #317a4e;
+}
+
+.completed-row .actions {
+  background: #10251d !important;
+}
+
+.protected {
+  font-weight: bold;
+  font-size: 12px;
+  color: #a9d9af;
+}
+
+/* =========================
+   STATUS / HINT
+========================= */
+
+.status {
+  padding: 30px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.error {
+  color: #ff9898;
+}
+
+.hint {
+  padding: 14px 5px 3px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =========================
+   MODAL
+========================= */
+
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  width: min(650px, 92vw);
+  padding: 22px;
+  background: #151e2a;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+textarea {
+  width: 100%;
+  min-height: 230px;
+  padding: 12px;
+  resize: vertical;
+  background: #0d141d;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: monospace;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .summary {
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: Arial, Helvetica, sans-serif;
-  }
-
-  .page {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 24px;
-  }
-
-  /* HEADER */
 
   .topbar {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 20px;
-    margin-bottom: 18px;
+    flex-direction: column;
   }
-
-  h1 {
-    margin: 0;
-    font-size: 30px;
-    letter-spacing: 0.3px;
-  }
-
-  .subtitle {
-    color: var(--muted);
-    margin-top: 7px;
-    font-size: 15px;
-  }
-
-  .back-btn {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    color: var(--text);
-    padding: 12px 18px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 14px;
-    white-space: nowrap;
-  }
-
-  .back-btn:hover {
-    background: #202b3b;
-  }
-
-  /* EVENT SUMMARY */
-
-  .summary {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 14px;
-  }
-
-  .summary-item {
-    padding: 18px 24px;
-    min-height: 78px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .summary-icon {
-    font-size: 25px;
-    opacity: 0.9;
-  }
-
-  .summary-label {
-    color: var(--muted);
-    font-size: 12px;
-    margin-bottom: 5px;
-  }
-
-  .summary-value {
-    font-size: 15px;
-    font-weight: bold;
-  }
-
-  /* TOOLBAR */
 
   .toolbar {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px 12px 0 0;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
     flex-wrap: wrap;
   }
 
-  button {
-    border: 1px solid var(--border);
-    background: #1a2533;
-    color: var(--text);
-    padding: 11px 17px;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-  }
-
-  button:hover {
-    filter: brightness(1.15);
-  }
-
-  .add-btn {
-    background: #195b43;
-    border-color: #29795d;
-  }
-
-  .paste-btn {
-    background: #215588;
-    border-color: #3974ac;
-  }
-
   .search-wrap {
-    margin-left: auto;
+    margin-left: 0;
+    width: 100%;
   }
 
   .search {
-    width: 245px;
-    background: #0f1620;
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 11px 14px;
-    border-radius: 7px;
-    outline: none;
-  }
-
-  /* TABLE */
-
-  .table-wrap {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-radius: 0 0 12px 12px;
-    padding: 8px;
-    overflow-x: auto;
-  }
-
-  table {
     width: 100%;
-    min-width: 1400px;
-    border-collapse: separate;
-    border-spacing: 0;
-    overflow: hidden;
-    border: 1px solid var(--border);
-    border-radius: 8px;
   }
-
-  th {
-    background: #192331;
-    color: #d8e0eb;
-    font-size: 13px;
-    font-weight: bold;
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--border);
-    text-align: left;
-    white-space: nowrap;
-  }
-
-  th.group {
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-  }
-
-  th.round1 {
-    color: #f0c6d4;
-  }
-
-  th.round2 {
-    color: #b8d9f6;
-  }
-
-  th.round3 {
-    color: #f5d77b;
-  }
-
-  td {
-    padding: 14px 10px;
-    border-bottom: 1px solid #263445;
-    border-right: 1px solid #263445;
-    font-size: 14px;
-    vertical-align: middle;
-  }
-
-  tr:last-child td {
-    border-bottom: none;
-  }
-
-  .drag {
-    width: 40px;
-    text-align: center;
-    color: #8190a3;
-    font-size: 18px;
-    cursor: grab;
-  }
-
-  .order {
-    width: 80px;
-    text-align: center;
-    font-weight: bold;
-  }
-
-  .number {
-    width: 78px;
-    text-align: center;
-    font-weight: bold;
-  }
-
-  .name {
-    min-width: 210px;
-    font-weight: bold;
-  }
-
-  /* WIDER MOVE COLUMNS */
-
-  .move {
-    min-width: 165px;
-    width: 165px;
-    line-height: 1.35;
-    word-break: normal;
-  }
-
-  .r1a {
-    background: var(--round1);
-  }
-
-  .r1b {
-    background: var(--round1b);
-  }
-
-  .r2a {
-    background: var(--round2);
-  }
-
-  .r2b {
-    background: var(--round2b);
-  }
-
-  .r3a {
-    background: var(--round3);
-  }
-
-  .r3b {
-    background: var(--round3b);
-  }
-
-  .actions {
-    width: 130px;
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .icon-btn {
-    padding: 8px 10px;
-    margin: 0 2px;
-    background: #162231;
-  }
-
-  .delete-btn {
-    color: #ff7777;
-    border-color: #6e3030;
-  }
-
-  /* COMPLETED */
-
-  .completed-row td {
-    background: #10251d !important;
-    color: #a7d8af;
-    border-top: 1px solid #2d7b4e;
-  }
-
-  .completed-row .name,
-  .completed-row .order {
-    font-weight: bold;
-  }
-
-  .protected {
-    color: #a7d8af;
-    font-size: 13px;
-    font-weight: bold;
-  }
-
-  /* FOOTER */
-
-  .hint {
-    text-align: center;
-    color: var(--muted);
-    padding: 15px 5px 3px;
-    font-size: 13px;
-  }
-
-  .status {
-    text-align: center;
-    padding: 30px;
-    color: var(--muted);
-  }
-
-  .error {
-    color: #ff9898;
-  }
-
-  /* MODAL */
-
-  .modal-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
-
-  .modal {
-    width: min(650px, 92vw);
-    background: #151e2a;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px;
-  }
-
-  .modal h2 {
-    margin-top: 0;
-  }
-
-  textarea {
-    width: 100%;
-    min-height: 250px;
-    resize: vertical;
-    background: #0d141d;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    padding: 12px;
-    font-family: monospace;
-  }
-
-  .modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 14px;
-  }
-
-  @media (max-width: 900px) {
-    .summary {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .topbar {
-      flex-direction: column;
-    }
-
-    .search-wrap {
-      margin-left: 0;
-      width: 100%;
-    }
-
-    .search {
-      width: 100%;
-    }
-  }
+}
 </style>
 </head>
 
@@ -423,7 +456,9 @@
     <a href="admin.html" class="back-btn">↩ Back to Admin Panel</a>
   </div>
 
+
   <!-- EVENT SUMMARY -->
+
   <div class="summary">
 
     <div class="summary-item">
@@ -460,23 +495,32 @@
 
   </div>
 
+
   <!-- TOOLBAR -->
+
   <div class="toolbar">
 
-    <button class="add-btn" onclick="comingSoon()">＋ Add Competitor</button>
+    <button class="add-btn" onclick="comingSoon()">
+      ＋ Add Competitor
+    </button>
 
     <button class="paste-btn" onclick="openPasteModal()">
       📋 Paste from Spreadsheet
     </button>
 
-    <button onclick="renumberPreview()">⟳ Renumber Order</button>
+    <button onclick="renumberPreview()">
+      ⟳ Renumber Order
+    </button>
 
-    <button onclick="exportExcel()">⇩ Export to Excel</button>
+    <button onclick="exportExcel()">
+      ⇩ Export to Excel
+    </button>
 
     <div class="search-wrap">
       <input
-        class="search"
         id="searchBox"
+        class="search"
+        type="text"
         placeholder="⌕ Search name or number..."
         oninput="filterTable()"
       >
@@ -484,10 +528,13 @@
 
   </div>
 
-  <!-- TABLE -->
+
+  <!-- COMPETITOR TABLE -->
+
   <div class="table-wrap">
 
     <table>
+
       <thead>
 
         <tr>
@@ -523,26 +570,29 @@
           </td>
         </tr>
       </tbody>
+
     </table>
 
     <div class="hint">
-      Drag and drop functionality and editing will be connected to the competition database in the next step.
+      Drag-and-drop ordering and editing will be connected to the competition database in the next step.
     </div>
 
   </div>
 
 </div>
 
+
 <!-- PASTE MODAL -->
 
 <div class="modal-backdrop" id="pasteModal">
+
   <div class="modal">
 
     <h2>📋 Paste Competitors from Spreadsheet</h2>
 
     <p style="color:#9ba9bb;font-size:14px;">
-      Paste rows copied directly from Excel or Google Sheets here.
-      The save function will be connected next.
+      Paste rows copied directly from Excel or Google Sheets.
+      The actual save function will be connected next.
     </p>
 
     <textarea
@@ -556,31 +606,24 @@
     </div>
 
   </div>
+
 </div>
 
 
 <script>
 
-/* ============================================================
-   CP FREESTYLE COMPETITOR MANAGEMENT
-   ============================================================
-
-   This page reads directly from the Google Spreadsheet.
-
-   Spreadsheet:
-   - Event Config tab: EventName and Location
-   - Competitors tab: Competitor list and moves
-
-   ============================================================ */
+/* =========================================================
+   CONFIGURATION
+========================================================= */
 
 const SPREADSHEET_ID = "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
 
 let competitors = [];
 
 
-/* ============================================================
-   GOOGLE SHEETS DATA LOADER
-   ============================================================ */
+/* =========================================================
+   LOAD GOOGLE SHEET
+========================================================= */
 
 async function getSheetData(sheetName) {
 
@@ -590,54 +633,62 @@ async function getSheetData(sheetName) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Could not load ${sheetName}`);
+    throw new Error(`Could not load sheet: ${sheetName}`);
   }
 
   const text = await response.text();
 
-  const jsonText =
-    text.substring(
-      text.indexOf("{"),
-      text.lastIndexOf("}") + 1
-    );
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}") + 1;
 
-  const json = JSON.parse(jsonText);
+  const json = JSON.parse(text.substring(start, end));
 
-  const table = json.table;
-
-  const headers = table.cols.map(col =>
-    col.label ? String(col.label).trim() : ""
-  );
-
-  const rows = table.rows.map(row => {
-
-    const obj = {};
-
-    headers.forEach((header, index) => {
-      const cell = row.c[index];
-
-      obj[header] =
-        cell && cell.v !== null && cell.v !== undefined
-          ? String(cell.v)
-          : "";
-    });
-
-    return obj;
+  const headers = json.table.cols.map((col, index) => {
+    const label = String(col.label || "").trim();
+    return label || `Column_${index}`;
   });
 
-  return rows;
+  return json.table.rows.map(row => {
+
+    const item = {};
+
+    headers.forEach((header, index) => {
+
+      const cell = row.c[index];
+
+      item[header] =
+        cell && cell.v !== null && cell.v !== undefined
+          ? String(cell.v).trim()
+          : "";
+
+    });
+
+    return item;
+  });
 }
 
 
-/* ============================================================
+/* =========================================================
    LOAD EVENT DETAILS
-   ============================================================ */
+
+   Supports both:
+   1. Horizontal headers:
+      EventName | Location
+      My Event  | Australia
+
+   2. Vertical key/value layout:
+      EventName | My Event
+      Location  | Australia
+========================================================= */
 
 async function loadEventDetails() {
 
+  const eventNameEl = document.getElementById("eventName");
+  const locationEl = document.getElementById("eventLocation");
+
   try {
 
-    const rows = await getSheetData("Event Config");
+    const rows = await getSheetData("EventConfig");
 
     let eventName = "";
     let location = "";
@@ -646,59 +697,99 @@ async function loadEventDetails() {
 
       const keys = Object.keys(row);
 
-      if (keys.length < 2) return;
+      /* Look for EventName and Location as actual column headers */
 
-      const key =
-        String(row[keys[0]] || "").trim();
+      keys.forEach(key => {
 
-      const value =
-        String(row[keys[1]] || "").trim();
+        const normalKey =
+          String(key)
+            .replace(/\s+/g, "")
+            .toLowerCase();
 
-      if (key === "EventName") {
-        eventName = value;
-      }
+        if (
+          normalKey === "eventname" &&
+          row[key] &&
+          !eventName
+        ) {
+          eventName = row[key];
+        }
 
-      if (key === "Location") {
-        location = value;
+        if (
+          normalKey === "location" &&
+          row[key] &&
+          !location
+        ) {
+          location = row[key];
+        }
+
+      });
+
+
+      /* Also support a simple key/value sheet */
+
+      if (keys.length >= 2) {
+
+        const first =
+          String(row[keys[0]] || "")
+            .replace(/\s+/g, "")
+            .toLowerCase();
+
+        const second =
+          String(row[keys[1]] || "").trim();
+
+        if (first === "eventname" && second) {
+          eventName = second;
+        }
+
+        if (first === "location" && second) {
+          location = second;
+        }
       }
 
     });
 
-    document.getElementById("eventName").textContent =
+    eventNameEl.textContent =
       eventName || "Not set";
 
-    document.getElementById("eventLocation").textContent =
+    locationEl.textContent =
       location || "Not set";
 
   } catch (error) {
 
-    console.error("Event Config error:", error);
+    console.error("Could not load EventConfig:", error);
 
-    document.getElementById("eventName").textContent =
-      "Could not load";
-
-    document.getElementById("eventLocation").textContent =
-      "Could not load";
+    eventNameEl.textContent = "Not available";
+    locationEl.textContent = "Not available";
   }
 }
 
 
-/* ============================================================
+/* =========================================================
    LOAD COMPETITORS
-   ============================================================ */
+========================================================= */
 
 async function loadCompetitors() {
 
-  const body = document.getElementById("competitorBody");
+  const body =
+    document.getElementById("competitorBody");
 
   try {
 
-    const rows = await getSheetData("Competitors");
+    const rows =
+      await getSheetData("Competitors");
 
-    competitors = rows
-      .filter(row =>
-        String(row.CompetitorNumber || "").trim() !== ""
-      )
+    const loadedCompetitors = rows
+      .filter(row => {
+
+        const number =
+          String(row.CompetitorNumber || "").trim();
+
+        const name =
+          String(row.CompetitorName || "").trim();
+
+        return number !== "" || name !== "";
+
+      })
       .map(row => ({
 
         order:
@@ -713,17 +804,17 @@ async function loadCompetitors() {
         r1a:
           String(row.Move_R1 || "").trim(),
 
-        r2a:
-          String(row.Move_R2 || "").trim(),
-
-        r3a:
-          String(row.Move_R3 || "").trim(),
-
         r1b:
           String(row.Move_R1_Alternate || "").trim(),
 
+        r2a:
+          String(row.Move_R2 || "").trim(),
+
         r2b:
           String(row.Move_R2_Alternate || "").trim(),
+
+        r3a:
+          String(row.Move_R3 || "").trim(),
 
         r3b:
           String(row.Move_R3_Alternate || "").trim()
@@ -731,23 +822,24 @@ async function loadCompetitors() {
       }));
 
 
-    /* Separate the protected COMPLETED marker */
+    /* Find and separate the protected COMPLETED row */
 
     const completed =
-      competitors.find(c => c.number === 0);
+      loadedCompetitors.find(
+        competitor => competitor.number === 0
+      );
 
-    let activeCompetitors =
-      competitors.filter(c => c.number !== 0);
+    const activeCompetitors =
+      loadedCompetitors
+        .filter(
+          competitor => competitor.number !== 0
+        )
+        .sort(
+          (a, b) => a.order - b.order
+        );
 
 
-    /* Sort active competitors by CompetitorOrder */
-
-    activeCompetitors.sort((a, b) =>
-      a.order - b.order
-    );
-
-
-    /* Always place COMPLETED at the bottom */
+    /* COMPLETED always goes last */
 
     competitors =
       completed
@@ -765,7 +857,7 @@ async function loadCompetitors() {
 
   } catch (error) {
 
-    console.error(error);
+    console.error("Could not load competitors:", error);
 
     body.innerHTML = `
       <tr>
@@ -781,9 +873,9 @@ async function loadCompetitors() {
 }
 
 
-/* ============================================================
-   RENDER TABLE
-   ============================================================ */
+/* =========================================================
+   RENDER COMPETITOR TABLE
+========================================================= */
 
 function renderTable() {
 
@@ -792,19 +884,18 @@ function renderTable() {
 
   body.innerHTML = "";
 
-  competitors.forEach((competitor, index) => {
-
-    const isCompleted =
-      competitor.number === 0;
+  competitors.forEach(competitor => {
 
     const row =
       document.createElement("tr");
 
-    if (isCompleted) {
-      row.classList.add("completed-row");
-    }
+    const isCompleted =
+      competitor.number === 0;
+
 
     if (isCompleted) {
+
+      row.className = "completed-row";
 
       row.innerHTML = `
         <td class="drag">▣</td>
@@ -832,70 +923,48 @@ function renderTable() {
         `${competitor.order} ${competitor.number} ${competitor.name}`.toLowerCase();
 
       row.innerHTML = `
-
         <td class="drag" title="Drag to reorder">⠿</td>
 
-        <td class="order">
-          ${competitor.order}
-        </td>
+        <td class="order">${competitor.order}</td>
 
-        <td class="number">
-          ${competitor.number}
-        </td>
+        <td class="number">${competitor.number}</td>
 
-        <td class="name">
-          ${escapeHtml(competitor.name)}
-        </td>
+        <td class="name">${escapeHtml(competitor.name)}</td>
 
-        <td class="move r1a">
-          ${displayMove(competitor.r1a)}
-        </td>
+        <td class="move r1a">${displayMove(competitor.r1a)}</td>
+        <td class="move r1b">${displayMove(competitor.r1b)}</td>
 
-        <td class="move r1b">
-          ${displayMove(competitor.r1b)}
-        </td>
+        <td class="move r2a">${displayMove(competitor.r2a)}</td>
+        <td class="move r2b">${displayMove(competitor.r2b)}</td>
 
-        <td class="move r2a">
-          ${displayMove(competitor.r2a)}
-        </td>
-
-        <td class="move r2b">
-          ${displayMove(competitor.r2b)}
-        </td>
-
-        <td class="move r3a">
-          ${displayMove(competitor.r3a)}
-        </td>
-
-        <td class="move r3b">
-          ${displayMove(competitor.r3b)}
-        </td>
+        <td class="move r3a">${displayMove(competitor.r3a)}</td>
+        <td class="move r3b">${displayMove(competitor.r3b)}</td>
 
         <td class="actions">
           <button
             class="icon-btn"
             title="Edit competitor"
-            onclick="comingSoon()"
+            onclick="editCompetitor(${competitor.number})"
           >✎</button>
 
           <button
             class="icon-btn delete-btn"
             title="Remove competitor"
-            onclick="comingSoon()"
-          >♙</button>
+            onclick="deleteCompetitor(${competitor.number})"
+          >🗑</button>
         </td>
       `;
     }
 
     body.appendChild(row);
-  });
 
+  });
 }
 
 
-/* ============================================================
+/* =========================================================
    SEARCH
-   ============================================================ */
+========================================================= */
 
 function filterTable() {
 
@@ -905,30 +974,27 @@ function filterTable() {
       .toLowerCase()
       .trim();
 
-  const rows =
-    document.querySelectorAll("#competitorBody tr");
+  document
+    .querySelectorAll("#competitorBody tr")
+    .forEach(row => {
 
-  rows.forEach(row => {
+      if (row.classList.contains("completed-row")) {
+        row.style.display = "";
+        return;
+      }
 
-    if (row.classList.contains("completed-row")) {
-      row.style.display = "";
-      return;
-    }
+      row.style.display =
+        row.textContent.toLowerCase().includes(search)
+          ? ""
+          : "none";
 
-    const text =
-      row.textContent.toLowerCase();
-
-    row.style.display =
-      text.includes(search)
-        ? ""
-        : "none";
-  });
+    });
 }
 
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
+/* =========================================================
+   DISPLAY HELPERS
+========================================================= */
 
 function displayMove(value) {
   return value ? escapeHtml(value) : "—";
@@ -946,17 +1012,19 @@ function escapeHtml(value) {
 }
 
 
-/* ============================================================
+/* =========================================================
    PASTE MODAL
-   ============================================================ */
+========================================================= */
 
 function openPasteModal() {
   document.getElementById("pasteModal").style.display = "flex";
 }
 
+
 function closePasteModal() {
   document.getElementById("pasteModal").style.display = "none";
 }
+
 
 function previewPaste() {
 
@@ -969,30 +1037,50 @@ function previewPaste() {
   }
 
   alert(
-    "Paste data received successfully.\n\n" +
-    "The actual save-to-Google-Sheets function will be connected in the next step."
+    "Your spreadsheet data has been received.\n\n" +
+    "The save-to-Google-Sheets function will be connected in the next stage."
   );
 }
 
 
-/* ============================================================
-   FUTURE FUNCTIONS
-   ============================================================ */
+/* =========================================================
+   PLACEHOLDER EDIT FUNCTIONS
+
+   These buttons are deliberately visual for now.
+   We will connect them to Code.gs next.
+========================================================= */
 
 function comingSoon() {
   alert(
-    "This editing function is coming next. The competitor list is currently connected in view mode."
+    "Competitor editing will be connected next. The page is currently running safely in view mode."
+  );
+}
+
+
+function editCompetitor(number) {
+  alert(
+    `Edit competitor ${number} will be connected to Code.gs next.`
+  );
+}
+
+
+function deleteCompetitor(number) {
+  alert(
+    `Remove competitor ${number} will be connected to Code.gs next.`
   );
 }
 
 
 function renumberPreview() {
-
   alert(
-    "Renumbering will be connected when we add the competitor editing functions to Code.gs."
+    "Renumber Order will be connected when we add the competitor editing functions."
   );
 }
 
+
+/* =========================================================
+   EXPORT CSV
+========================================================= */
 
 function exportExcel() {
 
@@ -1024,9 +1112,10 @@ function exportExcel() {
     });
 
   const blob =
-    new Blob([csv], {
-      type: "text/csv;charset=utf-8;"
-    });
+    new Blob(
+      [csv],
+      { type: "text/csv;charset=utf-8;" }
+    );
 
   const link =
     document.createElement("a");
@@ -1037,14 +1126,17 @@ function exportExcel() {
   link.download =
     "CP-Freestyle-Competitors.csv";
 
+  document.body.appendChild(link);
+
   link.click();
 
+  document.body.removeChild(link);
 }
 
 
-/* ============================================================
-   START PAGE
-   ============================================================ */
+/* =========================================================
+   START
+========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
