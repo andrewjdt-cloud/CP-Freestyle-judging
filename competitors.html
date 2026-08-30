@@ -1,746 +1,838 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>CP Freestyle – Admin Panel</title>
+  <base target="_top">
 
   <style>
+    :root {
+      --bg: #090d14;
+      --panel: #141a23;
+      --panel-2: #101720;
+      --border: #2a3442;
+      --text: #e8edf5;
+      --muted: #9ca8b8;
+      --green: #56c782;
+      --blue: #5ea4e8;
+      --purple: #b681e8;
+      --red: #f06b6b;
+      --yellow: #d8b85a;
+    }
 
     * {
       box-sizing: border-box;
     }
 
-    :root {
-      --bg: #08090c;
-      --panel: #15161b;
-      --line: #2a2c33;
-      --text: #f2f3f5;
-      --muted: #a5a8b0;
-      --green: #55d892;
-      --red: #ff7070;
-    }
-
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
       background:
-        radial-gradient(
-          ellipse at top,
-          #11131a 0%,
-          var(--bg) 55%
-        );
+        radial-gradient(circle at top center, #111a29 0%, var(--bg) 45%);
       color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
     }
 
     .page {
-      width: min(1120px, calc(100% - 40px));
+      width: min(1600px, calc(100% - 48px));
       margin: 0 auto;
-      padding: 12px 0 40px;
+      padding: 26px 0 40px;
     }
 
-    .page-header {
-      margin-bottom: 20px;
+    /* =========================
+       HEADER
+    ========================= */
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .title-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 15px;
+    }
+
+    .trophy {
+      font-size: 34px;
+      line-height: 1;
     }
 
     h1 {
-      margin: 0 0 4px;
+      margin: 0;
       font-size: 28px;
-      line-height: 1.25;
+      letter-spacing: .2px;
     }
 
     .subtitle {
       color: var(--muted);
-      font-size: 16px;
-    }
-
-    .panel {
-      background:
-        linear-gradient(
-          135deg,
-          rgba(27, 28, 34, .98),
-          rgba(20, 21, 26, .98)
-        );
-      border: 1px solid rgba(255, 255, 255, .025);
-      border-radius: 16px;
-      padding: 22px 20px 18px;
-      margin-bottom: 18px;
-      box-shadow:
-        0 12px 35px rgba(0, 0, 0, .18);
-    }
-
-    .panel h2 {
-      margin: 0 0 16px;
-      font-size: 21px;
-    }
-
-    .info-row {
-      display: grid;
-      grid-template-columns:
-        minmax(150px, 1fr)
-        minmax(180px, 1.7fr)
-        minmax(130px, auto);
-      align-items: center;
-      gap: 18px;
-      min-height: 58px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .info-row:last-child {
-      border-bottom: none;
-    }
-
-    .label {
-      color: var(--muted);
       font-size: 15px;
-      font-weight: 500;
+      margin-top: 6px;
     }
 
-    .value {
-      text-align: right;
-      font-size: 15px;
-      font-weight: 650;
-      word-break: break-word;
-    }
-
-    .row-actions,
-    .scoreboard-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 7px;
-      font-weight: 750;
-    }
-
-    .open,
-    .yes,
-    .active {
-      color: var(--green);
-    }
-
-    .closed,
-    .no,
-    .inactive {
-      color: var(--red);
-    }
-
-    button {
-      appearance: none;
-      border: 0;
-      border-radius: 8px;
-      padding: 10px 15px;
-      font: inherit;
-      font-size: 14px;
-      font-weight: 700;
+    .back-btn {
+      background: #151d28;
       color: var(--text);
+      border: 1px solid #344154;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 14px;
       cursor: pointer;
-    }
-
-    button:hover:not(:disabled) {
-      filter: brightness(1.12);
-    }
-
-    button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-    }
-
-    .button-edit,
-    .button-cancel {
-      background: linear-gradient(180deg, #34363d, #292b31);
-    }
-
-    .button-save,
-    .button-open,
-    .button-on {
-      background: linear-gradient(180deg, #169d62, #087a49);
-    }
-
-    .button-close,
-    .button-off {
-      background: linear-gradient(180deg, #bd5252, #923838);
-    }
-
-    .button-copy {
-      background: linear-gradient(180deg, #346fa8, #235886);
-    }
-
-    .button-qr {
-      background: linear-gradient(180deg, #7054a5, #533b81);
-    }
-
-    .button-small {
-      padding: 9px 13px;
-      font-size: 13px;
+      transition: .15s ease;
       white-space: nowrap;
     }
 
-    .hidden {
-      display: none !important;
+    .back-btn:hover {
+      background: #202a37;
     }
 
-    .error {
-      color: var(--red);
-      margin-bottom: 16px;
-      font-weight: 700;
-    }
+    /* =========================
+       EVENT SUMMARY
+    ========================= */
 
-    .message {
-      min-height: 22px;
-      margin-top: 14px;
-      font-weight: 650;
-    }
-
-    .success {
-      color: var(--green);
-    }
-
-    /* =========================================================
-       JUDGES
-       ========================================================= */
-
-    .judge-header,
-    .judge-row {
+    .event-summary {
       display: grid;
-      grid-template-columns:
-        90px
-        minmax(150px, 1fr)
-        100px
-        auto;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .judge-header {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-      padding: 0 0 10px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .judge-row {
-      padding: 13px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .judge-slot {
-      font-weight: 750;
-    }
-
-    .judge-status {
-      text-align: right;
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    .judge-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
-
-    /* =========================================================
-       EDITOR
-       ========================================================= */
-
-    .editor {
-      margin-top: 18px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns:
-        minmax(150px, 1fr)
-        minmax(280px, 1.7fr);
-      align-items: center;
-      gap: 18px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--line);
-    }
-
-    input,
-    select {
-      width: 100%;
-      background: #202127;
-      border: 1px solid #3a3c45;
-      border-radius: 8px;
-      padding: 11px 12px;
-      color: var(--text);
-      font: inherit;
-    }
-
-    input:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--green);
-    }
-
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
-    }
-
-    /* =========================================================
-       MODALS
-       ========================================================= */
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, .75);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 1000;
-    }
-
-    .modal.show {
-      display: flex;
-    }
-
-    .modal-card {
-      width: min(420px, 100%);
-      background: #18191e;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, .55);
-    }
-
-    .modal-card h3 {
-      margin: 0 0 8px;
-    }
-
-    .modal-card p {
-      margin: 0 0 18px;
-      color: var(--muted);
-    }
-
-    .qr-wrap {
-      background: white;
-      padding: 14px;
+      grid-template-columns: 1.2fr 1fr 1fr 1.25fr;
+      background: rgba(17, 24, 35, .94);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      margin-bottom: 18px;
+      overflow: hidden;
+      margin-bottom: 16px;
     }
 
-    .qr-wrap img {
-      width: min(280px, 100%);
-      height: auto;
-      display: block;
+    .summary-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 20px 24px;
+      min-width: 0;
+    }
+
+    .summary-icon {
+      font-size: 28px;
+      opacity: .95;
+    }
+
+    .summary-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-size: 16px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* =========================
+       TOOLBAR
+    ========================= */
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(17, 24, 35, .94);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 4px;
+    }
+
+    button {
+      font-family: inherit;
+    }
+
+    .tool-btn {
+      border: 1px solid #303b4a;
+      background: #18202b;
+      color: var(--text);
+      padding: 11px 17px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: .15s ease;
+    }
+
+    .tool-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.12);
+    }
+
+    .tool-btn.add {
+      background: linear-gradient(135deg, #164f36, #103a29);
+      border-color: #24734f;
+    }
+
+    .tool-btn.paste {
+      background: linear-gradient(135deg, #17599c, #174a80);
+      border-color: #337bc3;
+    }
+
+    .tool-btn.export {
+      margin-left: auto;
+    }
+
+    .search {
+      margin-left: auto;
+      position: relative;
+      width: 285px;
+    }
+
+    .search input {
+      width: 100%;
+      background: #0e141d;
+      border: 1px solid #334052;
+      color: var(--text);
+      border-radius: 7px;
+      padding: 11px 14px 11px 38px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .search::before {
+      content: "⌕";
+      position: absolute;
+      left: 13px;
+      top: 7px;
+      font-size: 23px;
+      color: var(--muted);
+    }
+
+    /* =========================
+       TABLE
+    ========================= */
+
+    .table-card {
+      background: rgba(14, 20, 29, .96);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1420px;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    th,
+    td {
+      border-right: 1px solid #293341;
+      border-bottom: 1px solid #293341;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: none;
+    }
+
+    thead tr:first-child th {
+      border-top: 1px solid #293341;
+    }
+
+    th {
+      background: #151c26;
+      padding: 14px 10px;
+      font-size: 14px;
+      color: #dce3ec;
+      text-align: center;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    th.group-r1 {
+      background: linear-gradient(135deg, #342635, #241d2b);
+      color: #e4bddc;
+    }
+
+    th.group-r2 {
+      background: linear-gradient(135deg, #1d3044, #172635);
+      color: #b8d8ef;
+    }
+
+    th.group-r3 {
+      background: linear-gradient(135deg, #3a321b, #292315);
+      color: #ecd47c;
+    }
+
+    th.sub-r1 {
+      background: #2c2330;
+    }
+
+    th.sub-r2 {
+      background: #1c2c3b;
+    }
+
+    th.sub-r3 {
+      background: #352e1a;
+    }
+
+    td {
+      background: #111720;
+      padding: 13px 12px;
+      font-size: 15px;
+      height: 58px;
+    }
+
+    tbody tr {
+      transition: background .15s ease;
+    }
+
+    tbody tr:hover td {
+      filter: brightness(1.12);
+    }
+
+    /* Column widths */
+    .drag-col {
+      width: 42px;
+      text-align: center;
+    }
+
+    .order-col {
+      width: 70px;
+      text-align: center;
+    }
+
+    .number-col {
+      width: 90px;
+      text-align: center;
+    }
+
+    .name-col {
+      width: 190px;
+      text-align: left;
+    }
+
+    /*
+      Deliberately wider move columns so long move names
+      have much more room.
+    */
+    .move-col {
+      width: 220px;
+      min-width: 220px;
+      text-align: left;
+    }
+
+    .action-col {
+      width: 125px;
+      text-align: center;
+    }
+
+    .drag-handle {
+      color: #8b96a5;
+      font-size: 21px;
+      cursor: grab;
+      letter-spacing: -3px;
+      user-select: none;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
+    }
+
+    .move-r1 {
+      background: linear-gradient(90deg, #624555, #493643);
+    }
+
+    .move-r1-alt {
+      background: linear-gradient(90deg, #513d4b, #3e303b);
+    }
+
+    .move-r2 {
+      background: linear-gradient(90deg, #41576d, #34485b);
+    }
+
+    .move-r2-alt {
+      background: linear-gradient(90deg, #35495c, #2d3e4e);
+    }
+
+    .move-r3 {
+      background: linear-gradient(90deg, #6a5729, #574820);
+    }
+
+    .move-r3-alt {
+      background: linear-gradient(90deg, #5d4c23, #4c3e1d);
+    }
+
+    .move-text {
+      font-weight: 500;
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .dash {
+      text-align: center;
+      color: #b9c2cc;
+    }
+
+    /* =========================
+       ROW ACTIONS
+    ========================= */
+
+    .row-actions {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 34px;
+      border-radius: 6px;
+      background: #151d27;
+      border: 1px solid #303b49;
+      color: #d7dee7;
+      cursor: pointer;
+      font-size: 17px;
+    }
+
+    .icon-btn.delete {
+      border-color: #612e35;
+      color: #ff7777;
+    }
+
+    .icon-btn:hover {
+      filter: brightness(1.25);
+    }
+
+    /* =========================
+       COMPLETED MARKER
+    ========================= */
+
+    .completed-row td {
+      background: linear-gradient(90deg, #102019, #0d1713);
+      border-color: #28533c;
+      color: #91d09e;
+      font-weight: 700;
+    }
+
+    .completed-row .drag-handle {
+      visibility: hidden;
+    }
+
+    .protected {
+      color: #a8d9b1;
+      font-size: 13px;
+    }
+
+    /* =========================
+       FOOTER MESSAGE
+    ========================= */
+
+    .reorder-message {
+      text-align: center;
+      color: var(--muted);
+      padding: 16px 10px 2px;
+      font-size: 14px;
+    }
+
+    /* =========================
+       BENEFITS PANEL
+    ========================= */
+
+    .benefits {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: rgba(17, 24, 35, .94);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .benefit {
+      padding: 20px;
+      display: flex;
+      gap: 14px;
+      min-height: 105px;
+    }
+
+    .benefit-icon {
+      font-size: 29px;
+      line-height: 1;
+    }
+
+    .benefit h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .benefit p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    /* =========================
+       RESPONSIVE
+    ========================= */
+
+    @media (max-width: 1000px) {
+      .event-summary {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .benefits {
+        grid-template-columns: 1fr 1fr;
+      }
     }
 
     @media (max-width: 700px) {
-
       .page {
-        width: min(100% - 24px, 1120px);
+        width: calc(100% - 24px);
+        padding-top: 18px;
       }
 
-      h1 {
-        font-size: 24px;
+      .topbar {
+        flex-direction: column;
       }
 
-      .panel {
-        padding: 18px 15px;
-      }
-
-      .info-row {
-        grid-template-columns: 1fr auto;
-        gap: 10px;
-        padding: 13px 0;
-      }
-
-      .info-row .value {
-        grid-column: 2;
-      }
-
-      .row-actions,
-      .scoreboard-actions {
-        grid-column: 1 / -1;
-        justify-content: flex-end;
-      }
-
-      .judge-header,
-      .judge-row {
-        grid-template-columns:
-          58px
-          minmax(0, 1fr)
-          76px;
-        gap: 8px;
-      }
-
-      .judge-header div:last-child {
-        display: none;
-      }
-
-      .judge-actions {
-        grid-column: 1 / -1;
-        padding-bottom: 5px;
-      }
-
-      .form-row {
+      .event-summary {
         grid-template-columns: 1fr;
-        gap: 7px;
       }
 
-      .form-actions {
+      .toolbar {
         flex-wrap: wrap;
       }
 
-      .form-actions button {
-        flex: 1;
+      .search,
+      .tool-btn.export {
+        margin-left: 0;
       }
 
-    }
+      .search {
+        width: 100%;
+      }
 
+      .benefits {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-  <main class="page">
+  <div class="page">
 
-    <header class="page-header">
-      <h1>CP Freestyle – Admin Panel</h1>
-      <div class="subtitle">Competition setup overview</div>
-    </header>
-
-    <div id="pageError" class="error"></div>
-
-    <div id="adminContent" class="hidden">
-
-      <!-- =====================================================
-           LIVE SCOREBOARD VIEW
-           ===================================================== -->
-
-      <section class="panel">
-
-        <h2>🏆 LIVE Scoreboard View</h2>
-
-        <div class="info-row">
-          <div class="label">
-            Public Scoreboard
-          </div>
-
-          <div
-            class="value"
-            id="liveScoreboardStatus">
-            Loading...
-          </div>
-
-          <div class="scoreboard-actions">
-            <button
-              type="button"
-              class="button-copy button-small"
-              id="copyLiveScoreboardButton"
-              disabled>
-              Copy URL
-            </button>
-
-            <button
-              type="button"
-              class="button-qr button-small"
-              id="showLiveScoreboardQRButton"
-              disabled>
-              View QR Code
-            </button>
-          </div>
+    <!-- HEADER -->
+    <div class="topbar">
+      <div class="title-wrap">
+        <div class="trophy">🏆</div>
+        <div>
+          <h1>CP Freestyle – Competitor Management</h1>
+          <div class="subtitle">View and manage all competitors for the event</div>
         </div>
-
-      </section>
-
-
-      <!-- =====================================================
-           COMPETITION
-           ===================================================== -->
-
-      <section class="panel">
-
-        <h2>Competition</h2>
-
-        <div class="info-row">
-          <div class="label">Event Name</div>
-          <div class="value" id="eventName">—</div>
-          <div></div>
-        </div>
-
-        <div class="info-row">
-          <div class="label">Location</div>
-          <div class="value" id="eventLocation">—</div>
-          <div></div>
-        </div>
-
-        <div class="info-row">
-          <div class="label">Current Round</div>
-          <div class="value" id="eventRound">—</div>
-
-          <div class="row-actions">
-            <button
-              type="button"
-              class="button-edit button-small"
-              id="editRoundButton">
-              Edit
-            </button>
-          </div>
-        </div>
-
-        <div class="info-row">
-          <div class="label">Round Status</div>
-          <div class="value" id="roundStatus">—</div>
-
-          <div class="row-actions">
-            <button
-              type="button"
-              class="button-open button-small"
-              id="roundStatusButton">
-              Open Round
-            </button>
-          </div>
-        </div>
-
-        <div class="info-row">
-          <div class="label">Panel Insights</div>
-          <div class="value" id="panelInsights">—</div>
-
-          <div class="row-actions">
-            <button
-              type="button"
-              class="button-on button-small"
-              id="panelInsightsButton">
-              Turn ON
-            </button>
-          </div>
-        </div>
-
-        <div class="info-row">
-          <div class="label">LiveToken</div>
-          <div class="value" id="liveToken">—</div>
-
-          <div class="row-actions">
-            <button
-              type="button"
-              class="button-edit button-small"
-              id="editLiveTokenButton">
-              Edit
-            </button>
-          </div>
-        </div>
-
-        <div
-          id="competitionSuccess"
-          class="message">
-        </div>
-
-      </section>
-
-
-      <!-- =====================================================
-           JUDGES
-           ===================================================== -->
-
-      <section class="panel">
-
-        <h2>Judges</h2>
-
-        <div class="judge-header">
-          <div>Slot</div>
-          <div>Judge Name</div>
-          <div>Status</div>
-          <div></div>
-        </div>
-
-        <div id="judges">
-          Loading judges...
-        </div>
-
-        <div
-          id="judgeEditor"
-          class="editor hidden">
-
-          <h3 id="judgeEditorTitle">
-            Edit Judge
-          </h3>
-
-          <div class="form-row">
-            <label for="judgeNameInput">
-              Judge Name
-            </label>
-            <input
-              id="judgeNameInput"
-              type="text">
-          </div>
-
-          <div class="form-row">
-            <label for="judgeTokenInput">
-              Judge Token
-            </label>
-            <input
-              id="judgeTokenInput"
-              type="text">
-          </div>
-
-          <div class="form-row">
-            <label for="judgeActiveInput">
-              Judge Status
-            </label>
-
-            <select id="judgeActiveInput">
-              <option value="YES">ACTIVE</option>
-              <option value="NO">INACTIVE</option>
-            </select>
-          </div>
-
-          <div class="form-row">
-            <label for="scoreboardIDInput">
-              Judge Slot / Scoreboard ID
-            </label>
-            <input
-              id="scoreboardIDInput"
-              type="text">
-          </div>
-
-          <div class="form-actions">
-
-            <button
-              type="button"
-              class="button-cancel"
-              id="cancelJudgeButton">
-              Cancel
-            </button>
-
-            <button
-              type="button"
-              class="button-save"
-              id="saveJudgeButton">
-              Save Judge
-            </button>
-
-          </div>
-
-          <div
-            id="judgeSaveMessage"
-            class="message">
-          </div>
-
-        </div>
-
-      </section>
-
-    </div>
-
-  </main>
-
-
-  <!-- =======================================================
-       QR CODE MODAL
-       ======================================================== -->
-
-  <div
-    id="qrModal"
-    class="modal">
-
-    <div class="modal-card">
-
-      <h3 id="qrTitle">
-        QR Code
-      </h3>
-
-      <p id="qrSubtitle">
-        Scan this QR code to open the page.
-      </p>
-
-      <div class="qr-wrap">
-        <img
-          id="qrImage"
-          alt="QR Code">
       </div>
 
-      <div class="form-actions">
+      <button class="back-btn" onclick="goBack()">
+        ↩ Back to Admin Panel
+      </button>
+    </div>
 
-        <button
-          type="button"
-          class="button-copy"
-          id="copyQRUrlButton">
-          Copy URL
-        </button>
 
-        <button
-          type="button"
-          class="button-cancel"
-          id="closeQrButton">
-          Close
-        </button>
+    <!-- EVENT SUMMARY -->
+    <div class="event-summary">
 
+      <div class="summary-item">
+        <div class="summary-icon">🗓</div>
+        <div>
+          <div class="summary-label">Event Name</div>
+          <div class="summary-value">CP Freestyle 2025</div>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-icon">📍</div>
+        <div>
+          <div class="summary-label">Location</div>
+          <div class="summary-value">Melbourne, Australia</div>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-icon">👥</div>
+        <div>
+          <div class="summary-label">Total Competitors</div>
+          <div class="summary-value">21</div>
+        </div>
+      </div>
+
+      <div class="summary-item">
+        <div class="summary-icon">◷</div>
+        <div>
+          <div class="summary-label">Last Updated</div>
+          <div class="summary-value">Ready</div>
+        </div>
       </div>
 
     </div>
 
-  </div>
 
+    <!-- TOOLBAR -->
+    <div class="toolbar">
 
-  <!-- =======================================================
-       VALUE EDITOR MODAL
-       ======================================================== -->
+      <button class="tool-btn add" onclick="comingSoon('Add Competitor')">
+        ＋ Add Competitor
+      </button>
 
-  <div
-    id="editValueModal"
-    class="modal">
+      <button class="tool-btn paste" onclick="comingSoon('Paste from Spreadsheet')">
+        ▣ Paste from Spreadsheet
+      </button>
 
-    <div class="modal-card">
+      <button class="tool-btn" onclick="comingSoon('Renumber Order')">
+        ⟳ Renumber Order
+      </button>
 
-      <h3 id="editValueTitle">
-        Edit Value
-      </h3>
+      <button class="tool-btn export" onclick="comingSoon('Export to Excel')">
+        ⇩ Export to Excel
+      </button>
 
-      <p id="editValueSubtitle"></p>
-
-      <input
-        id="editValueInput"
-        type="text">
-
-      <div
-        id="editValueMessage"
-        class="message">
+      <div class="search">
+        <input
+          type="text"
+          id="searchBox"
+          placeholder="Search name or number..."
+          oninput="filterCompetitors()"
+        >
       </div>
 
-      <div class="form-actions">
+    </div>
 
-        <button
-          type="button"
-          class="button-cancel"
-          id="cancelEditValueButton">
-          Cancel
-        </button>
 
-        <button
-          type="button"
-          class="button-save"
-          id="saveEditValueButton">
-          Save
-        </button>
+    <!-- COMPETITOR TABLE -->
+    <div class="table-card">
 
+      <table id="competitorTable">
+
+        <thead>
+
+          <tr>
+            <th rowspan="2" class="drag-col"></th>
+            <th rowspan="2" class="order-col">Order ↕</th>
+            <th rowspan="2" class="number-col">Number</th>
+            <th rowspan="2" class="name-col">Name</th>
+
+            <th colspan="2" class="group-r1">Round 1</th>
+            <th colspan="2" class="group-r2">Round 2</th>
+            <th colspan="2" class="group-r3">Round 3</th>
+
+            <th rowspan="2" class="action-col">Actions</th>
+          </tr>
+
+          <tr>
+            <th class="sub-r1 move-col">A Move</th>
+            <th class="sub-r1 move-col">B Move</th>
+
+            <th class="sub-r2 move-col">A Move</th>
+            <th class="sub-r2 move-col">B Move</th>
+
+            <th class="sub-r3 move-col">A Move</th>
+            <th class="sub-r3 move-col">B Move</th>
+          </tr>
+
+        </thead>
+
+        <tbody id="competitorBody">
+
+          <tr>
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">1</td>
+            <td class="number-col">21</td>
+            <td class="name-col">John Smith</td>
+            <td class="move-r1 move-col"><div class="move-text">CRANE 1.2</div></td>
+            <td class="move-r1-alt move-col dash">—</td>
+            <td class="move-r2 move-col"><div class="move-text">CANCAN 1.3</div></td>
+            <td class="move-r2-alt move-col dash">—</td>
+            <td class="move-r3 move-col"><div class="move-text">BOOMERANG 2.6</div></td>
+            <td class="move-r3-alt move-col dash">—</td>
+            <td class="action-col">
+              <div class="row-actions">
+                <button class="icon-btn" title="Edit">✎</button>
+                <button class="icon-btn delete" title="Delete">♙</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">2</td>
+            <td class="number-col">20</td>
+            <td class="name-col">Jack Brown</td>
+            <td class="move-r1 move-col"><div class="move-text">CANCAN 1.3</div></td>
+            <td class="move-r1-alt move-col dash">—</td>
+            <td class="move-r2 move-col"><div class="move-text">FLEXHEAD+LAZYBOY (S) 4.0</div></td>
+            <td class="move-r2-alt move-col dash">—</td>
+            <td class="move-r3 move-col"><div class="move-text">BLINDBOOM 4.6</div></td>
+            <td class="move-r3-alt move-col dash">—</td>
+            <td class="action-col">
+              <div class="row-actions">
+                <button class="icon-btn">✎</button>
+                <button class="icon-btn delete">♙</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">3</td>
+            <td class="number-col">19</td>
+            <td class="name-col">Peter White</td>
+            <td class="move-r1 move-col"><div class="move-text">CANCAN 1.3</div></td>
+            <td class="move-r1-alt move-col dash">—</td>
+            <td class="move-r2 move-col"><div class="move-text">SUPERMAN 2.1</div></td>
+            <td class="move-r2-alt move-col dash">—</td>
+            <td class="move-r3 move-col"><div class="move-text">BLINDBOOM 4.6</div></td>
+            <td class="move-r3-alt move-col dash">—</td>
+            <td class="action-col">
+              <div class="row-actions">
+                <button class="icon-btn">✎</button>
+                <button class="icon-btn delete">♙</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">4</td>
+            <td class="number-col">18</td>
+            <td class="name-col">Michael Green</td>
+            <td class="move-r1 move-col"><div class="move-text">CROSSUP 1.4</div></td>
+            <td class="move-r1-alt move-col dash">—</td>
+            <td class="move-r2 move-col"><div class="move-text">SUPERMAN+WALNUT(S) 2.9</div></td>
+            <td class="move-r2-alt move-col dash">—</td>
+            <td class="move-r3 move-col"><div class="move-text">COWBOY 4.7</div></td>
+            <td class="move-r3-alt move-col dash">—</td>
+            <td class="action-col">
+              <div class="row-actions">
+                <button class="icon-btn">✎</button>
+                <button class="icon-btn delete">♙</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">5</td>
+            <td class="number-col">17</td>
+            <td class="name-col">Sarah Taylor</td>
+            <td class="move-r1 move-col"><div class="move-text">CROSSUP 1.4</div></td>
+            <td class="move-r1-alt move-col dash">—</td>
+            <td class="move-r2 move-col"><div class="move-text">BOOMERANG 2.6</div></td>
+            <td class="move-r2-alt move-col dash">—</td>
+            <td class="move-r3 move-col"><div class="move-text">COWBOY 4.7</div></td>
+            <td class="move-r3-alt move-col dash">—</td>
+            <td class="action-col">
+              <div class="row-actions">
+                <button class="icon-btn">✎</button>
+                <button class="icon-btn delete">♙</button>
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">6</td>
+            <td class="number-col">16</td>
+            <td class="name-col">Thomas Black</td>
+            <td class="move-r1 move-col"><div class="move-text">NAC-NAC 1.4</div></td>
+            <td class="move-r1-alt move-col dash">—</td>
+            <td class="move-r2 move-col"><div class="move-text">SWITCHBLADE 3.5</div></td>
+            <td class="move-r2-alt move-col dash">—</td>
+            <td class="move-r3 move-col"><div class="move-text">DOUBLE COWBOY 5.9</div></td>
+            <td class="move-r3-alt move-col dash">—</td>
+            <td class="action-col">
+              <div class="row-actions">
+                <button class="icon-btn">✎</button>
+                <button class="icon-btn delete">♙</button>
+              </div>
+            </td>
+          </tr>
+
+
+          <!-- COMPLETED MARKER - ALWAYS LAST -->
+          <tr class="completed-row">
+            <td class="drag-col"><span class="drag-handle">⠿</span></td>
+            <td class="order-col">COMPLETE</td>
+            <td class="number-col">0</td>
+            <td class="name-col">COMPLETED</td>
+
+            <td class="move-col dash">—</td>
+            <td class="move-col dash">—</td>
+            <td class="move-col dash">—</td>
+            <td class="move-col dash">—</td>
+            <td class="move-col dash">—</td>
+            <td class="move-col dash">—</td>
+
+            <td class="action-col">
+              <span class="protected">🔒 Protected</span>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <div class="reorder-message">
+        Drag the handle (⠿) to change the running order of competitors.
+        The <strong>COMPLETED</strong> marker always remains at the bottom.
+      </div>
+
+    </div>
+
+
+    <!-- BOTTOM INFORMATION PANEL -->
+    <div class="benefits">
+
+      <div class="benefit">
+        <div class="benefit-icon">📋</div>
+        <div>
+          <h3 style="color:#d5a7ec;">Easy Data Entry</h3>
+          <p>Add competitors manually or paste directly from Excel or Google Sheets.</p>
+        </div>
+      </div>
+
+      <div class="benefit">
+        <div class="benefit-icon">↕</div>
+        <div>
+          <h3 style="color:#9ed08b;">Flexible Ordering</h3>
+          <p>Drag and drop competitors to change the running order and renumber if needed.</p>
+        </div>
+      </div>
+
+      <div class="benefit">
+        <div class="benefit-icon">🛡</div>
+        <div>
+          <h3 style="color:#77b5ed;">Data Protection</h3>
+          <p>The Completed marker is protected and always remains at the bottom of the list.</p>
+        </div>
+      </div>
+
+      <div class="benefit">
+        <div class="benefit-icon">👥</div>
+        <div>
+          <h3 style="color:#e4c66e;">Clear & Organised</h3>
+          <p>Colour-coded rounds make competitor moves easy to read at a glance.</p>
+        </div>
+      </div>
+
+      <div class="benefit">
+        <div class="benefit-icon">⇩</div>
+        <div>
+          <h3 style="color:#c596e5;">Export Anytime</h3>
+          <p>Export the competitor list to Excel for your records when required.</p>
+        </div>
       </div>
 
     </div>
@@ -749,1482 +841,48 @@
 
 
   <script>
+    /*
+      IMPORTANT:
+      This first version is intentionally a VISUAL PAGE ONLY.
 
-    /* =========================================================
-       CONFIGURATION
-       ========================================================= */
+      We can connect it to Code.gs and the Competitors sheet once
+      you are happy with the appearance. That means your existing
+      working Admin Panel remains completely untouched for now.
+    */
 
-    const SHEET_ID =
-      "1v839BJMAiCtXbSwRaS6jDq_oDxZgSYwU5sm4JwzrYUk";
-
-    const EVENT_CONFIG_GID =
-      "686531230";
-
-    const JUDGES_GID =
-      "1213944419";
-
-    const URLS_GID =
-      "1750768877";
-
-    const APPS_SCRIPT_URL =
-      "https://script.google.com/macros/s/AKfycbx9xfxW7hyAT-3A5viq0REB2MKw4JAuBjUN4_YfHaE-kIV-G-7oLUvvaiLMtZhzYrr_/exec";
-
-
-    /* =========================================================
-       AUTHENTICATION
-       ========================================================= */
-
-    const params =
-      new URLSearchParams(
-        window.location.search
-      );
-
-    const adminToken =
-      params.get("token");
-
-
-    /* =========================================================
-       PAGE STATE
-       ========================================================= */
-
-    let currentConfig = {};
-    let currentJudges = [];
-    let editingJudgeRow = null;
-    let editingConfigField = null;
-
-    let liveScoreboardURL = "";
-    let currentQRUrl = "";
-
-
-    /* =========================================================
-       HELPERS
-       ========================================================= */
-
-    function sleep(milliseconds) {
-      return new Promise(resolve => {
-        setTimeout(resolve, milliseconds);
-      });
+    function goBack() {
+      // We will connect this properly to the Admin Panel URL/navigation
+      // when we hook the pages together.
+      window.history.back();
     }
 
 
-    function normalise(value) {
-      return String(value ?? "").trim();
+    function comingSoon(feature) {
+      alert(feature + " will be connected next once we are happy with the page layout.");
     }
 
 
-    function getCellValue(cell) {
+    function filterCompetitors() {
+      const search = document
+        .getElementById("searchBox")
+        .value
+        .toLowerCase()
+        .trim();
 
-      if (!cell) {
-        return "";
-      }
+      const rows = document.querySelectorAll("#competitorBody tr");
 
-      if (
-        cell.v !== null &&
-        cell.v !== undefined
-      ) {
-        return String(cell.v);
-      }
+      rows.forEach(row => {
 
-      return "";
-    }
-
-
-    function escapeHtml(value) {
-
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-
-    function isRoundOpen() {
-
-      const value =
-        normalise(
-          currentConfig.RoundStatus ||
-          currentConfig.RoundOpen ||
-          ""
-        ).toUpperCase();
-
-      return (
-        value === "OPEN" ||
-        value === "YES" ||
-        value === "TRUE"
-      );
-    }
-
-
-    function isPanelInsightsOn() {
-
-      const value =
-        normalise(
-          currentConfig.PanelInsights ||
-          currentConfig.Insights ||
-          ""
-        ).toUpperCase();
-
-      return (
-        value === "ON" ||
-        value === "YES" ||
-        value === "TRUE"
-      );
-    }
-
-
-    /* =========================================================
-       READ GOOGLE SHEETS
-       ========================================================= */
-
-    async function getSheetData(gid) {
-
-      const cacheBuster =
-        Date.now();
-
-      const url =
-        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?gid=${gid}&tqx=out:json&_=${cacheBuster}`;
-
-      const response =
-        await fetch(
-          url,
-          { cache: "no-store" }
-        );
-
-      if (!response.ok) {
-        throw new Error(
-          "Could not load sheet data."
-        );
-      }
-
-      const text =
-        await response.text();
-
-      const start =
-        text.indexOf("{");
-
-      const end =
-        text.lastIndexOf("}") + 1;
-
-      if (
-        start === -1 ||
-        end <= start
-      ) {
-        throw new Error(
-          "Invalid response from Google Sheets."
-        );
-      }
-
-      return JSON.parse(
-        text.substring(start, end)
-      );
-    }
-
-
-    /* =========================================================
-       SEND ADMIN ACTION
-       ========================================================= */
-
-    async function sendAdminAction(data) {
-
-      const body =
-        JSON.stringify(data);
-
-      const blob =
-        new Blob(
-          [body],
-          {
-            type:
-              "text/plain;charset=UTF-8"
-          }
-        );
-
-      if (
-        navigator.sendBeacon &&
-        navigator.sendBeacon(
-          APPS_SCRIPT_URL,
-          blob
-        )
-      ) {
-        return;
-      }
-
-      await fetch(
-        APPS_SCRIPT_URL,
-        {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type":
-              "text/plain;charset=utf-8"
-          },
-          body
-        }
-      );
-    }
-
-
-    /* =========================================================
-       LIVE SCOREBOARD URL
-
-       This reads only URLS!B4.
-       Nothing in this section writes to the spreadsheet.
-       ========================================================= */
-
-    async function loadLiveScoreboardURL() {
-
-      const status =
-        document.getElementById(
-          "liveScoreboardStatus"
-        );
-
-      const copyButton =
-        document.getElementById(
-          "copyLiveScoreboardButton"
-        );
-
-      const qrButton =
-        document.getElementById(
-          "showLiveScoreboardQRButton"
-        );
-
-      status.textContent =
-        "Loading...";
-
-      copyButton.disabled = true;
-      qrButton.disabled = true;
-
-      try {
-
-        const sheetData =
-          await getSheetData(
-            URLS_GID
-          );
-
-        /*
-           URLS!B4 means:
-           spreadsheet row 4
-           column B
-
-           Google Visualization row index 3,
-           column index 1.
-        */
-
-        const row =
-          sheetData.table.rows[3];
-
-        const cell =
-          row &&
-          row.c
-            ? row.c[1]
-            : null;
-
-        liveScoreboardURL =
-          normalise(
-            getCellValue(cell)
-          );
-
-        if (!liveScoreboardURL) {
-          status.textContent =
-            "No Live Scoreboard URL found.";
+        // Never hide the COMPLETED marker
+        if (row.classList.contains("completed-row")) {
+          row.style.display = "";
           return;
         }
 
-        status.textContent =
-          "Ready";
-
-        copyButton.disabled = false;
-        qrButton.disabled = false;
-
-      } catch (error) {
-
-        liveScoreboardURL = "";
-
-        status.textContent =
-          "Could not load URL.";
-
-      }
-    }
-
-
-    /* =========================================================
-       COPY TO CLIPBOARD
-       ========================================================= */
-
-    async function copyText(text) {
-
-      if (!text) {
-        return false;
-      }
-
-      try {
-
-        if (
-          navigator.clipboard &&
-          window.isSecureContext
-        ) {
-          await navigator.clipboard.writeText(
-            text
-          );
-          return true;
-        }
-
-        const textarea =
-          document.createElement(
-            "textarea"
-          );
-
-        textarea.value = text;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-
-        document.body.appendChild(
-          textarea
-        );
-
-        textarea.select();
-
-        const success =
-          document.execCommand(
-            "copy"
-          );
-
-        textarea.remove();
-
-        return success;
-
-      } catch (error) {
-        return false;
-      }
-    }
-
-
-    function flashButton(button, text) {
-
-      const original =
-        button.textContent;
-
-      button.textContent =
-        text;
-
-      setTimeout(() => {
-        button.textContent =
-          original;
-      }, 1400);
-    }
-
-
-    /* =========================================================
-       LIVE SCOREBOARD BUTTONS
-       ========================================================= */
-
-    document
-      .getElementById(
-        "copyLiveScoreboardButton"
-      )
-      .addEventListener(
-        "click",
-        async event => {
-
-          const copied =
-            await copyText(
-              liveScoreboardURL
-            );
-
-          if (copied) {
-            flashButton(
-              event.currentTarget,
-              "Copied!"
-            );
-          } else {
-            alert(
-              "Could not copy the Live Scoreboard URL."
-            );
-          }
-
-        }
-      );
-
-
-    document
-      .getElementById(
-        "showLiveScoreboardQRButton"
-      )
-      .addEventListener(
-        "click",
-        () => {
-
-          if (!liveScoreboardURL) {
-            return;
-          }
-
-          showQRCode(
-            "LIVE Scoreboard View",
-            liveScoreboardURL,
-            "Scan this code to open the live public scoreboard."
-          );
-
-        }
-      );
-
-
-    /* =========================================================
-       LOAD EVENT CONFIG
-       ========================================================= */
-
-    async function loadEventConfig() {
-
-      const sheetData =
-        await getSheetData(
-          EVENT_CONFIG_GID
-        );
-
-      const cfg = {};
-
-      sheetData.table.rows.forEach(
-        row => {
-
-          if (
-            !row.c ||
-            row.c.length < 2
-          ) {
-            return;
-          }
-
-          const key =
-            normalise(
-              getCellValue(row.c[0])
-            );
-
-          const value =
-            normalise(
-              getCellValue(row.c[1])
-            );
-
-          if (key) {
-            cfg[key] = value;
-          }
-
-        }
-      );
-
-      if (
-        !adminToken ||
-        cfg.AdminToken !== adminToken
-      ) {
-        throw new Error(
-          "Access denied."
-        );
-      }
-
-      currentConfig = cfg;
-
-      document
-        .getElementById("eventName")
-        .textContent =
-          cfg.EventName || "—";
-
-      document
-        .getElementById("eventLocation")
-        .textContent =
-          cfg.Location || "—";
-
-      document
-        .getElementById("eventRound")
-        .textContent =
-          cfg.CurrentRound ||
-          cfg.Round ||
-          "—";
-
-      document
-        .getElementById("liveToken")
-        .textContent =
-          cfg.LiveToken || "—";
-
-      const roundStatus =
-        document.getElementById(
-          "roundStatus"
-        );
-
-      roundStatus.innerHTML =
-        isRoundOpen()
-          ? `<span class="status open">OPEN</span>`
-          : `<span class="status closed">CLOSED</span>`;
-
-      const panelInsights =
-        document.getElementById(
-          "panelInsights"
-        );
-
-      panelInsights.innerHTML =
-        isPanelInsightsOn()
-          ? `<span class="status yes">ON</span>`
-          : `<span class="status no">OFF</span>`;
-
-      updateControlButtons();
-    }
-
-
-    function updateControlButtons() {
-
-      const roundButton =
-        document.getElementById(
-          "roundStatusButton"
-        );
-
-      if (isRoundOpen()) {
-        roundButton.textContent =
-          "Close Round";
-        roundButton.className =
-          "button-close button-small";
-      } else {
-        roundButton.textContent =
-          "Open Round";
-        roundButton.className =
-          "button-open button-small";
-      }
-
-      const insightsButton =
-        document.getElementById(
-          "panelInsightsButton"
-        );
-
-      if (isPanelInsightsOn()) {
-        insightsButton.textContent =
-          "Turn OFF";
-        insightsButton.className =
-          "button-off button-small";
-      } else {
-        insightsButton.textContent =
-          "Turn ON";
-        insightsButton.className =
-          "button-on button-small";
-      }
-    }
-
-
-    /* =========================================================
-       SAVE EVENT CONTROLS
-       ========================================================= */
-
-    async function saveEventControls(
-      updates,
-      button,
-      originalText
-    ) {
-
-      if (button) {
-        button.disabled = true;
-        button.textContent = "Saving...";
-      }
-
-      try {
-
-        const currentRound =
-          updates.currentRound ??
-          currentConfig.CurrentRound ??
-          currentConfig.Round ??
-          "";
-
-        const roundStatus =
-          updates.roundStatus ??
-          (isRoundOpen() ? "OPEN" : "CLOSED");
-
-        const panelInsights =
-          updates.panelInsights ??
-          (isPanelInsightsOn() ? "ON" : "OFF");
-
-        const liveToken =
-          updates.liveToken ??
-          currentConfig.LiveToken ??
-          "";
-
-        await sendAdminAction({
-          action: "updateEventControls",
-          adminToken,
-          currentRound,
-          roundStatus,
-          panelInsights,
-          liveToken
-        });
-
-        let saved = false;
-
-        for (
-          let attempt = 0;
-          attempt < 5;
-          attempt++
-        ) {
-
-          await sleep(1000);
-
-          await loadEventConfig();
-
-          const loadedRound =
-            currentConfig.CurrentRound ||
-            currentConfig.Round ||
-            "";
-
-          const loadedStatus =
-            isRoundOpen()
-              ? "OPEN"
-              : "CLOSED";
-
-          const loadedInsights =
-            isPanelInsightsOn()
-              ? "ON"
-              : "OFF";
-
-          const loadedToken =
-            currentConfig.LiveToken || "";
-
-          if (
-            loadedRound === currentRound &&
-            loadedStatus === roundStatus &&
-            loadedInsights === panelInsights &&
-            loadedToken === liveToken
-          ) {
-            saved = true;
-            break;
-          }
-        }
-
-        if (!saved) {
-          throw new Error(
-            "The sheet did not confirm the changes."
-          );
-        }
-
-        const message =
-          document.getElementById(
-            "competitionSuccess"
-          );
-
-        message.textContent =
-          "Settings saved successfully.";
-
-        message.className =
-          "message success";
-
-        return true;
-
-      } catch (error) {
-
-        alert(
-          "Could not save settings: " +
-          (
-            error.message ||
-            String(error)
-          )
-        );
-
-        return false;
-
-      } finally {
-
-        if (button) {
-          button.disabled = false;
-          button.textContent =
-            originalText;
-        }
-      }
-    }
-
-
-    /* =========================================================
-       CURRENT ROUND
-       ========================================================= */
-
-    document
-      .getElementById("editRoundButton")
-      .addEventListener(
-        "click",
-        () => {
-
-          openValueEditor(
-            "currentRound",
-            "Edit Current Round",
-            "Enter the current competition round.",
-            currentConfig.CurrentRound ||
-              currentConfig.Round ||
-              ""
-          );
-
-        }
-      );
-
-
-    /* =========================================================
-       ROUND STATUS
-       ========================================================= */
-
-    document
-      .getElementById("roundStatusButton")
-      .addEventListener(
-        "click",
-        async event => {
-
-          const button =
-            event.currentTarget;
-
-          const newStatus =
-            isRoundOpen()
-              ? "CLOSED"
-              : "OPEN";
-
-          if (
-            !confirm(
-              `Are you sure you want to ${
-                newStatus === "OPEN"
-                  ? "open"
-                  : "close"
-              } the round?`
-            )
-          ) {
-            return;
-          }
-
-          await saveEventControls(
-            {
-              roundStatus: newStatus
-            },
-            button,
-            button.textContent
-          );
-
-        }
-      );
-
-
-    /* =========================================================
-       PANEL INSIGHTS
-       ========================================================= */
-
-    document
-      .getElementById("panelInsightsButton")
-      .addEventListener(
-        "click",
-        async event => {
-
-          const button =
-            event.currentTarget;
-
-          const newValue =
-            isPanelInsightsOn()
-              ? "OFF"
-              : "ON";
-
-          await saveEventControls(
-            {
-              panelInsights: newValue
-            },
-            button,
-            button.textContent
-          );
-
-        }
-      );
-
-
-    /* =========================================================
-       LIVE TOKEN
-       ========================================================= */
-
-    document
-      .getElementById("editLiveTokenButton")
-      .addEventListener(
-        "click",
-        () => {
-
-          openValueEditor(
-            "liveToken",
-            "Edit LiveToken",
-            "Enter the LiveToken.",
-            currentConfig.LiveToken || ""
-          );
-
-        }
-      );
-
-
-    /* =========================================================
-       GENERIC VALUE EDITOR
-       ========================================================= */
-
-    function openValueEditor(
-      field,
-      title,
-      subtitle,
-      value
-    ) {
-
-      editingConfigField = field;
-
-      document
-        .getElementById("editValueTitle")
-        .textContent = title;
-
-      document
-        .getElementById("editValueSubtitle")
-        .textContent = subtitle;
-
-      document
-        .getElementById("editValueInput")
-        .value = value;
-
-      document
-        .getElementById("editValueMessage")
-        .textContent = "";
-
-      document
-        .getElementById("editValueModal")
-        .classList.add("show");
-
-      setTimeout(() => {
-        document
-          .getElementById("editValueInput")
-          .focus();
-      }, 50);
-    }
-
-
-    function closeValueEditor() {
-
-      editingConfigField = null;
-
-      document
-        .getElementById("editValueModal")
-        .classList.remove("show");
-    }
-
-
-    document
-      .getElementById("cancelEditValueButton")
-      .addEventListener(
-        "click",
-        closeValueEditor
-      );
-
-
-    document
-      .getElementById("saveEditValueButton")
-      .addEventListener(
-        "click",
-        async () => {
-
-          const value =
-            document
-              .getElementById(
-                "editValueInput"
-              )
-              .value
-              .trim();
-
-          const message =
-            document.getElementById(
-              "editValueMessage"
-            );
-
-          if (!value) {
-            message.textContent =
-              "This value cannot be empty.";
-            return;
-          }
-
-          let updates = {};
-
-          if (
-            editingConfigField ===
-            "currentRound"
-          ) {
-            updates.currentRound = value;
-          }
-
-          if (
-            editingConfigField ===
-            "liveToken"
-          ) {
-            updates.liveToken = value;
-          }
-
-          const saved =
-            await saveEventControls(
-              updates,
-              document.getElementById(
-                "saveEditValueButton"
-              ),
-              "Save"
-            );
-
-          if (saved) {
-            closeValueEditor();
-          }
-
-        }
-      );
-
-
-    /* =========================================================
-       LOAD JUDGES
-       ========================================================= */
-
-    async function loadJudges() {
-
-      const container =
-        document.getElementById(
-          "judges"
-        );
-
-      const sheetData =
-        await getSheetData(
-          JUDGES_GID
-        );
-
-      const judges = [];
-
-      sheetData.table.rows.forEach(
-        (row, index) => {
-
-          /*
-             Row 1 is the header.
-          */
-
-          if (index === 0 || !row.c) {
-            return;
-          }
-
-          const name =
-            normalise(
-              getCellValue(row.c[0])
-            );
-
-          const token =
-            normalise(
-              getCellValue(row.c[1])
-            );
-
-          const active =
-            normalise(
-              getCellValue(row.c[2])
-            ).toUpperCase();
-
-          const scoreboardID =
-            normalise(
-              getCellValue(row.c[3])
-            );
-
-          const judgeUrl =
-            normalise(
-              getCellValue(row.c[4])
-            );
-
-          /*
-             Completely empty records are not shown.
-             This prevents phantom INACTIVE judges.
-          */
-
-          if (
-            !name &&
-            !token &&
-            !scoreboardID
-          ) {
-            return;
-          }
-
-          judges.push({
-            sheetRow: index + 1,
-            name,
-            token,
-            active,
-            scoreboardID,
-            judgeUrl
-          });
-
-        }
-      );
-
-      currentJudges = judges;
-
-      container.innerHTML = "";
-
-      if (!judges.length) {
-        container.textContent =
-          "No judges found.";
-        return;
-      }
-
-      judges.forEach(judge => {
-
-        const row =
-          document.createElement("div");
-
-        row.className =
-          "judge-row";
-
-        const isActive =
-          (
-            judge.active === "YES" ||
-            judge.active === "ACTIVE" ||
-            judge.active === "TRUE"
-          );
-
-        row.innerHTML = `
-          <div class="judge-slot">
-            ${escapeHtml(
-              judge.scoreboardID ||
-              `J${judge.sheetRow - 1}`
-            )}
-          </div>
-
-          <div class="judge-name">
-            ${escapeHtml(
-              judge.name || "—"
-            )}
-          </div>
-
-          <div class="judge-status">
-            <span class="status ${
-              isActive
-                ? "active"
-                : "inactive"
-            }">
-              ${
-                isActive
-                  ? "ACTIVE"
-                  : "INACTIVE"
-              }
-            </span>
-          </div>
-
-          <div class="judge-actions">
-
-            <button
-              type="button"
-              class="button-copy button-small">
-              Copy URL
-            </button>
-
-            <button
-              type="button"
-              class="button-qr button-small">
-              QR
-            </button>
-
-            <button
-              type="button"
-              class="button-edit button-small">
-              Edit
-            </button>
-
-          </div>
-        `;
-
-        const buttons =
-          row.querySelectorAll("button");
-
-        buttons[0].disabled =
-          !judge.judgeUrl;
-
-        buttons[1].disabled =
-          !judge.judgeUrl;
-
-        buttons[0].addEventListener(
-          "click",
-          async event => {
-
-            const copied =
-              await copyText(
-                judge.judgeUrl
-              );
-
-            if (copied) {
-              flashButton(
-                event.currentTarget,
-                "Copied!"
-              );
-            }
-
-          }
-        );
-
-        buttons[1].addEventListener(
-          "click",
-          () => {
-
-            showQRCode(
-              judge.name ||
-                judge.scoreboardID ||
-                "Judge QR Code",
-              judge.judgeUrl,
-              "Scan this code to open the judge scoring page."
-            );
-
-          }
-        );
-
-        buttons[2].addEventListener(
-          "click",
-          () => openJudgeEditor(judge)
-        );
-
-        container.appendChild(row);
-
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(search) ? "" : "none";
       });
     }
-
-
-    /* =========================================================
-       JUDGE EDITOR
-       ========================================================= */
-
-    function openJudgeEditor(judge) {
-
-      editingJudgeRow =
-        judge.sheetRow;
-
-      document
-        .getElementById(
-          "judgeEditorTitle"
-        )
-        .textContent =
-          `Edit ${
-            judge.scoreboardID ||
-            "Judge"
-          }`;
-
-      document
-        .getElementById("judgeNameInput")
-        .value =
-          judge.name;
-
-      document
-        .getElementById("judgeTokenInput")
-        .value =
-          judge.token;
-
-      document
-        .getElementById("judgeActiveInput")
-        .value =
-          (
-            judge.active === "NO" ||
-            judge.active === "INACTIVE"
-          )
-            ? "NO"
-            : "YES";
-
-      document
-        .getElementById("scoreboardIDInput")
-        .value =
-          judge.scoreboardID;
-
-      document
-        .getElementById("judgeSaveMessage")
-        .textContent = "";
-
-      document
-        .getElementById("judgeEditor")
-        .classList.remove("hidden");
-
-      document
-        .getElementById("judgeEditor")
-        .scrollIntoView({
-          behavior: "smooth",
-          block: "nearest"
-        });
-    }
-
-
-    document
-      .getElementById("cancelJudgeButton")
-      .addEventListener(
-        "click",
-        () => {
-
-          editingJudgeRow = null;
-
-          document
-            .getElementById("judgeEditor")
-            .classList.add("hidden");
-
-        }
-      );
-
-
-    document
-      .getElementById("saveJudgeButton")
-      .addEventListener(
-        "click",
-        async () => {
-
-          if (!editingJudgeRow) {
-            return;
-          }
-
-          const judgeName =
-            document
-              .getElementById("judgeNameInput")
-              .value
-              .trim();
-
-          const judgeToken =
-            document
-              .getElementById("judgeTokenInput")
-              .value
-              .trim();
-
-          const judgeActive =
-            document
-              .getElementById("judgeActiveInput")
-              .value
-              .trim();
-
-          const scoreboardID =
-            document
-              .getElementById("scoreboardIDInput")
-              .value
-              .trim();
-
-          const message =
-            document.getElementById(
-              "judgeSaveMessage"
-            );
-
-          const saveButton =
-            document.getElementById(
-              "saveJudgeButton"
-            );
-
-          if (
-            !judgeName ||
-            !judgeToken ||
-            !scoreboardID
-          ) {
-            message.textContent =
-              "Judge Name, Judge Token and Scoreboard ID cannot be empty.";
-            return;
-          }
-
-          saveButton.disabled = true;
-          saveButton.textContent =
-            "Saving...";
-
-          try {
-
-            await sendAdminAction({
-              action: "updateJudgeDetails",
-              adminToken,
-              sheetRow: editingJudgeRow,
-              judgeName,
-              judgeToken,
-              judgeActive,
-              scoreboardID
-            });
-
-            let saved = false;
-
-            for (
-              let attempt = 0;
-              attempt < 5;
-              attempt++
-            ) {
-
-              await sleep(1000);
-
-              await loadJudges();
-
-              const confirmed =
-                currentJudges.find(
-                  judge =>
-                    judge.sheetRow ===
-                    editingJudgeRow
-                );
-
-              if (
-                confirmed &&
-                confirmed.name === judgeName &&
-                confirmed.token === judgeToken &&
-                confirmed.scoreboardID === scoreboardID
-              ) {
-                saved = true;
-                break;
-              }
-            }
-
-            if (!saved) {
-              throw new Error(
-                "The sheet did not confirm the judge changes."
-              );
-            }
-
-            message.textContent =
-              "Judge details saved successfully.";
-
-            message.className =
-              "message success";
-
-            editingJudgeRow = null;
-
-            setTimeout(() => {
-              document
-                .getElementById("judgeEditor")
-                .classList.add("hidden");
-            }, 700);
-
-          } catch (error) {
-
-            message.textContent =
-              "Could not save judge: " +
-              (
-                error.message ||
-                String(error)
-              );
-
-          } finally {
-
-            saveButton.disabled = false;
-            saveButton.textContent =
-              "Save Judge";
-          }
-
-        }
-      );
-
-
-    /* =========================================================
-       QR CODE
-       ========================================================= */
-
-    function showQRCode(
-      title,
-      url,
-      subtitle
-    ) {
-
-      if (!url) {
-        return;
-      }
-
-      currentQRUrl = url;
-
-      document
-        .getElementById("qrTitle")
-        .textContent = title;
-
-      document
-        .getElementById("qrSubtitle")
-        .textContent = subtitle;
-
-      document
-        .getElementById("qrImage")
-        .src =
-          "https://api.qrserver.com/v1/create-qr-code/?size=400x400&data=" +
-          encodeURIComponent(url);
-
-      document
-        .getElementById("qrModal")
-        .classList.add("show");
-    }
-
-
-    function closeQRCode() {
-
-      document
-        .getElementById("qrModal")
-        .classList.remove("show");
-    }
-
-
-    document
-      .getElementById("closeQrButton")
-      .addEventListener(
-        "click",
-        closeQRCode
-      );
-
-
-    document
-      .getElementById("copyQRUrlButton")
-      .addEventListener(
-        "click",
-        async event => {
-
-          const copied =
-            await copyText(
-              currentQRUrl
-            );
-
-          if (copied) {
-            flashButton(
-              event.currentTarget,
-              "Copied!"
-            );
-          }
-
-        }
-      );
-
-
-    document
-      .getElementById("qrModal")
-      .addEventListener(
-        "click",
-        event => {
-
-          if (
-            event.target.id === "qrModal"
-          ) {
-            closeQRCode();
-          }
-
-        }
-      );
-
-
-    /* =========================================================
-       INITIAL LOAD
-       ========================================================= */
-
-    async function initialise() {
-
-      const pageError =
-        document.getElementById(
-          "pageError"
-        );
-
-      try {
-
-        /*
-           Event Config authenticates the admin page first.
-           The scoreboard URL is then read independently
-           from URLS!B4.
-        */
-
-        await loadEventConfig();
-
-        await Promise.all([
-          loadJudges(),
-          loadLiveScoreboardURL()
-        ]);
-
-        document
-          .getElementById("adminContent")
-          .classList.remove("hidden");
-
-      } catch (error) {
-
-        pageError.textContent =
-          "Could not load the Admin Panel: " +
-          (
-            error.message ||
-            String(error)
-          );
-      }
-    }
-
-
-    initialise();
-
   </script>
 
 </body>
